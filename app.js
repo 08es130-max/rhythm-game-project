@@ -41,24 +41,20 @@ function getGeometry() {
   const h = game.clientHeight;
   const spawn = {x:w * 0.5, y:h * 0.075};
 
-  // スクフェスの画面比率に寄せた9点配置。
-  // 横幅を少し絞り、左右端を高く、中央を深くして強い半円状の弧にする。
-  const pointRatios = [
-    {x:0.18, y:0.18},
-    {x:0.235, y:0.34},
-    {x:0.32, y:0.54},
-    {x:0.405, y:0.76},
-    {x:0.50, y:0.91},
-    {x:0.595, y:0.76},
-    {x:0.68, y:0.54},
-    {x:0.765, y:0.34},
-    {x:0.82, y:0.18}
-  ];
+  // 9個の判定位置を、手置きの折れ線ではなく滑らかな楕円弧上に配置する。
+  // 左右端から中央まで一定角度で並ぶため、三角形っぽくならない。
+  const centerX = w * 0.5;
+  const centerY = h * 0.20;
+  const radiusX = w * 0.30;
+  const radiusY = h * 0.70;
 
-  const targetPoints = pointRatios.map(p => ({
-    x: w * p.x,
-    y: h * p.y
-  }));
+  const targetPoints = Array.from({length:9}, (_, i) => {
+    const angle = Math.PI + (Math.PI * i / 8); // 180° → 360°
+    return {
+      x: centerX + Math.cos(angle) * radiusX,
+      y: centerY - Math.sin(angle) * radiusY
+    };
+  });
 
   return {spawn,targetPoints};
 }
