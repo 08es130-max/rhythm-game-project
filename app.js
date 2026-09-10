@@ -41,9 +41,8 @@ function getGeometry() {
   const h = game.clientHeight;
   const spawn = {x:w * 0.5, y:h * 0.07};
 
-  // SIF風：中央レーンが最も低く、左右端ほど高くなる「∪」型配置。
   const targetPoints = Array.from({length:9}, (_, i) => {
-    const u = (i - 4) / 4; // -1 ... 0 ... +1
+    const u = (i - 4) / 4;
     return {
       x: w * (0.08 + 0.84 * (i / 8)),
       y: h * (0.84 - 0.16 * u * u)
@@ -83,7 +82,10 @@ function layoutPlayfield() {
     target.dataset.lane = i;
     target.style.left = `${p.x}px`;
     target.style.top = `${p.y}px`;
-    target.addEventListener('pointerdown', () => hitLane(i));
+    target.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      hitLane(i);
+    });
     targets.appendChild(target);
   });
 }
@@ -155,8 +157,34 @@ function validateChart(data) {
 
 speed.addEventListener('input', () => speedValue.textContent = Number(speed.value).toFixed(1) + 'x');
 
+function tryEnterMobilePlayMode() {
+  document.body.classList.add('playing-mode');
+  requestAnimationFrame(layoutPlayfield);
+
+  const coarse = window.matchMedia?.('(pointer: coarse)').matches;
+  if (!coarse) return;
+
+  const root = document.documentElement;
+  if (root.requestFullscreen && !document.fullscreenElement) {
+    root.requestFullscreen().then(() => {
+      if (screen.orientation?.lock) {
+        screen.orientation.lock('landscape').catch(() => {});
+      }
+    }).catch(() => {});
+  }
+}
+
+function exitMobilePlayMode() {
+  document.body.classList.remove('playing-mode');
+  requestAnimationFrame(layoutPlayfield);
+  if (document.fullscreenElement && document.exitFullscreen) {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
 startBtn.addEventListener('click', async () => {
   if (!chart || !audio.src) return;
+  tryEnterMobilePlayMode();
   resetGame();
   resultPanel.hidden = true;
   await audio.play();
@@ -192,6 +220,7 @@ function stopGame() {
   startBtn.disabled = false;
   stopBtn.disabled = true;
   judgeEl.textContent = 'STOP';
+  exitMobilePlayMode();
 }
 
 function finishGame() {
@@ -210,6 +239,7 @@ function finishGame() {
   rMiss.textContent = counts.miss;
   rMaxCombo.textContent = maxCombo;
   rScore.textContent = score;
+  exitMobilePlayMode();
 }
 
 function currentMs() {
