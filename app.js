@@ -40,20 +40,16 @@ function getGeometry() {
   const w = game.clientWidth;
   const h = game.clientHeight;
   const spawn = {x:w * 0.5, y:h * 0.07};
-  const centerX = w * 0.5;
-  const centerY = h * 1.02;
-  const radiusX = w * 0.43;
-  const radiusY = h * 0.28;
-  const startAngle = Math.PI * 1.06;
-  const endAngle = Math.PI * 1.94;
+
+  // SIF風：中央レーンが最も低く、左右端ほど高くなる「∪」型配置。
   const targetPoints = Array.from({length:9}, (_, i) => {
-    const t = i / 8;
-    const a = startAngle + (endAngle - startAngle) * t;
+    const u = (i - 4) / 4; // -1 ... 0 ... +1
     return {
-      x: centerX + Math.cos(a) * radiusX,
-      y: centerY + Math.sin(a) * radiusY
+      x: w * (0.08 + 0.84 * (i / 8)),
+      y: h * (0.84 - 0.16 * u * u)
     };
   });
+
   return {spawn,targetPoints};
 }
 
