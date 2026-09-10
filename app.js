@@ -12,6 +12,7 @@ const chartName = document.getElementById('chartName');
 const notesLayer = document.getElementById('notesLayer');
 const laneLayer = document.getElementById('laneLayer');
 const targets = document.getElementById('targets');
+const game = document.getElementById('game');
 const scoreEl = document.getElementById('score');
 const comboEl = document.getElementById('combo');
 const judgeEl = document.getElementById('judge');
@@ -35,18 +36,70 @@ let maxCombo = 0;
 let counts = {perfect:0,great:0,good:0,miss:0};
 let audioCtx = null;
 
-for (let i = 0; i < 9; i++) {
-  const lane = document.createElement('div');
-  lane.className = 'lane';
-  laneLayer.appendChild(lane);
-
-  const target = document.createElement('button');
-  target.className = 'target';
-  target.type = 'button';
-  target.dataset.lane = i;
-  target.addEventListener('pointerdown', () => hitLane(i));
-  targets.appendChild(target);
+function getGeometry() {
+  const w = game.clientWidth;
+  const h = game.clientHeight;
+  const spawn = {x:w * 0.5, y:h * 0.07};
+  const centerX = w * 0.5;
+  const centerY = h * 1.02;
+  const radiusX = w * 0.43;
+  const radiusY = h * 0.28;
+  const startAngle = Math.PI * 1.06;
+  const endAngle = Math.PI * 1.94;
+  const targetPoints = Array.from({length:9}, (_, i) => {
+    const t = i / 8;
+    const a = startAngle + (endAngle - startAngle) * t;
+    return {
+      x: centerX + Math.cos(a) * radiusX,
+      y: centerY + Math.sin(a) * radiusY
+    };
+  });
+  return {spawn,targetPoints};
 }
+
+function layoutPlayfield() {
+  const {spawn,targetPoints} = getGeometry();
+  laneLayer.innerHTML = '';
+  targets.innerHTML = '';
+
+  const glow = document.createElement('div');
+  glow.className = 'spawn-glow';
+  glow.style.left = `${spawn.x}px`;
+  glow.style.top = `${spawn.y}px`;
+  laneLayer.appendChild(glow);
+
+  targetPoints.forEach((p, i) => {
+    const dx = p.x - spawn.x;
+    const dy = p.y - spawn.y;
+    const length = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI - 90;
+    const lane = document.createElement('div');
+    lane.className = 'lane';
+    lane.style.left = `${spawn.x}px`;
+    lane.style.top = `${spawn.y}px`;
+    lane.style.height = `${length}px`;
+    lane.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+    laneLayer.appendChild(lane);
+
+    const target = document.createElement('button');
+    target.className = 'target';
+    target.type = 'button';
+    target.dataset.lane = i;
+    target.style.left = `${p.x}px`;
+    target.style.top = `${p.y}px`;
+    target.addEventListener('pointerdown', () => hitLane(i));
+    targets.appendChild(target);
+  });
+}
+
+layoutPlayfield();
+window.addEventListener('resize', () => {
+  layoutPlayfield();
+  if (playing) {
+    for (const n of activeNotes) n.el?.remove();
+    activeNotes.forEach(n => n.el = null);
+  }
+});
 
 function canStart() {
   startBtn.disabled = !(audio.src && chart);
@@ -171,8 +224,7 @@ function loop() {
   if (!playing) return;
   const now = currentMs();
   const leadMs = 1600 / Number(speed.value);
-  const gameHeight = document.getElementById('game').clientHeight;
-  const judgeY = gameHeight - 92;
+  const {spawn,targetPoints} = getGeometry();
 
   for (const n of activeNotes) {
     if (judged.has(n.idx)) continue;
@@ -182,19 +234,24 @@ function loop() {
       continue;
     }
     if (dt <= leadMs && dt >= -180) {
-      if (!n.el) n.el = createNoteEl(n.lane);
-      const progress = 1 - Math.max(0, dt) / leadMs;
-      const y = 26 + progress * (judgeY - 26);
+      if (!n.el) n.el = createNoteEl();
+      const raw = 1 - Math.max(0, dt) / leadMs;
+      const progress = raw * raw * (3 - 2 * raw);
+      const p = targetPoints[n.lane];
+      const x = spawn.x + (p.x - spawn.x) * progress;
+      const y = spawn.y + (p.y - spawn.y) * progress;
+      const scale = 0.45 + 0.55 * progress;
+      n.el.style.left = `${x}px`;
       n.el.style.top = `${y}px`;
+      n.el.style.transform = `translate(-50%,-50%) scale(${scale})`;
     }
   }
   rafId = requestAnimationFrame(loop);
 }
 
-function createNoteEl(lane) {
+function createNoteEl() {
   const el = document.createElement('div');
   el.className = 'note';
-  el.style.left = `${((lane + 0.5) / 9) * 100}%`;
   notesLayer.appendChild(el);
   return el;
 }
@@ -247,23 +304,34 @@ function applyJudge(note, grade) {
 
 function flashTarget(lane) {
   const el = targets.children[lane];
+  if (!el) return;
   el.classList.add('active');
   setTimeout(() => el.classList.remove('active'), 70);
 }
 
 function playTapSound(grade) {
   audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
   const now = audioCtx.currentTime;
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(grade === 'perfect' ? 1450 : grade === 'great' ? 1250 : 1050, now);
-  osc.frequency.exponentialRampToValueAtTime(800, now + 0.06);
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  const base = grade === 'perfect' ? 1760 : grade === 'great' ? 1520 : 1280;
+  osc1.type = 'sine';
+  osc2.type = 'triangle';
+  osc1.frequency.setValueAtTime(base, now);
+  osc1.frequency.exponentialRampToValueAtTime(base * 0.62, now + 0.07);
+  osc2.frequency.setValueAtTime(base * 1.5, now);
+  osc2.frequency.exponentialRampToValueAtTime(base * 0.9, now + 0.05);
+  filter.type = 'highpass';
+  filter.frequency.value = 650;
   gain.gain.setValueAtTime(0.16, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-  osc.connect(gain).connect(audioCtx.destination);
-  osc.start(now);
-  osc.stop(now + 0.08);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+  osc1.connect(filter);
+  osc2.connect(filter);
+  filter.connect(gain).connect(audioCtx.destination);
+  osc1.start(now); osc2.start(now);
+  osc1.stop(now + 0.09); osc2.stop(now + 0.07);
 }
 
 document.addEventListener('keydown', (e) => {
