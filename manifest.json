@@ -1,0 +1,10 @@
+{
+  "name": "9-Lane Rhythm Prototype",
+  "short_name": "9-Lane Rhythm",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#111827",
+  "theme_color": "#111827"
+}
