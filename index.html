@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>9-Lane Rhythm Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="panel controls">
+      <h1>9-Lane Rhythm Prototype</h1>
+      <p class="sub">ローカル音源＋譜面JSONで遊ぶ試作版です。</p>
+
+      <div class="file-row">
+        <label>音源
+          <input id="audioFile" type="file" accept="audio/*" />
+        </label>
+        <label>譜面JSON
+          <input id="chartFile" type="file" accept="application/json,.json" />
+        </label>
+      </div>
+
+      <div class="settings-row">
+        <label>ノーツ速度
+          <input id="speed" type="range" min="0.7" max="2.0" step="0.1" value="1.0" />
+          <span id="speedValue">1.0x</span>
+        </label>
+        <label>オフセット(ms)
+          <input id="offset" type="number" step="10" value="0" />
+        </label>
+      </div>
+
+      <div class="button-row">
+        <button id="startBtn" disabled>START</button>
+        <button id="stopBtn" disabled>STOP</button>
+        <button id="demoBtn">DEMO譜面を使う</button>
+      </div>
+
+      <div class="meta-row">
+        <div>曲: <strong id="songName">未選択</strong></div>
+        <div>譜面: <strong id="chartName">未選択</strong></div>
+      </div>
+    </section>
+
+    <section class="game-wrap">
+      <div class="hud">
+        <div><span class="hud-label">SCORE</span><span id="score">0</span></div>
+        <div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
+        <div id="judge" class="judge">READY</div>
+      </div>
+
+      <div id="game" class="game" aria-label="9 lane rhythm game">
+        <div id="notesLayer" class="notes-layer"></div>
+        <div id="laneLayer" class="lane-layer"></div>
+        <div class="judge-line"></div>
+        <div id="targets" class="targets"></div>
+      </div>
+
+      <div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
+    </section>
+
+    <section class="panel result" id="resultPanel" hidden>
+      <h2>RESULT</h2>
+      <div class="result-grid">
+        <div>PERFECT <strong id="rPerfect">0</strong></div>
+        <div>GREAT <strong id="rGreat">0</strong></div>
+        <div>GOOD <strong id="rGood">0</strong></div>
+        <div>MISS <strong id="rMiss">0</strong></div>
+        <div>MAX COMBO <strong id="rMaxCombo">0</strong></div>
+        <div>SCORE <strong id="rScore">0</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <audio id="audio" preload="auto"></audio>
+  <script src="app.js"></script>
+</body>
+</html>
