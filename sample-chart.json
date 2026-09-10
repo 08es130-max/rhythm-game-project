@@ -1,0 +1,23 @@
+{
+  "title": "Sample Chart",
+  "offsetMs": 0,
+  "notes": [
+    { "timeMs": 1000, "lane": 4 },
+    { "timeMs": 1500, "lane": 3 },
+    { "timeMs": 2000, "lane": 5 },
+    { "timeMs": 2500, "lane": 2 },
+    { "timeMs": 3000, "lane": 6 },
+    { "timeMs": 3500, "lane": 1 },
+    { "timeMs": 4000, "lane": 7 },
+    { "timeMs": 4500, "lane": 0 },
+    { "timeMs": 5000, "lane": 8 },
+    { "timeMs": 5500, "lane": 3 },
+    { "timeMs": 5500, "lane": 5 },
+    { "timeMs": 6250, "lane": 4 },
+    { "timeMs": 7000, "lane": 2 },
+    { "timeMs": 7250, "lane": 3 },
+    { "timeMs": 7500, "lane": 4 },
+    { "timeMs": 7750, "lane": 5 },
+    { "timeMs": 8000, "lane": 6 }
+  ]
+}
