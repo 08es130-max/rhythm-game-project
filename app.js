@@ -41,11 +41,13 @@ function getGeometry() {
   const h = game.clientHeight;
   const spawn = {x:w * 0.5, y:h * 0.07};
 
+  // SIF風の深いU字。中央を低く、左右端は画面上半分まで持ち上げる。
   const targetPoints = Array.from({length:9}, (_, i) => {
-    const u = (i - 4) / 4;
+    const u = (i - 4) / 4; // -1 ... 0 ... +1
+    const absU = Math.abs(u);
     return {
       x: w * (0.08 + 0.84 * (i / 8)),
-      y: h * (0.84 - 0.16 * u * u)
+      y: h * (0.88 - 0.40 * Math.pow(absU, 1.45))
     };
   });
 
