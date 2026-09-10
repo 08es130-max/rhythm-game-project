@@ -41,11 +41,10 @@ function getGeometry() {
   const h = game.clientHeight;
   const spawn = {x:w * 0.5, y:h * 0.075};
 
-  // 9個の判定位置を、手置きの折れ線ではなく滑らかな楕円弧上に配置する。
-  // 左右端から中央まで一定角度で並ぶため、三角形っぽくならない。
+  // 滑らかな楕円弧。前版より左右へほんの少し広げる。
   const centerX = w * 0.5;
   const centerY = h * 0.20;
-  const radiusX = w * 0.30;
+  const radiusX = w * 0.33;
   const radiusY = h * 0.70;
 
   const targetPoints = Array.from({length:9}, (_, i) => {
