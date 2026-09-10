@@ -39,17 +39,26 @@ let audioCtx = null;
 function getGeometry() {
   const w = game.clientWidth;
   const h = game.clientHeight;
-  const spawn = {x:w * 0.5, y:h * 0.07};
+  const spawn = {x:w * 0.5, y:h * 0.08};
 
-  // SIF風の深いU字。中央を低く、左右端は画面上半分まで持ち上げる。
-  const targetPoints = Array.from({length:9}, (_, i) => {
-    const u = (i - 4) / 4; // -1 ... 0 ... +1
-    const absU = Math.abs(u);
-    return {
-      x: w * (0.08 + 0.84 * (i / 8)),
-      y: h * (0.88 - 0.40 * Math.pow(absU, 1.45))
-    };
-  });
+  // スクフェス風：9個の判定位置が半円に近い深い弧を描く。
+  // 左右端はかなり上、中央が最も低い。
+  const pointRatios = [
+    {x:0.11, y:0.25},
+    {x:0.16, y:0.43},
+    {x:0.25, y:0.62},
+    {x:0.37, y:0.78},
+    {x:0.50, y:0.86},
+    {x:0.63, y:0.78},
+    {x:0.75, y:0.62},
+    {x:0.84, y:0.43},
+    {x:0.89, y:0.25}
+  ];
+
+  const targetPoints = pointRatios.map(p => ({
+    x: w * p.x,
+    y: h * p.y
+  }));
 
   return {spawn,targetPoints};
 }
