@@ -1,9 +1,12 @@
 const audioFile = document.getElementById('audioFile');
+const audioMode = document.getElementById('audioMode');
 const chartFile = document.getElementById('chartFile');
 const audio = document.getElementById('audio');
 const startBtn = document.getElementById('startBtn');
 const stopBtn = document.getElementById('stopBtn');
 const demoBtn = document.getElementById('demoBtn');
+const retryBtn = document.getElementById('retryBtn');
+const backBtn = document.getElementById('backBtn');
 const speed = document.getElementById('speed');
 const speedValue = document.getElementById('speedValue');
 const offsetInput = document.getElementById('offset');
@@ -35,20 +38,21 @@ let combo = 0;
 let maxCombo = 0;
 let counts = {perfect:0,great:0,good:0,miss:0};
 let audioCtx = null;
+let silentStartAt = 0;
+let silentDurationMs = 0;
 
 function getGeometry() {
   const w = game.clientWidth;
   const h = game.clientHeight;
   const spawn = {x:w * 0.5, y:h * 0.075};
 
-  // 滑らかな楕円弧。前版より左右へほんの少し広げる。
   const centerX = w * 0.5;
   const centerY = h * 0.20;
   const radiusX = w * 0.33;
   const radiusY = h * 0.70;
 
   const targetPoints = Array.from({length:9}, (_, i) => {
-    const angle = Math.PI + (Math.PI * i / 8); // 180° → 360°
+    const angle = Math.PI + (Math.PI * i / 8);
     return {
       x: centerX + Math.cos(angle) * radiusX,
       y: centerY - Math.sin(angle) * radiusY
@@ -105,15 +109,30 @@ window.addEventListener('resize', () => {
   }
 });
 
-function canStart() {
-  startBtn.disabled = !(audio.src && chart);
+function isSilentMode() {
+  return audioMode.value === 'silent';
 }
+
+function canStart() {
+  const sourceReady = isSilentMode() || !!audio.src;
+  startBtn.disabled = !(sourceReady && chart);
+}
+
+audioMode.addEventListener('change', () => {
+  if (isSilentMode()) {
+    songName.textContent = 'テスト用（無音）';
+  } else {
+    songName.textContent = audioFile.files?.[0]?.name || '未選択';
+  }
+  canStart();
+});
 
 audioFile.addEventListener('change', () => {
   const file = audioFile.files?.[0];
   if (!file) return;
-  if (audio.src) URL.revokeObjectURL(audio.src);
+  if (audio.src && audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
   audio.src = URL.createObjectURL(file);
+  audioMode.value = 'file';
   songName.textContent = file.name;
   canStart();
 });
@@ -133,9 +152,9 @@ chartFile.addEventListener('change', async () => {
   }
 });
 
-demoBtn.addEventListener('click', () => {
+function loadDemoChart() {
   chart = {
-    title: 'Demo Chart',
+    title: '操作テスト譜面',
     offsetMs: 0,
     notes: [
       {timeMs:1000,lane:4},{timeMs:1500,lane:3},{timeMs:2000,lane:5},
@@ -148,8 +167,12 @@ demoBtn.addEventListener('click', () => {
   };
   chartName.textContent = chart.title;
   offsetInput.value = 0;
+  audioMode.value = 'silent';
+  songName.textContent = 'テスト用（無音）';
   canStart();
-});
+}
+
+demoBtn.addEventListener('click', loadDemoChart);
 
 function validateChart(data) {
   if (!data || !Array.isArray(data.notes)) throw new Error('notes配列がありません');
@@ -164,6 +187,7 @@ function validateChart(data) {
 speed.addEventListener('input', () => speedValue.textContent = Number(speed.value).toFixed(1) + 'x');
 
 function tryEnterMobilePlayMode() {
+  document.body.classList.remove('finished-mode');
   document.body.classList.add('playing-mode');
   requestAnimationFrame(layoutPlayfield);
 
@@ -181,28 +205,55 @@ function tryEnterMobilePlayMode() {
 }
 
 function exitMobilePlayMode() {
-  document.body.classList.remove('playing-mode');
+  document.body.classList.remove('playing-mode', 'finished-mode');
   requestAnimationFrame(layoutPlayfield);
+  setTimeout(layoutPlayfield, 150);
   if (document.fullscreenElement && document.exitFullscreen) {
     document.exitFullscreen().catch(() => {});
   }
 }
 
-startBtn.addEventListener('click', async () => {
-  if (!chart || !audio.src) return;
+async function startGame() {
+  if (!chart || (!isSilentMode() && !audio.src)) return;
+
   tryEnterMobilePlayMode();
   resetGame();
   resultPanel.hidden = true;
-  await audio.play();
+
+  if (isSilentMode()) {
+    silentStartAt = performance.now();
+    const lastNote = chart.notes.length ? chart.notes[chart.notes.length - 1].timeMs : 0;
+    silentDurationMs = lastNote + 1500;
+  } else {
+    try {
+      await audio.play();
+    } catch (e) {
+      exitMobilePlayMode();
+      alert('音源を再生できませんでした。');
+      return;
+    }
+  }
+
   playing = true;
   startBtn.disabled = true;
   stopBtn.disabled = false;
   judgeEl.textContent = 'GO!';
   loop();
+}
+
+startBtn.addEventListener('click', startGame);
+retryBtn.addEventListener('click', startGame);
+backBtn.addEventListener('click', () => {
+  resultPanel.hidden = true;
+  exitMobilePlayMode();
+  judgeEl.textContent = 'READY';
+  window.scrollTo({top:0, behavior:'smooth'});
 });
 
 stopBtn.addEventListener('click', stopGame);
-audio.addEventListener('ended', () => finishGame());
+audio.addEventListener('ended', () => {
+  if (!isSilentMode()) finishGame();
+});
 
 function resetGame() {
   cancelAnimationFrame(rafId);
@@ -215,13 +266,13 @@ function resetGame() {
   counts = {perfect:0,great:0,good:0,miss:0};
   scoreEl.textContent = '0';
   comboEl.textContent = '0';
-  audio.currentTime = 0;
+  if (!isSilentMode() && audio.src) audio.currentTime = 0;
 }
 
 function stopGame() {
   if (!playing) return;
   playing = false;
-  audio.pause();
+  if (!isSilentMode()) audio.pause();
   cancelAnimationFrame(rafId);
   startBtn.disabled = false;
   stopBtn.disabled = true;
@@ -230,7 +281,9 @@ function stopGame() {
 }
 
 function finishGame() {
+  if (!playing) return;
   playing = false;
+  if (!isSilentMode()) audio.pause();
   cancelAnimationFrame(rafId);
   activeNotes.forEach(n => {
     if (!judged.has(n.idx)) applyJudge(n, 'miss');
@@ -245,11 +298,20 @@ function finishGame() {
   rMiss.textContent = counts.miss;
   rMaxCombo.textContent = maxCombo;
   rScore.textContent = score;
-  exitMobilePlayMode();
+
+  const coarse = window.matchMedia?.('(pointer: coarse)').matches;
+  if (coarse) {
+    document.body.classList.add('finished-mode');
+  } else {
+    exitMobilePlayMode();
+  }
 }
 
 function currentMs() {
-  return audio.currentTime * 1000 + Number(offsetInput.value || 0);
+  const baseMs = isSilentMode()
+    ? performance.now() - silentStartAt
+    : audio.currentTime * 1000;
+  return baseMs + Number(offsetInput.value || 0);
 }
 
 function loop() {
@@ -278,6 +340,12 @@ function loop() {
       n.el.style.transform = `translate(-50%,-50%) scale(${scale})`;
     }
   }
+
+  if (isSilentMode() && now >= silentDurationMs) {
+    finishGame();
+    return;
+  }
+
   rafId = requestAnimationFrame(loop);
 }
 
