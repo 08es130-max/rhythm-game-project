@@ -11,16 +11,16 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json?v=0.2.1" />
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.1" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.1" />
-  <link rel="stylesheet" href="styles.css?v=0.2.1" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.2.1" />
-  <link rel="stylesheet" href="pause.css?v=0.2.1" />
-  <link rel="stylesheet" href="calibration.css?v=0.2.1" />
-  <link rel="stylesheet" href="home.css?v=0.2.1" />
+  <link rel="manifest" href="manifest.json?v=0.2.2" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.2" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.2" />
+  <link rel="stylesheet" href="styles.css?v=0.2.2" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.2.2" />
+  <link rel="stylesheet" href="pause.css?v=0.2.2" />
+  <link rel="stylesheet" href="calibration.css?v=0.2.2" />
+  <link rel="stylesheet" href="home.css?v=0.2.2" />
   <script>
-    window.APP_VERSION = '0.2.1';
+    window.APP_VERSION = '0.2.2';
     (async () => {
       try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -43,12 +43,12 @@
           <h1 class="home-title">9-Lane Rhythm</h1>
           <p class="home-subtitle">LIVE HOME</p>
         </div>
-        <div class="home-version">Ver. 0.2.1</div>
+        <div class="home-version">Ver. 0.2.2</div>
       </div>
 
       <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.1 アップデート</span></div>
-        <p class="update-text">判定調整を修正しました。2個目以降のノーツも毎回上から降るようになり、現在のノーツ速度に合わせて測定します。</p>
+        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.2 アップデート</span></div>
+        <p class="update-text">「スピカテリブル」の内蔵譜面を追加しました。ライブ画面で曲名ボタンを押し、手元の音源ファイルを選ぶだけで遊べます。</p>
       </div>
 
       <div class="home-main">
@@ -73,9 +73,14 @@
       </div>
 
       <section class="panel controls" id="controlsPanel">
-        <div class="version-badge" aria-label="app version">Ver. 0.2.1</div>
+        <div class="version-badge" aria-label="app version">Ver. 0.2.2</div>
         <h2>ライブ選択</h2>
-        <p class="sub">音源と譜面を選んでライブを開始します。</p>
+        <p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
+
+        <div class="button-row">
+          <button id="spicaPresetBtn" type="button">スピカテリブル</button>
+          <button id="demoBtn">テスト譜面を使う</button>
+        </div>
 
         <div class="file-row">
           <label>音源モード
@@ -85,7 +90,7 @@
             </select>
           </label>
           <label>音源ファイル
-            <input id="audioFile" type="file" accept="audio/*" />
+            <input id="audioFile" type="file" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" />
           </label>
           <label>譜面JSON
             <input id="chartFile" type="file" accept="application/json,.json" />
@@ -95,7 +100,6 @@
         <div class="button-row">
           <button id="startBtn" disabled>START</button>
           <button id="stopBtn" disabled>STOP</button>
-          <button id="demoBtn">テスト譜面を使う</button>
         </div>
 
         <div class="meta-row">
@@ -214,12 +218,13 @@
   </section>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="character-data.js?v=0.2.1"></script>
-  <script src="app.js?v=0.2.1"></script>
-  <script src="settings.js?v=0.2.1"></script>
-  <script src="calibration.js?v=0.2.1"></script>
-  <script src="touch-guards.js?v=0.2.1"></script>
-  <script src="pause.js?v=0.2.1"></script>
-  <script src="home.js?v=0.2.1"></script>
+  <script src="character-data.js?v=0.2.2"></script>
+  <script src="app.js?v=0.2.2"></script>
+  <script src="settings.js?v=0.2.2"></script>
+  <script src="calibration.js?v=0.2.2"></script>
+  <script src="touch-guards.js?v=0.2.2"></script>
+  <script src="pause.js?v=0.2.2"></script>
+  <script src="home.js?v=0.2.2"></script>
+  <script src="song-presets.js?v=0.2.2"></script>
 </body>
 </html>
