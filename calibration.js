@@ -12,8 +12,8 @@ const calibrationRetryBtn = document.getElementById('calibrationRetryBtn');
 const calibrationBackBtn = document.getElementById('calibrationBackBtn');
 
 const CAL_COUNT = 12;
-const CAL_INTERVAL = 900;
 const CAL_TAP_WINDOW = 320;
+const CAL_GAP_AFTER_TARGET = 450;
 let calRunning = false;
 let calRaf = null;
 let calStartAt = 0;
@@ -21,6 +21,11 @@ let calExpected = [];
 let calResults = [];
 let calNextIndex = 0;
 let calSuggestedOffset = null;
+let calLeadMs = 1600;
+
+function getCalibrationLeadMs() {
+  return 1600 / Number(speed.value || 1);
+}
 
 function showCalibration() {
   if (playing) return;
@@ -28,7 +33,7 @@ function showCalibration() {
   calibrationCurrent.textContent = `${getSavedTimingOffset()} ms`;
   calibrationRecommended.textContent = '未測定';
   calibrationProgress.textContent = `0 / ${CAL_COUNT}`;
-  calibrationStatus.textContent = 'STARTを押して、中央の丸に重なった瞬間にタップしてください。';
+  calibrationStatus.textContent = `現在のノーツ速度 ${Number(speed.value || 1).toFixed(1)}x で測定します。STARTを押してください。`;
   calibrationSaveBtn.disabled = true;
   calibrationRetryBtn.disabled = true;
   stopCalibration();
@@ -49,11 +54,13 @@ function startCalibration() {
   calibrationRetryBtn.disabled = true;
   calibrationRecommended.textContent = '測定中';
   calibrationProgress.textContent = `0 / ${CAL_COUNT}`;
-  calibrationStatus.textContent = 'ノーツをタップしてください';
 
-  const leadMs = 1600 / Number(speed.value || 1);
+  calLeadMs = getCalibrationLeadMs();
+  const interval = calLeadMs + CAL_GAP_AFTER_TARGET;
   calStartAt = performance.now() + 700;
-  calExpected = Array.from({length: CAL_COUNT}, (_, i) => calStartAt + leadMs + i * CAL_INTERVAL);
+  calExpected = Array.from({length: CAL_COUNT}, (_, i) => calStartAt + calLeadMs + i * interval);
+
+  calibrationStatus.textContent = `ノーツ速度 ${Number(speed.value || 1).toFixed(1)}x。上から降ってくるノーツが中央の丸に重なった瞬間にタップしてください。`;
   calRaf = requestAnimationFrame(calibrationLoop);
 }
 
@@ -65,7 +72,6 @@ function stopCalibration() {
 
 function calibrationLoop(now) {
   if (!calRunning) return;
-  const leadMs = 1600 / Number(speed.value || 1);
 
   while (calNextIndex < CAL_COUNT && now > calExpected[calNextIndex] + CAL_TAP_WINDOW) {
     calResults.push(null);
@@ -80,7 +86,7 @@ function calibrationLoop(now) {
 
   const expected = calExpected[calNextIndex];
   const dt = expected - now;
-  const progress = 1 - dt / leadMs;
+  const progress = 1 - dt / calLeadMs;
 
   if (progress >= 0 && progress <= 1.22) {
     const stageH = calibrationStage.clientHeight;
@@ -107,6 +113,7 @@ function tapCalibration(e) {
   calNextIndex++;
   calibrationProgress.textContent = `${calNextIndex} / ${CAL_COUNT}`;
   calibrationStatus.textContent = delta >= 0 ? `${Math.round(delta)}ms 遅め` : `${Math.abs(Math.round(delta))}ms 早め`;
+  calibrationNote.hidden = true;
 
   if (calNextIndex >= CAL_COUNT) finishCalibration();
 }
