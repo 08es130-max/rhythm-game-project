@@ -4,7 +4,7 @@
   window.CHARACTER_LIBRARY.unshift({
     id: 'default',
     name: '三船栞子',
-    icon: 'icon-180-v029.png',
-    home: 'icon-180-v029.png'
+    icon: 'icon-192-v030.png?v=0.3.0',
+    home: 'icon-192-v030.png?v=0.3.0'
   });
 })();
