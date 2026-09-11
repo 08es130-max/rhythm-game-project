@@ -11,16 +11,16 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json?v=0.2.2" />
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.2" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.2" />
-  <link rel="stylesheet" href="styles.css?v=0.2.2" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.2.2" />
-  <link rel="stylesheet" href="pause.css?v=0.2.2" />
-  <link rel="stylesheet" href="calibration.css?v=0.2.2" />
-  <link rel="stylesheet" href="home.css?v=0.2.2" />
+  <link rel="manifest" href="manifest.json?v=0.2.3" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.3" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.3" />
+  <link rel="stylesheet" href="styles.css?v=0.2.3" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.2.3" />
+  <link rel="stylesheet" href="pause.css?v=0.2.3" />
+  <link rel="stylesheet" href="calibration.css?v=0.2.3" />
+  <link rel="stylesheet" href="home.css?v=0.2.3" />
   <script>
-    window.APP_VERSION = '0.2.2';
+    window.APP_VERSION = '0.2.3';
     (async () => {
       try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -43,12 +43,12 @@
           <h1 class="home-title">9-Lane Rhythm</h1>
           <p class="home-subtitle">LIVE HOME</p>
         </div>
-        <div class="home-version">Ver. 0.2.2</div>
+        <div class="home-version">Ver. 0.2.3</div>
       </div>
 
       <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.2 アップデート</span></div>
-        <p class="update-text">「スピカテリブル」の内蔵譜面を追加しました。ライブ画面で曲名ボタンを押し、手元の音源ファイルを選ぶだけで遊べます。</p>
+        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.3 アップデート</span></div>
+        <p class="update-text">「スピカテリブル」の音源を端末内に保存できるようになりました。初回だけ音源ファイルを選べば、次回からは曲名ボタンだけで読み込めます。</p>
       </div>
 
       <div class="home-main">
@@ -73,7 +73,7 @@
       </div>
 
       <section class="panel controls" id="controlsPanel">
-        <div class="version-badge" aria-label="app version">Ver. 0.2.2</div>
+        <div class="version-badge" aria-label="app version">Ver. 0.2.3</div>
         <h2>ライブ選択</h2>
         <p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 
@@ -218,13 +218,13 @@
   </section>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="character-data.js?v=0.2.2"></script>
-  <script src="app.js?v=0.2.2"></script>
-  <script src="settings.js?v=0.2.2"></script>
-  <script src="calibration.js?v=0.2.2"></script>
-  <script src="touch-guards.js?v=0.2.2"></script>
-  <script src="pause.js?v=0.2.2"></script>
-  <script src="home.js?v=0.2.2"></script>
-  <script src="song-presets.js?v=0.2.2"></script>
+  <script src="character-data.js?v=0.2.3"></script>
+  <script src="app.js?v=0.2.3"></script>
+  <script src="settings.js?v=0.2.3"></script>
+  <script src="calibration.js?v=0.2.3"></script>
+  <script src="touch-guards.js?v=0.2.3"></script>
+  <script src="pause.js?v=0.2.3"></script>
+  <script src="home.js?v=0.2.3"></script>
+  <script src="song-presets.js?v=0.2.3"></script>
 </body>
 </html>
