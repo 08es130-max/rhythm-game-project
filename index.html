@@ -11,16 +11,16 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json?v=0.2.7" />
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.7" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.7" />
-  <link rel="stylesheet" href="styles.css?v=0.2.7" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.2.7" />
-  <link rel="stylesheet" href="pause.css?v=0.2.7" />
-  <link rel="stylesheet" href="calibration.css?v=0.2.7" />
-  <link rel="stylesheet" href="home.css?v=0.2.7" />
+  <link rel="manifest" href="manifest.json?v=0.2.8" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.8" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.8" />
+  <link rel="stylesheet" href="styles.css?v=0.2.8" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.2.8" />
+  <link rel="stylesheet" href="pause.css?v=0.2.8" />
+  <link rel="stylesheet" href="calibration.css?v=0.2.8" />
+  <link rel="stylesheet" href="home.css?v=0.2.8" />
   <script>
-    window.APP_VERSION = '0.2.7';
+    window.APP_VERSION = '0.2.8';
     (async () => {
       try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -43,12 +43,12 @@
           <h1 class="home-title">9-Lane Rhythm</h1>
           <p class="home-subtitle">LIVE HOME</p>
         </div>
-        <div class="home-version">Ver. 0.2.7</div>
+        <div class="home-version">Ver. 0.2.8</div>
       </div>
 
       <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.7 アップデート</span></div>
-        <p class="update-text">標準の「シャン」音を大きく聞き取りやすく調整しました。10タップごとの音声は内部音声を個別選択でき、端末ごとの音声追加にも対応しました。</p>
+        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.8 アップデート</span></div>
+        <p class="update-text">キャラ変更に12人分のアイコンを追加しました。9レーンそれぞれに好きなキャラを選んで保存できます。</p>
       </div>
 
       <div class="home-main">
@@ -73,7 +73,7 @@
       </div>
 
       <section class="panel controls" id="controlsPanel">
-        <div class="version-badge" aria-label="app version">Ver. 0.2.7</div>
+        <div class="version-badge" aria-label="app version">Ver. 0.2.8</div>
         <h2>ライブ選択</h2>
         <p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
         <div class="button-row">
@@ -182,7 +182,7 @@
           <button id="sameCharacterBtn" class="same-character" type="button">レーン1と同じキャラに統一</button>
           <button id="saveCharactersBtn" class="save-characters" type="button">この設定を保存</button>
         </div>
-        <div id="characterSaveStatus" class="character-help">`characters/char01.png` ～ `char09.png` をリポジトリに追加すると、登録済み候補としてそのまま使えます。画像が未登録の場合はデフォルト画像を表示します。</div>
+        <div id="characterSaveStatus" class="character-help">12人からレーンごとに選択できます。画像自体には名前を入れず、選択欄だけにキャラ名を表示します。</div>
       </div>
     </section>
   </main>
@@ -212,16 +212,17 @@
   </section>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="character-data.js?v=0.2.7"></script>
-  <script src="app.js?v=0.2.7"></script>
-  <script src="settings.js?v=0.2.7"></script>
-  <script src="tap-boost.js?v=0.2.7"></script>
-  <script src="voice-events.js?v=0.2.7"></script>
-  <script src="voice-manager.js?v=0.2.7"></script>
-  <script src="calibration.js?v=0.2.7"></script>
-  <script src="touch-guards.js?v=0.2.7"></script>
-  <script src="pause.js?v=0.2.7"></script>
-  <script src="home.js?v=0.2.7"></script>
-  <script src="song-presets.js?v=0.2.7"></script>
+  <script src="character-data.js?v=0.2.8"></script>
+  <script src="character-overrides.js?v=0.2.8"></script>
+  <script src="app.js?v=0.2.8"></script>
+  <script src="settings.js?v=0.2.8"></script>
+  <script src="tap-boost.js?v=0.2.8"></script>
+  <script src="voice-events.js?v=0.2.8"></script>
+  <script src="voice-manager.js?v=0.2.8"></script>
+  <script src="calibration.js?v=0.2.8"></script>
+  <script src="touch-guards.js?v=0.2.8"></script>
+  <script src="pause.js?v=0.2.8"></script>
+  <script src="home.js?v=0.2.8"></script>
+  <script src="song-presets.js?v=0.2.8"></script>
 </body>
 </html>
