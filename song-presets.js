@@ -3,7 +3,7 @@ const spicaPresetBtn = document.getElementById('spicaPresetBtn');
 const PRESET_AUDIO_DB = 'rhythmGamePresetAudio';
 const PRESET_AUDIO_STORE = 'audio';
 const SPICA_AUDIO_KEY = 'spica-terrible';
-const SPICA_TARGET_NOTE_COUNT = 1250;
+const SPICA_TARGET_NOTE_COUNT = 1350;
 let awaitingPresetAudioKey = null;
 let presetAudioObjectUrl = null;
 
@@ -76,55 +76,21 @@ function limitEventsToTwo(notes) {
   const grouped = new Map();
   for (const n of notes) {
     if (!grouped.has(n.timeMs)) grouped.set(n.timeMs, []);
-    grouped.get(n.timeMs).push({...n});
+    grouped.get(n.timeMs).push({timeMs:n.timeMs, lane:n.lane});
   }
   const out = [];
-  for (const [timeMs, group] of grouped) {
+  for (const group of grouped.values()) {
     group.sort((a,b) => a.lane - b.lane);
-    if (group.length <= 2) {
-      out.push(...group);
-      continue;
-    }
-    // Two-thumb play: keep at most two notes at exactly the same instant.
-    out.push(group[0], group[group.length - 1]);
+    if (group.length <= 2) out.push(...group);
+    else out.push(group[0], group[group.length - 1]);
   }
   return out.sort((a,b) => a.timeMs - b.timeMs || a.lane - b.lane);
-}
-
-function addSpicaHoldNotes(notes, bpm = 161.499) {
-  const beat = 60000 / bpm;
-  const out = notes.map(n => ({...n}));
-  const counts = new Map();
-  for (const n of out) counts.set(n.timeMs, (counts.get(n.timeMs) || 0) + 1);
-  const times = [...counts.keys()].sort((a,b) => a-b);
-  let lastHoldEnd = -Infinity;
-  let made = 0;
-  const maxHolds = 36;
-
-  for (let i = 18; i < out.length - 8 && made < maxHolds; i += 20) {
-    const n = out[i];
-    if (!n || counts.get(n.timeMs) !== 1 || n.timeMs < lastHoldEnd + 250) continue;
-    const durationMs = Math.round(beat * (made % 4 === 0 ? 3 : 2));
-    const end = n.timeMs + durationMs;
-
-    // While one thumb is holding, the other thumb must never be asked to hit two notes at once.
-    const impossibleChord = times.some(t => t > n.timeMs && t < end && (counts.get(t) || 0) > 1);
-    if (impossibleChord) continue;
-
-    // Do not place another note on the same lane before the hold ends.
-    const sameLaneConflict = out.some(x => x !== n && x.lane === n.lane && x.timeMs > n.timeMs && x.timeMs < end);
-    if (sameLaneConflict) continue;
-
-    n.durationMs = durationMs;
-    lastHoldEnd = end;
-    made++;
-  }
-  return out;
 }
 
 function makeSpicaHighDensityChart(source) {
   if (!source?.notes?.length) return source;
 
+  // Two-thumb play only: no hold notes and never more than two notes at one instant.
   const notes = limitEventsToTwo(source.notes);
   const lanesByTime = new Map();
   notes.forEach(n => {
@@ -140,7 +106,7 @@ function makeSpicaHighDensityChart(source) {
 
   for (let t = start; t <= end; t += step) {
     const d = nearestEventDistance(eventTimes, t);
-    if (d >= 105 && d <= 850 && !lanesByTime.has(t)) candidates.push(t);
+    if (d >= 95 && d <= 900 && !lanesByTime.has(t)) candidates.push(t);
   }
 
   let need = Math.max(0, SPICA_TARGET_NOTE_COUNT - notes.length);
@@ -156,13 +122,36 @@ function makeSpicaHighDensityChart(source) {
     need--;
   }
 
+  // If single-note additions are not enough, turn selected single events into two-note chords.
+  // Existing two-note chords stay untouched, so three-finger input is never required.
+  if (need > 0) {
+    const singles = [...lanesByTime.entries()]
+      .filter(([t, lanes]) => t >= start && lanes.size === 1)
+      .map(([t]) => t)
+      .sort((a,b) => a-b);
+    const selected = Math.min(need, singles.length);
+    for (let i = 0; i < selected; i++) {
+      const idx = Math.min(singles.length - 1, Math.floor((i + 0.5) * singles.length / selected));
+      const t = singles[idx];
+      const used = lanesByTime.get(t);
+      if (!used || used.size !== 1) continue;
+      const first = [...used][0];
+      let lane = 8 - first;
+      if (lane === first || used.has(lane)) lane = first < 4 ? 8 : 0;
+      if (used.has(lane)) continue;
+      used.add(lane);
+      notes.push({timeMs:t, lane});
+      need--;
+      if (need <= 0) break;
+    }
+  }
+
   notes.sort((a,b) => a.timeMs - b.timeMs || a.lane - b.lane);
-  const withHolds = addSpicaHoldNotes(notes, source.bpm || 161.499);
   return {
     ...source,
-    difficulty:'EXPERT 二本指向け＋長押し',
-    noteCount:withHolds.length,
-    notes:withHolds
+    difficulty:'EXPERT 二本指向け',
+    noteCount:notes.length,
+    notes
   };
 }
 
@@ -174,8 +163,7 @@ async function loadBuiltInChart(path, fallbackTitle, transform = null) {
     if (transform) parsed = transform(parsed);
     validateChart(parsed);
     chart = parsed;
-    const holds = parsed.notes.filter(n => Number.isFinite(n.durationMs)).length;
-    chartName.textContent = `${parsed.title || fallbackTitle || path}（${parsed.notes.length} notes / HOLD ${holds}）`;
+    chartName.textContent = `${parsed.title || fallbackTitle || path}（${parsed.notes.length} notes）`;
     offsetInput.value = String(getSavedTimingOffset());
     canStart();
     return parsed;
