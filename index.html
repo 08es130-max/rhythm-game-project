@@ -11,14 +11,15 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json?v=0.1.2" />
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.1.2" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.1.2" />
-  <link rel="stylesheet" href="styles.css?v=0.1.2" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.1.2" />
-  <link rel="stylesheet" href="pause.css?v=0.1.2" />
+  <link rel="manifest" href="manifest.json?v=0.1.3" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.1.3" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.1.3" />
+  <link rel="stylesheet" href="styles.css?v=0.1.3" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.1.3" />
+  <link rel="stylesheet" href="pause.css?v=0.1.3" />
+  <link rel="stylesheet" href="calibration.css?v=0.1.3" />
   <script>
-    window.APP_VERSION = '0.1.2';
+    window.APP_VERSION = '0.1.3';
     (async () => {
       try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -36,7 +37,7 @@
 <body>
   <main class="app-shell">
     <section class="panel controls" id="controlsPanel">
-      <div class="version-badge" aria-label="app version">Ver. 0.1.2</div>
+      <div class="version-badge" aria-label="app version">Ver. 0.1.3</div>
       <h1>9-Lane Rhythm Prototype</h1>
       <p class="sub">ローカル音源＋譜面JSONで遊ぶ試作版です。</p>
 
@@ -60,9 +61,12 @@
           <input id="speed" type="range" min="0.7" max="2.0" step="0.1" value="1.0" />
           <span id="speedValue">1.0x</span>
         </label>
-        <label title="端末ごとの音・表示のズレを補正します。プラスでノーツと判定を早め、マイナスで遅らせます。">判定タイミング(ms)
-          <input id="offset" type="number" min="-500" max="500" step="10" value="0" />
+        <button id="timingAdjustBtn" class="timing-adjust-btn" type="button">判定調整</button>
+        <label class="assist-setting" title="ONにするとPERFECT判定を±45msから±70msへ広げます。">
+          <input id="perfectAssist" type="checkbox" />
+          <span>判定強化 ON/OFF<br><small>PERFECT判定を広げる</small></span>
         </label>
+        <input id="offset" type="hidden" value="0" />
       </div>
 
       <div class="button-row">
@@ -115,10 +119,35 @@
     </section>
   </main>
 
+  <section id="timingCalibration" class="calibration-screen" hidden>
+    <div class="calibration-card">
+      <h2>判定タイミング調整</h2>
+      <p class="calibration-note">中央の丸にノーツが重なった瞬間にタップしてください。12回の結果から、この端末向けの補正値を計算します。</p>
+      <div class="calibration-info">
+        <div>現在: <strong id="calibrationCurrent">0 ms</strong></div>
+        <div>推奨: <strong id="calibrationRecommended">未測定</strong></div>
+        <div>回数: <strong id="calibrationProgress">0 / 12</strong></div>
+      </div>
+      <div id="calibrationStage" class="calibration-stage" aria-label="判定タイミング調整エリア">
+        <div class="calibration-lane"></div>
+        <div class="calibration-target"></div>
+        <div id="calibrationNote" class="calibration-falling-note" hidden></div>
+      </div>
+      <div id="calibrationStatus" class="calibration-status">STARTを押して開始してください。</div>
+      <div class="calibration-actions">
+        <button id="calibrationStartBtn" class="calibration-start" type="button">START</button>
+        <button id="calibrationSaveBtn" class="calibration-save" type="button" disabled>この設定を使う</button>
+        <button id="calibrationRetryBtn" class="calibration-retry" type="button" disabled>もう一度</button>
+        <button id="calibrationBackBtn" class="calibration-back" type="button">戻る</button>
+      </div>
+    </div>
+  </section>
+
   <audio id="audio" preload="auto"></audio>
-  <script src="app.js?v=0.1.2"></script>
-  <script src="settings.js?v=0.1.2"></script>
-  <script src="touch-guards.js?v=0.1.2"></script>
-  <script src="pause.js?v=0.1.2"></script>
+  <script src="app.js?v=0.1.3"></script>
+  <script src="settings.js?v=0.1.3"></script>
+  <script src="calibration.js?v=0.1.3"></script>
+  <script src="touch-guards.js?v=0.1.3"></script>
+  <script src="pause.js?v=0.1.3"></script>
 </body>
 </html>
