@@ -61,6 +61,7 @@ if (perfectAssist) {
 const TAP_SOUND_DB = 'rhythmGameTapSound';
 const TAP_SOUND_STORE = 'audio';
 const TAP_SOUND_KEY = 'custom-tap';
+const BUILTIN_TAP_BASE64 = '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';
 let customTapBuffer = null;
 let customTapLoadPromise = null;
 const fallbackPlayTapSound = playTapSound;
@@ -118,16 +119,25 @@ async function decodeTapSound(blob) {
   return customTapBuffer;
 }
 
+async function decodeBuiltInTapSound() {
+  audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
+  const binary = atob(BUILTIN_TAP_BASE64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  customTapBuffer = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+  return customTapBuffer;
+}
+
 async function prepareSavedTapSound() {
   if (customTapBuffer) return customTapBuffer;
   if (customTapLoadPromise) return customTapLoadPromise;
   customTapLoadPromise = (async () => {
     try {
       const record = await getSavedTapSound();
-      if (!record?.blob) return null;
-      return await decodeTapSound(record.blob);
+      if (record?.blob) return await decodeTapSound(record.blob);
+      return await decodeBuiltInTapSound();
     } catch (e) {
-      console.warn('保存済みタップ音を読み込めませんでした', e);
+      console.warn('タップ音を読み込めませんでした', e);
       return null;
     } finally {
       customTapLoadPromise = null;
@@ -146,8 +156,8 @@ function injectTapSoundSetting() {
     <label>タップ音
       <input id="tapSoundFile" type="file" accept="audio/*,.mp3,.m4a,.wav" />
     </label>
-    <div id="tapSoundStatus" class="settings-value">未登録</div>
-    <small>一度登録すると、この端末に保存されます。</small>
+    <div id="tapSoundStatus" class="settings-value">標準: シャン</div>
+    <small>標準は今回の「シャン」音です。別の音に変える場合だけファイルを選んでください。</small>
   `;
   grid.appendChild(card);
 
@@ -174,7 +184,7 @@ function injectTapSoundSetting() {
   });
 }
 
-// 最初のユーザー操作で保存済み音源を先読みして、プレイ中の遅延を避ける。
+// 最初のユーザー操作で先読みして、プレイ中の遅延を避ける。
 document.addEventListener('pointerdown', () => {
   prepareSavedTapSound().catch(() => {});
 }, { once: true, capture: true });
@@ -197,7 +207,7 @@ playTapSound = function(grade) {
   const source = audioCtx.createBufferSource();
   const gain = audioCtx.createGain();
   source.buffer = customTapBuffer;
-  gain.gain.value = 0.75;
+  gain.gain.value = 0.82;
   source.connect(gain).connect(audioCtx.destination);
   source.start();
 };
@@ -263,4 +273,5 @@ chartFile.addEventListener('change', async () => {
 });
 
 injectTapSoundSetting();
+prepareSavedTapSound().catch(() => {});
 restoreDeviceSettings();
