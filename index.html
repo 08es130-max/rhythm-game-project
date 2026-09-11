@@ -1,233 +1,229 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#111827" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="ラブフェス！" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <title>ラブフェス！</title>
-  <link rel="manifest" href="manifest.json?v=0.3.9" />
-  <link rel="apple-touch-icon" href="icon-180-v030.png?v=0.3.9" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v030.png?v=0.3.9" />
-  <link rel="stylesheet" href="styles.css?v=0.3.9" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.3.9" />
-  <link rel="stylesheet" href="pause.css?v=0.3.9" />
-  <link rel="stylesheet" href="calibration.css?v=0.3.9" />
-  <link rel="stylesheet" href="home.css?v=0.3.9" />
-  <script>
-    window.APP_VERSION = '0.3.9';
-    (async () => {
-      try {
-        const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
-        if (!response.ok) return;
-        const data = await response.json();
-        if (data.version && data.version !== window.APP_VERSION) {
-          const url = new URL(window.location.href);
-          url.searchParams.set('v', data.version);
-          window.location.replace(url.toString());
-        }
-      } catch (_) {}
-    })();
-  </script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#111827" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="ラブフェス！" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<title>ラブフェス！</title>
+<link rel="manifest" href="manifest.json?v=0.4.0" />
+<link rel="apple-touch-icon" href="icon-180-v030.png?v=0.4.0" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192-v030.png?v=0.4.0" />
+<link rel="stylesheet" href="styles.css?v=0.4.0" />
+<link rel="stylesheet" href="touch-guards.css?v=0.4.0" />
+<link rel="stylesheet" href="pause.css?v=0.4.0" />
+<link rel="stylesheet" href="calibration.css?v=0.4.0" />
+<link rel="stylesheet" href="home.css?v=0.4.0" />
+<script>
+window.APP_VERSION = '0.4.0';
+(async () => {
+try {
+const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+if (!response.ok) return;
+const data = await response.json();
+if (data.version && data.version !== window.APP_VERSION) {
+const url = new URL(window.location.href);
+url.searchParams.set('v', data.version);
+window.location.replace(url.toString());
+}
+} catch (_) {}
+})();
+</script>
 </head>
 <body>
-  <main class="app-shell">
-    <section id="homeScreen" class="app-screen home-screen">
-      <div class="home-topbar">
-        <div>
-          <h1 class="home-title">ラブフェス！</h1>
-          <p class="home-subtitle">LIVE HOME</p>
-        </div>
-        <div class="home-version">Ver. 0.3.9</div>
-      </div>
-
-      <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.3.9 アップデート</span></div>
-        <p class="update-text">内蔵ボイスの再生処理を再構成し、iPhoneでユーザー操作中にAudioContextを起動してから、内蔵音声を独立バッファとしてWeb Audio再生する方式へ変更しました。</p>
-      </div>
-
-      <div class="home-main">
-        <div class="home-character-card">
-          <img class="home-character-img" src="icon-512-v030.png?v=0.3.9" alt="ホームキャラクター" />
-        </div>
-        <div class="home-menu">
-          <button id="homeLiveBtn" class="home-menu-btn home-menu-live" type="button">ライブ<span>曲・譜面を選んでプレイ</span></button>
-          <button id="homeSettingsBtn" class="home-menu-btn home-menu-settings" type="button">設定<span>速度・判定強化など</span></button>
-          <button id="homeTimingBtn" class="home-menu-btn home-menu-timing" type="button">判定調整<span>実際にノーツを叩いて調整</span></button>
-          <button id="homeCharactersBtn" class="home-menu-btn home-menu-characters" type="button">キャラ変更<span>9レーンのアイコンを設定</span></button>
-        </div>
-      </div>
-    </section>
-
-    <section id="liveScreen" class="app-screen live-screen" hidden>
-      <div class="screen-header">
-        <button class="home-back-btn" data-home type="button">ホーム</button>
-        <h1>ライブ</h1>
-        <button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button>
-      </div>
-
-      <section class="panel controls" id="controlsPanel">
-        <div class="version-badge" aria-label="app version">Ver. 0.3.9</div>
-        <h2>ライブ選択</h2>
-        <p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
-        <div class="button-row">
-          <button id="spicaPresetBtn" type="button">スピカテリブル</button>
-          <button id="demoBtn">テスト譜面を使う</button>
-        </div>
-        <div class="file-row">
-          <label>音源モード
-            <select id="audioMode">
-              <option value="silent" selected>テスト用（無音）</option>
-              <option value="file">ファイル音源</option>
-            </select>
-          </label>
-          <label>音源ファイル
-            <input id="audioFile" type="file" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" />
-          </label>
-          <label>譜面JSON
-            <input id="chartFile" type="file" accept="application/json,.json" />
-          </label>
-        </div>
-        <div class="button-row">
-          <button id="startBtn" disabled>START</button>
-          <button id="stopBtn" disabled>STOP</button>
-        </div>
-        <div class="meta-row">
-          <div>曲: <strong id="songName">テスト用（無音）</strong></div>
-          <div>譜面: <strong id="chartName">未選択</strong></div>
-        </div>
-      </section>
-
-      <section class="game-wrap">
-        <div class="hud">
-          <div><span class="hud-label">SCORE</span><span id="score">0</span></div>
-          <div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
-          <div id="judge" class="judge">READY</div>
-        </div>
-        <div id="game" class="game" aria-label="9 lane rhythm game">
-          <div class="live-backdrop" aria-hidden="true"></div>
-          <div id="laneLayer" class="lane-layer"></div>
-          <div id="comboOverlay" class="combo-overlay" hidden>
-            <span id="comboCount" class="combo-count">0</span>
-            <span class="combo-text">combo</span>
-          </div>
-          <div id="notesLayer" class="notes-layer"></div>
-          <div class="judge-line"></div>
-          <div id="targets" class="targets"></div>
-        </div>
-        <div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
-      </section>
-
-      <section class="panel result" id="resultPanel" hidden>
-        <h2>RESULT</h2>
-        <div class="result-grid">
-          <div>PERFECT <strong id="rPerfect">0</strong></div>
-          <div>GREAT <strong id="rGreat">0</strong></div>
-          <div>GOOD <strong id="rGood">0</strong></div>
-          <div>MISS <strong id="rMiss">0</strong></div>
-          <div>MAX COMBO <strong id="rMaxCombo">0</strong></div>
-          <div>SCORE <strong id="rScore">0</strong></div>
-        </div>
-        <div class="result-actions">
-          <button id="retryBtn">もう一度</button>
-          <button id="backBtn">ライブ選択に戻る</button>
-          <button id="resultHomeBtn" class="result-home-btn" type="button">ホームに戻る</button>
-        </div>
-      </section>
-    </section>
-
-    <section id="settingsScreen" class="app-screen" hidden>
-      <div class="screen-header">
-        <button class="home-back-btn" data-home type="button">ホーム</button>
-        <h1>設定</h1>
-      </div>
-      <div class="screen-panel settings-grid">
-        <div class="setting-card">
-          <label>ノーツ速度
-            <input id="speed" type="range" min="0.7" max="4.0" step="0.1" value="1.0" />
-            <span id="speedValue">1.0x</span>
-          </label>
-          <div>保存値: <span id="speedSummary" class="settings-value">1.0x</span></div>
-        </div>
-        <div class="setting-card">
-          <label class="assist-setting" title="ONにするとPERFECT判定を±45msから±70msへ広げます。">
-            <input id="perfectAssist" type="checkbox" />
-            <span>判定強化 ON/OFF<br><small>PERFECT判定を広げる</small></span>
-          </label>
-          <div>現在: <span id="assistSummary" class="settings-value">OFF</span></div>
-        </div>
-        <div class="setting-card">
-          <div>判定タイミング: <span id="timingCurrentValue" class="settings-value timing-current">0 ms</span></div>
-          <button id="timingAdjustBtn" class="timing-adjust-btn" type="button">判定調整を開く</button>
-          <input id="offset" type="hidden" value="0" />
-        </div>
-      </div>
-    </section>
-
-    <section id="characterScreen" class="app-screen" hidden>
-      <div class="screen-header">
-        <button class="home-back-btn" data-home type="button">ホーム</button>
-        <h1>キャラ変更</h1>
-      </div>
-      <div class="screen-panel">
-        <p class="sub">ライブ中の9つの判定円に表示するキャラをレーンごとに設定します。設定はこの端末に保存されます。</p>
-        <div id="characterGrid" class="character-grid"></div>
-        <div class="character-actions">
-          <button id="sameCharacterBtn" class="same-character" type="button">レーン1と同じキャラに統一</button>
-          <button id="saveCharactersBtn" class="save-characters" type="button">この設定を保存</button>
-        </div>
-        <div id="characterSaveStatus" class="character-help">13種類からレーンごとに選択できます。栞子は「アイコン」と「音符ロリータ」の2種類です。</div>
-      </div>
-    </section>
-  </main>
-
-  <section id="timingCalibration" class="calibration-screen" hidden>
-    <div class="calibration-card">
-      <h2>判定タイミング調整</h2>
-      <p class="calibration-note">中央の丸にノーツが重なった瞬間にタップしてください。12回の結果から、この端末向けの補正値を計算します。</p>
-      <div class="calibration-info">
-        <div>現在: <strong id="calibrationCurrent">0 ms</strong></div>
-        <div>推奨: <strong id="calibrationRecommended">未測定</strong></div>
-        <div>回数: <strong id="calibrationProgress">0 / 12</strong></div>
-      </div>
-      <div id="calibrationStage" class="calibration-stage" aria-label="判定タイミング調整エリア">
-        <div class="calibration-lane"></div>
-        <div class="calibration-target"></div>
-        <div id="calibrationNote" class="calibration-falling-note" hidden></div>
-      </div>
-      <div id="calibrationStatus" class="calibration-status">STARTを押して開始してください。</div>
-      <div class="calibration-actions">
-        <button id="calibrationStartBtn" class="calibration-start" type="button">START</button>
-        <button id="calibrationSaveBtn" class="calibration-save" type="button" disabled>この設定を使う</button>
-        <button id="calibrationRetryBtn" class="calibration-retry" type="button" disabled>もう一度</button>
-        <button id="calibrationBackBtn" class="calibration-back" type="button">設定に戻る</button>
-      </div>
-    </div>
-  </section>
-
-  <audio id="audio" preload="auto"></audio>
-  <script src="character-data.js?v=0.3.9"></script>
-  <script src="character-overrides.js?v=0.3.9"></script>
-  <script src="character-default-override.js?v=0.3.9"></script>
-  <script src="character-series-overrides.js?v=0.3.9"></script>
-  <script src="character-fixes-v037.js?v=0.3.9"></script>
-  <script src="app.js?v=0.3.9"></script>
-  <script src="settings.js?v=0.3.9"></script>
-  <script src="tap-boost.js?v=0.3.9"></script>
-  <script src="voice-events.js?v=0.3.9"></script>
-  <script src="voice-manager.js?v=0.3.9"></script>
-  <script src="calibration.js?v=0.3.9"></script>
-  <script src="touch-guards.js?v=0.3.9"></script>
-  <script src="pause.js?v=0.3.9"></script>
-  <script src="home.js?v=0.3.9"></script>
-  <script src="song-presets.js?v=0.3.9"></script>
-  <script src="audio-fixes.js?v=0.3.9"></script>
-  <script src="voice-direct.js?v=0.3.9"></script>
-  <script src="voice-builtins-v038.js?v=0.3.9"></script>
+<main class="app-shell">
+<section id="homeScreen" class="app-screen home-screen">
+<div class="home-topbar">
+<div>
+<h1 class="home-title">ラブフェス！</h1>
+<p class="home-subtitle">LIVE HOME</p>
+</div>
+<div class="home-version">Ver. 0.4.0</div>
+</div>
+<div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.4.0 アップデート</span></div>
+<p class="update-text">内蔵6音声を音声スプライトから完全に分離し、端末追加音声と同じBlob/HTMLAudio経路で再生する方式へ変更しました。</p>
+</div>
+<div class="home-main">
+<div class="home-character-card">
+<img class="home-character-img" src="icon-512-v030.png?v=0.4.0" alt="ホームキャラクター" />
+</div>
+<div class="home-menu">
+<button id="homeLiveBtn" class="home-menu-btn home-menu-live" type="button">ライブ<span>曲・譜面を選んでプレイ</span></button>
+<button id="homeSettingsBtn" class="home-menu-btn home-menu-settings" type="button">設定<span>速度・判定強化など</span></button>
+<button id="homeTimingBtn" class="home-menu-btn home-menu-timing" type="button">判定調整<span>実際にノーツを叩いて調整</span></button>
+<button id="homeCharactersBtn" class="home-menu-btn home-menu-characters" type="button">キャラ変更<span>9レーンのアイコンを設定</span></button>
+</div>
+</div>
+</section>
+<section id="liveScreen" class="app-screen live-screen" hidden>
+<div class="screen-header">
+<button class="home-back-btn" data-home type="button">ホーム</button>
+<h1>ライブ</h1>
+<button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button>
+</div>
+<section class="panel controls" id="controlsPanel">
+<div class="version-badge" aria-label="app version">Ver. 0.4.0</div>
+<h2>ライブ選択</h2>
+<p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
+<div class="button-row">
+<button id="spicaPresetBtn" type="button">スピカテリブル</button>
+<button id="demoBtn">テスト譜面を使う</button>
+</div>
+<div class="file-row">
+<label>音源モード
+<select id="audioMode">
+<option value="silent" selected>テスト用（無音）</option>
+<option value="file">ファイル音源</option>
+</select>
+</label>
+<label>音源ファイル
+<input id="audioFile" type="file" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" />
+</label>
+<label>譜面JSON
+<input id="chartFile" type="file" accept="application/json,.json" />
+</label>
+</div>
+<div class="button-row">
+<button id="startBtn" disabled>START</button>
+<button id="stopBtn" disabled>STOP</button>
+</div>
+<div class="meta-row">
+<div>曲: <strong id="songName">テスト用（無音）</strong></div>
+<div>譜面: <strong id="chartName">未選択</strong></div>
+</div>
+</section>
+<section class="game-wrap">
+<div class="hud">
+<div><span class="hud-label">SCORE</span><span id="score">0</span></div>
+<div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
+<div id="judge" class="judge">READY</div>
+</div>
+<div id="game" class="game" aria-label="9 lane rhythm game">
+<div class="live-backdrop" aria-hidden="true"></div>
+<div id="laneLayer" class="lane-layer"></div>
+<div id="comboOverlay" class="combo-overlay" hidden>
+<span id="comboCount" class="combo-count">0</span>
+<span class="combo-text">combo</span>
+</div>
+<div id="notesLayer" class="notes-layer"></div>
+<div class="judge-line"></div>
+<div id="targets" class="targets"></div>
+</div>
+<div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
+</section>
+<section class="panel result" id="resultPanel" hidden>
+<h2>RESULT</h2>
+<div class="result-grid">
+<div>PERFECT <strong id="rPerfect">0</strong></div>
+<div>GREAT <strong id="rGreat">0</strong></div>
+<div>GOOD <strong id="rGood">0</strong></div>
+<div>MISS <strong id="rMiss">0</strong></div>
+<div>MAX COMBO <strong id="rMaxCombo">0</strong></div>
+<div>SCORE <strong id="rScore">0</strong></div>
+</div>
+<div class="result-actions">
+<button id="retryBtn">もう一度</button>
+<button id="backBtn">ライブ選択に戻る</button>
+<button id="resultHomeBtn" class="result-home-btn" type="button">ホームに戻る</button>
+</div>
+</section>
+</section>
+<section id="settingsScreen" class="app-screen" hidden>
+<div class="screen-header">
+<button class="home-back-btn" data-home type="button">ホーム</button>
+<h1>設定</h1>
+</div>
+<div class="screen-panel settings-grid">
+<div class="setting-card">
+<label>ノーツ速度
+<input id="speed" type="range" min="0.7" max="4.0" step="0.1" value="1.0" />
+<span id="speedValue">1.0x</span>
+</label>
+<div>保存値: <span id="speedSummary" class="settings-value">1.0x</span></div>
+</div>
+<div class="setting-card">
+<label class="assist-setting" title="ONにするとPERFECT判定を±45msから±70msへ広げます。">
+<input id="perfectAssist" type="checkbox" />
+<span>判定強化 ON/OFF<br><small>PERFECT判定を広げる</small></span>
+</label>
+<div>現在: <span id="assistSummary" class="settings-value">OFF</span></div>
+</div>
+<div class="setting-card">
+<div>判定タイミング: <span id="timingCurrentValue" class="settings-value timing-current">0 ms</span></div>
+<button id="timingAdjustBtn" class="timing-adjust-btn" type="button">判定調整を開く</button>
+<input id="offset" type="hidden" value="0" />
+</div>
+</div>
+</section>
+<section id="characterScreen" class="app-screen" hidden>
+<div class="screen-header">
+<button class="home-back-btn" data-home type="button">ホーム</button>
+<h1>キャラ変更</h1>
+</div>
+<div class="screen-panel">
+<p class="sub">ライブ中の9つの判定円に表示するキャラをレーンごとに設定します。設定はこの端末に保存されます。</p>
+<div id="characterGrid" class="character-grid"></div>
+<div class="character-actions">
+<button id="sameCharacterBtn" class="same-character" type="button">レーン1と同じキャラに統一</button>
+<button id="saveCharactersBtn" class="save-characters" type="button">この設定を保存</button>
+</div>
+<div id="characterSaveStatus" class="character-help">13種類からレーンごとに選択できます。栞子は「アイコン」と「音符ロリータ」の2種類です。</div>
+</div>
+</section>
+</main>
+<section id="timingCalibration" class="calibration-screen" hidden>
+<div class="calibration-card">
+<h2>判定タイミング調整</h2>
+<p class="calibration-note">中央の丸にノーツが重なった瞬間にタップしてください。12回の結果から、この端末向けの補正値を計算します。</p>
+<div class="calibration-info">
+<div>現在: <strong id="calibrationCurrent">0 ms</strong></div>
+<div>推奨: <strong id="calibrationRecommended">未測定</strong></div>
+<div>回数: <strong id="calibrationProgress">0 / 12</strong></div>
+</div>
+<div id="calibrationStage" class="calibration-stage" aria-label="判定タイミング調整エリア">
+<div class="calibration-lane"></div>
+<div class="calibration-target"></div>
+<div id="calibrationNote" class="calibration-falling-note" hidden></div>
+</div>
+<div id="calibrationStatus" class="calibration-status">STARTを押して開始してください。</div>
+<div class="calibration-actions">
+<button id="calibrationStartBtn" class="calibration-start" type="button">START</button>
+<button id="calibrationSaveBtn" class="calibration-save" type="button" disabled>この設定を使う</button>
+<button id="calibrationRetryBtn" class="calibration-retry" type="button" disabled>もう一度</button>
+<button id="calibrationBackBtn" class="calibration-back" type="button">設定に戻る</button>
+</div>
+</div>
+</section>
+<audio id="audio" preload="auto"></audio>
+<script src="character-data.js?v=0.4.0"></script>
+<script src="character-overrides.js?v=0.4.0"></script>
+<script src="character-default-override.js?v=0.4.0"></script>
+<script src="character-series-overrides.js?v=0.4.0"></script>
+<script src="character-fixes-v037.js?v=0.4.0"></script>
+<script src="app.js?v=0.4.0"></script>
+<script src="settings.js?v=0.4.0"></script>
+<script src="tap-boost.js?v=0.4.0"></script>
+<script src="voice-events.js?v=0.4.0"></script>
+<script src="voice-manager.js?v=0.4.0"></script>
+<script src="calibration.js?v=0.4.0"></script>
+<script src="touch-guards.js?v=0.4.0"></script>
+<script src="pause.js?v=0.4.0"></script>
+<script src="home.js?v=0.4.0"></script>
+<script src="song-presets.js?v=0.4.0"></script>
+<script src="audio-fixes.js?v=0.4.0"></script>
+<script src="voice-direct.js?v=0.4.0"></script>
+<script src="voice-fullhouse-v040.js?v=0.4.0"></script>
+<script src="voice-nanisore-v040.js?v=0.4.0"></script>
+<script src="voice-dareka-v040.js?v=0.4.0"></script>
+<script src="voice-nico-v040.js?v=0.4.0"></script>
+<script src="voice-ieni-v040.js?v=0.4.0"></script>
+<script src="voice-yohane-v040.js?v=0.4.0"></script>
+<script src="voice-independent-v040.js?v=0.4.0"></script>
 </body>
 </html>
