@@ -11,16 +11,16 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json?v=0.2.9" />
-  <link rel="apple-touch-icon" href="icon-180-v029.png?v=0.2.9" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.9" />
-  <link rel="stylesheet" href="styles.css?v=0.2.9" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.2.9" />
-  <link rel="stylesheet" href="pause.css?v=0.2.9" />
-  <link rel="stylesheet" href="calibration.css?v=0.2.9" />
-  <link rel="stylesheet" href="home.css?v=0.2.9" />
+  <link rel="manifest" href="manifest.json?v=0.3.0" />
+  <link rel="apple-touch-icon" href="icon-192-v030.png?v=0.3.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v030.png?v=0.3.0" />
+  <link rel="stylesheet" href="styles.css?v=0.3.0" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.3.0" />
+  <link rel="stylesheet" href="pause.css?v=0.3.0" />
+  <link rel="stylesheet" href="calibration.css?v=0.3.0" />
+  <link rel="stylesheet" href="home.css?v=0.3.0" />
   <script>
-    window.APP_VERSION = '0.2.9';
+    window.APP_VERSION = '0.3.0';
     (async () => {
       try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -43,17 +43,17 @@
           <h1 class="home-title">9-Lane Rhythm</h1>
           <p class="home-subtitle">LIVE HOME</p>
         </div>
-        <div class="home-version">Ver. 0.2.9</div>
+        <div class="home-version">Ver. 0.3.0</div>
       </div>
 
       <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.9 アップデート</span></div>
-        <p class="update-text">修正版の栞子画像をアプリアイコンと初期キャラアイコンへ反映しました。</p>
+        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.3.0 アップデート</span></div>
+        <p class="update-text">栞子アイコンを元の高画質画像から作り直し、明るさ・彩度・輪郭を調整しました。アプリアイコンと初期キャラアイコンに反映しています。</p>
       </div>
 
       <div class="home-main">
         <div class="home-character-card">
-          <img class="home-character-img" src="icon-512.png" alt="ホームキャラクター" />
+          <img class="home-character-img" src="icon-192-v030.png?v=0.3.0" alt="ホームキャラクター" />
           <div class="home-character-note">ライブの準備はできています。メニューから選んでください。<div class="home-art-note">※現在は既存画像を仮表示。立ち絵画像へ差し替え可能です。</div></div>
         </div>
         <div class="home-menu">
@@ -73,7 +73,7 @@
       </div>
 
       <section class="panel controls" id="controlsPanel">
-        <div class="version-badge" aria-label="app version">Ver. 0.2.9</div>
+        <div class="version-badge" aria-label="app version">Ver. 0.3.0</div>
         <h2>ライブ選択</h2>
         <p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
         <div class="button-row">
@@ -212,18 +212,18 @@
   </section>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="character-data.js?v=0.2.9"></script>
-  <script src="character-overrides.js?v=0.2.9"></script>
-  <script src="character-default-override.js?v=0.2.9"></script>
-  <script src="app.js?v=0.2.9"></script>
-  <script src="settings.js?v=0.2.9"></script>
-  <script src="tap-boost.js?v=0.2.9"></script>
-  <script src="voice-events.js?v=0.2.9"></script>
-  <script src="voice-manager.js?v=0.2.9"></script>
-  <script src="calibration.js?v=0.2.9"></script>
-  <script src="touch-guards.js?v=0.2.9"></script>
-  <script src="pause.js?v=0.2.9"></script>
-  <script src="home.js?v=0.2.9"></script>
-  <script src="song-presets.js?v=0.2.9"></script>
+  <script src="character-data.js?v=0.3.0"></script>
+  <script src="character-overrides.js?v=0.3.0"></script>
+  <script src="character-default-override.js?v=0.3.0"></script>
+  <script src="app.js?v=0.3.0"></script>
+  <script src="settings.js?v=0.3.0"></script>
+  <script src="tap-boost.js?v=0.3.0"></script>
+  <script src="voice-events.js?v=0.3.0"></script>
+  <script src="voice-manager.js?v=0.3.0"></script>
+  <script src="calibration.js?v=0.3.0"></script>
+  <script src="touch-guards.js?v=0.3.0"></script>
+  <script src="pause.js?v=0.3.0"></script>
+  <script src="home.js?v=0.3.0"></script>
+  <script src="song-presets.js?v=0.3.0"></script>
 </body>
 </html>
