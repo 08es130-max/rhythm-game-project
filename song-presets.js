@@ -3,8 +3,15 @@ const spicaPresetBtn = document.getElementById('spicaPresetBtn');
 const PRESET_AUDIO_DB = 'rhythmGamePresetAudio';
 const PRESET_AUDIO_STORE = 'audio';
 const SPICA_AUDIO_KEY = 'spica-terrible';
+const SPICA_TARGET_NOTE_COUNT = 1080;
 let awaitingPresetAudioKey = null;
 let presetAudioObjectUrl = null;
+
+// スピカテリブルの高密度譜面向けに、速度上限を4.0xまで拡張します。
+if (speed) {
+  speed.max = '4.0';
+  speed.step = '0.1';
+}
 
 function openPresetAudioDb() {
   return new Promise((resolve, reject) => {
@@ -65,14 +72,94 @@ function usePresetAudio(record, title) {
   return true;
 }
 
-async function loadBuiltInChart(path, fallbackTitle) {
+function nearestEventDistance(times, value) {
+  let lo = 0;
+  let hi = times.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (times[mid] < value) lo = mid + 1;
+    else hi = mid;
+  }
+  let best = Infinity;
+  if (lo < times.length) best = Math.min(best, Math.abs(times[lo] - value));
+  if (lo > 0) best = Math.min(best, Math.abs(times[lo - 1] - value));
+  return best;
+}
+
+function makeSpicaHighDensityChart(source) {
+  if (!source?.notes?.length || source.notes.length >= SPICA_TARGET_NOTE_COUNT) return source;
+
+  const notes = source.notes.map(n => ({...n}));
+  const lanesByTime = new Map();
+  notes.forEach(n => {
+    if (!lanesByTime.has(n.timeMs)) lanesByTime.set(n.timeMs, new Set());
+    lanesByTime.get(n.timeMs).add(n.lane);
+  });
+
+  const eventTimes = [...lanesByTime.keys()].sort((a, b) => a - b);
+  const start = eventTimes.find(t => t >= 10000) ?? eventTimes[0];
+  const end = eventTimes[eventTimes.length - 1];
+  const step = 186;
+  const candidates = [];
+
+  for (let t = start; t <= end; t += step) {
+    const d = nearestEventDistance(eventTimes, t);
+    if (d >= 85 && d <= 900) candidates.push(t);
+  }
+
+  let need = SPICA_TARGET_NOTE_COUNT - notes.length;
+  const take = Math.min(need, candidates.length);
+
+  // 曲全体へ均等に追加し、前半だけ密になるのを防ぎます。
+  for (let i = 0; i < take; i++) {
+    const idx = Math.min(candidates.length - 1, Math.floor((i + 0.5) * candidates.length / take));
+    const t = candidates[idx];
+    if (lanesByTime.has(t)) continue;
+
+    const phase = Math.floor((t - start) / step) % 16;
+    const lane = phase <= 8 ? phase : 16 - phase;
+    lanesByTime.set(t, new Set([lane]));
+    notes.push({timeMs: t, lane});
+    need--;
+  }
+
+  // まだ足りない分は既存の単押しを一部同時押し化します。
+  if (need > 0) {
+    const singles = eventTimes.filter(t => lanesByTime.get(t)?.size === 1 && t >= start);
+    const selected = Math.min(need, singles.length);
+    for (let i = 0; i < selected; i++) {
+      const idx = Math.min(singles.length - 1, Math.floor((i + 0.5) * singles.length / selected));
+      const t = singles[idx];
+      const used = lanesByTime.get(t);
+      const first = [...used][0];
+      let lane = 8 - first;
+      if (lane === first || used.has(lane)) lane = first < 4 ? 8 : 0;
+      if (used.has(lane)) continue;
+      used.add(lane);
+      notes.push({timeMs: t, lane});
+      need--;
+      if (need <= 0) break;
+    }
+  }
+
+  notes.sort((a, b) => a.timeMs - b.timeMs || a.lane - b.lane);
+  return {
+    ...source,
+    difficulty: 'EXPERT高密度',
+    noteCount: notes.length,
+    notes
+  };
+}
+
+async function loadBuiltInChart(path, fallbackTitle, transform = null) {
   try {
     const response = await fetch(`${path}?v=${window.APP_VERSION}&t=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const parsed = await response.json();
+    let parsed = await response.json();
+    if (transform) parsed = transform(parsed);
     validateChart(parsed);
     chart = parsed;
-    chartName.textContent = parsed.title || fallbackTitle || path;
+    chartName.textContent = `${parsed.title || fallbackTitle || path}（${parsed.notes.length} notes）`;
     offsetInput.value = String(getSavedTimingOffset());
     canStart();
     return parsed;
@@ -97,7 +184,11 @@ async function prepareSpicaAudio() {
 }
 
 spicaPresetBtn?.addEventListener('click', async () => {
-  const parsed = await loadBuiltInChart('charts/spica-terrible.json', 'スピカテリブル');
+  const parsed = await loadBuiltInChart(
+    'charts/spica-terrible.json',
+    'スピカテリブル',
+    makeSpicaHighDensityChart
+  );
   if (!parsed) return;
   audioMode.value = 'file';
   await prepareSpicaAudio();
