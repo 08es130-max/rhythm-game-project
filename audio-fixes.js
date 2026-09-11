@@ -1,7 +1,10 @@
-// Ver.0.3.3: reduce tap latency and make 10-hit voices clearly audible over music
+// Ver.0.3.4: lower tap latency and force an audible 10-hit voice path
 (function(){
-  const TAP_SKIP_SECONDS = 0.012;
+  const TAP_SKIP_SECONDS = 0.020;
   let duckTimer = null;
+  let reliableSuccessCount = 0;
+  let reliableLastVoiceIndex = -1;
+  let reliableVoiceSource = null;
 
   playTapSound = function() {
     audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
@@ -13,66 +16,81 @@
     }
     const source = audioCtx.createBufferSource();
     const gain = audioCtx.createGain();
-    const compressor = audioCtx.createDynamicsCompressor();
     source.buffer = buffer;
-    gain.gain.value = useDeviceCustomTap ? 1.15 : 1.5;
-    compressor.threshold.value = -10;
-    compressor.knee.value = 8;
-    compressor.ratio.value = 6;
-    compressor.attack.value = 0.001;
-    compressor.release.value = 0.06;
-    source.connect(gain).connect(compressor).connect(audioCtx.destination);
+    gain.gain.value = useDeviceCustomTap ? 1.15 : 1.55;
+    source.connect(gain).connect(audioCtx.destination);
     const skip = Math.min(TAP_SKIP_SECONDS, Math.max(0, buffer.duration - 0.02));
     source.start(0, skip);
   };
 
-  playManagedVoice = async function(item) {
+  async function playReliableBuiltinVoice() {
     audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') await audioCtx.resume().catch(() => {});
-    try { currentManagedVoiceSource?.stop(); } catch (_) {}
+    const buffer = await preloadTenHitVoice().catch(() => null);
+    if (!buffer || !TEN_HIT_VOICE_SEGMENTS?.length) return;
 
+    let enabledIndexes = TEN_HIT_VOICE_SEGMENTS.map((_, i) => i);
+    try {
+      if (typeof getEnabledManagedVoiceIds === 'function') {
+        const enabled = getEnabledManagedVoiceIds();
+        const filtered = enabledIndexes.filter(i => enabled.has(`builtin-${i}`));
+        if (filtered.length) enabledIndexes = filtered;
+      }
+    } catch (_) {}
+
+    let pool = enabledIndexes.filter(i => i !== reliableLastVoiceIndex);
+    if (!pool.length) pool = enabledIndexes;
+    const index = pool[Math.floor(Math.random() * pool.length)];
+    reliableLastVoiceIndex = index;
+    const segment = TEN_HIT_VOICE_SEGMENTS[index];
+
+    try { reliableVoiceSource?.stop(); } catch (_) {}
     const source = audioCtx.createBufferSource();
     const gain = audioCtx.createGain();
     const compressor = audioCtx.createDynamicsCompressor();
-    gain.gain.value = 2.25;
-    compressor.threshold.value = -12;
-    compressor.knee.value = 12;
-    compressor.ratio.value = 4;
-    compressor.attack.value = 0.002;
+    source.buffer = buffer;
+    gain.gain.value = 3.2;
+    compressor.threshold.value = -16;
+    compressor.knee.value = 8;
+    compressor.ratio.value = 5;
+    compressor.attack.value = 0.001;
     compressor.release.value = 0.12;
+    source.connect(gain).connect(compressor).connect(audioCtx.destination);
 
-    let duration = 2.5;
-    if (item.kind === 'builtin') {
-      const buffer = await preloadTenHitVoice();
-      if (!buffer) return;
-      source.buffer = buffer;
-      duration = item.segment.duration;
-      source.connect(gain).connect(compressor).connect(audioCtx.destination);
-      source.start(0, item.segment.offset, item.segment.duration);
-    } else {
-      source.buffer = await decodeManagedLocalVoice(item);
-      duration = source.buffer.duration;
-      source.connect(gain).connect(compressor).connect(audioCtx.destination);
-      source.start();
-    }
-
-    // Music is an HTMLAudioElement, so briefly duck it while a voice plays.
     if (typeof audio !== 'undefined' && audio && !audio.paused) {
       const previousVolume = Number.isFinite(audio.volume) ? audio.volume : 1;
-      audio.volume = Math.min(previousVolume, 0.38);
+      audio.volume = Math.min(previousVolume, 0.24);
       clearTimeout(duckTimer);
       duckTimer = setTimeout(() => {
         try { audio.volume = previousVolume; } catch (_) {}
-      }, Math.max(500, duration * 1000 + 120));
+      }, Math.max(700, segment.duration * 1000 + 180));
     }
 
-    currentManagedVoiceSource = source;
+    source.start(0, segment.offset, segment.duration);
+    reliableVoiceSource = source;
     source.onended = () => {
-      if (currentManagedVoiceSource === source) currentManagedVoiceSource = null;
+      if (reliableVoiceSource === source) reliableVoiceSource = null;
     };
+  }
+
+  // Disable the older ten-hit trigger and replace it with one counter at the final registerHit layer.
+  playRandomTenHitVoice = function() {};
+  const baseRegisterHit = registerHit;
+  registerHit = function(note, grade) {
+    const wasAvailable = !note.hit && !note.missRegistered;
+    baseRegisterHit(note, grade);
+    if (!wasAvailable || !note.hit) return;
+    reliableSuccessCount += 1;
+    if (reliableSuccessCount % 10 === 0) playReliableBuiltinVoice().catch(() => {});
   };
 
-  // Warm both buffers as early as iOS permits, and resume the context on the first gesture.
+  const baseResetGame = resetGame;
+  resetGame = function() {
+    reliableSuccessCount = 0;
+    reliableLastVoiceIndex = -1;
+    baseResetGame();
+  };
+
   const warmAudio = () => {
     audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
     audioCtx.resume().catch(() => {});
