@@ -13,9 +13,7 @@ function showAppScreen(name) {
   Object.entries(screens).forEach(([key, el]) => {
     if (el) el.hidden = key !== name;
   });
-  if (name !== 'live') {
-    resultPanel.hidden = true;
-  }
+  if (name !== 'live') resultPanel.hidden = true;
   if (name === 'settings') refreshSettingsSummary();
   if (name === 'characters') renderCharacterSelectors();
   window.scrollTo({top: 0, behavior: 'auto'});
@@ -32,10 +30,14 @@ if (updateBanner) {
   } else if (updateNew) {
     updateNew.hidden = true;
   }
-  updateBanner.addEventListener('click', () => {
+  const markUpdateSeen = () => {
     localStorage.setItem(HOME_UPDATE_KEY, HOME_VERSION);
     updateBanner.classList.remove('new');
     if (updateNew) updateNew.hidden = true;
+  };
+  updateBanner.addEventListener('click', markUpdateSeen);
+  updateBanner.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') markUpdateSeen();
   });
 }
 
@@ -171,6 +173,20 @@ document.getElementById('resultHomeBtn')?.addEventListener('click', () => {
 calibrationBackBtn?.addEventListener('click', () => {
   queueMicrotask(() => showAppScreen('settings'));
 });
+
+const calibrationActions = document.querySelector('.calibration-actions');
+if (calibrationActions && !document.getElementById('calibrationHomeBtn')) {
+  const homeBtn = document.createElement('button');
+  homeBtn.id = 'calibrationHomeBtn';
+  homeBtn.className = 'calibration-back';
+  homeBtn.type = 'button';
+  homeBtn.textContent = 'ホームに戻る';
+  homeBtn.addEventListener('click', () => {
+    hideCalibration();
+    showAppScreen('home');
+  });
+  calibrationActions.appendChild(homeBtn);
+}
 
 applyLaneCharacters();
 refreshSettingsSummary();
