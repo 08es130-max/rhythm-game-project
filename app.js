@@ -18,6 +18,8 @@ const targets = document.getElementById('targets');
 const game = document.getElementById('game');
 const scoreEl = document.getElementById('score');
 const comboEl = document.getElementById('combo');
+const comboOverlay = document.getElementById('comboOverlay');
+const comboCount = document.getElementById('comboCount');
 const judgeEl = document.getElementById('judge');
 const resultPanel = document.getElementById('resultPanel');
 const rPerfect = document.getElementById('rPerfect');
@@ -28,11 +30,15 @@ const rMaxCombo = document.getElementById('rMaxCombo');
 const rScore = document.getElementById('rScore');
 
 const laneKeys = ['KeyA','KeyS','KeyD','KeyF','Space','KeyJ','KeyK','KeyL','Semicolon'];
+const laneArtworks = Array.from({length:9}, () => 'icon-192.png');
+const HIT_WINDOWS = {perfect:45, great:85, good:150};
+const MISS_WINDOW = 150;
+const TRAIL_MS = 420;
+
 let chart = null;
 let playing = false;
 let rafId = null;
 let activeNotes = [];
-let judged = new Set();
 let score = 0;
 let combo = 0;
 let maxCombo = 0;
@@ -62,6 +68,17 @@ function getGeometry() {
   return {spawn,targetPoints};
 }
 
+function setTargetArtwork(avatar, path) {
+  if (!path) return;
+  const img = new Image();
+  img.onload = () => {
+    avatar.style.setProperty('--target-art', `url("${path}")`);
+    avatar.classList.add('has-art');
+  };
+  img.onerror = () => avatar.classList.remove('has-art');
+  img.src = path;
+}
+
 function layoutPlayfield() {
   const {spawn,targetPoints} = getGeometry();
   laneLayer.innerHTML = '';
@@ -78,6 +95,7 @@ function layoutPlayfield() {
     const dy = p.y - spawn.y;
     const length = Math.hypot(dx, dy);
     const angle = Math.atan2(dy, dx) * 180 / Math.PI - 90;
+
     const lane = document.createElement('div');
     lane.className = 'lane';
     lane.style.left = `${spawn.x}px`;
@@ -92,6 +110,16 @@ function layoutPlayfield() {
     target.dataset.lane = i;
     target.style.left = `${p.x}px`;
     target.style.top = `${p.y}px`;
+
+    const avatar = document.createElement('span');
+    avatar.className = 'target-avatar';
+    setTargetArtwork(avatar, laneArtworks[i]);
+
+    const ring = document.createElement('span');
+    ring.className = 'target-ring';
+
+    target.appendChild(avatar);
+    target.appendChild(ring);
     target.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       hitLane(i);
@@ -100,13 +128,15 @@ function layoutPlayfield() {
   });
 }
 
+function removeNoteEl(note) {
+  note.el?.remove();
+  note.el = null;
+}
+
 layoutPlayfield();
 window.addEventListener('resize', () => {
   layoutPlayfield();
-  if (playing) {
-    for (const n of activeNotes) n.el?.remove();
-    activeNotes.forEach(n => n.el = null);
-  }
+  if (playing) activeNotes.forEach(removeNoteEl);
 });
 
 function isSilentMode() {
@@ -116,6 +146,21 @@ function isSilentMode() {
 function canStart() {
   const sourceReady = isSilentMode() || !!audio.src;
   startBtn.disabled = !(sourceReady && chart);
+}
+
+function updateComboDisplay() {
+  comboEl.textContent = combo;
+  if (combo > 0) {
+    comboCount.textContent = combo;
+    comboOverlay.hidden = false;
+  } else {
+    comboOverlay.hidden = true;
+  }
+}
+
+function updateHud() {
+  scoreEl.textContent = score;
+  updateComboDisplay();
 }
 
 audioMode.addEventListener('change', () => {
@@ -223,7 +268,7 @@ async function startGame() {
   if (isSilentMode()) {
     silentStartAt = performance.now();
     const lastNote = chart.notes.length ? chart.notes[chart.notes.length - 1].timeMs : 0;
-    silentDurationMs = lastNote + 1500;
+    silentDurationMs = lastNote + TRAIL_MS + 1200;
   } else {
     try {
       await audio.play();
@@ -252,21 +297,26 @@ backBtn.addEventListener('click', () => {
 
 stopBtn.addEventListener('click', stopGame);
 audio.addEventListener('ended', () => {
-  if (!isSilentMode()) finishGame();
+  if (!isSilentMode()) setTimeout(finishGame, TRAIL_MS);
 });
 
 function resetGame() {
   cancelAnimationFrame(rafId);
   notesLayer.innerHTML = '';
-  activeNotes = chart.notes.map((n, idx) => ({...n, idx, el:null}));
-  judged = new Set();
+  activeNotes = chart.notes.map((n, idx) => ({
+    ...n,
+    idx,
+    el:null,
+    hit:false,
+    missRegistered:false,
+    finished:false
+  }));
   score = 0;
   combo = 0;
   maxCombo = 0;
   counts = {perfect:0,great:0,good:0,miss:0};
-  scoreEl.textContent = '0';
-  comboEl.textContent = '0';
   if (!isSilentMode() && audio.src) audio.currentTime = 0;
+  updateHud();
 }
 
 function stopGame() {
@@ -285,9 +335,13 @@ function finishGame() {
   playing = false;
   if (!isSilentMode()) audio.pause();
   cancelAnimationFrame(rafId);
+
   activeNotes.forEach(n => {
-    if (!judged.has(n.idx)) applyJudge(n, 'miss');
+    if (!n.hit && !n.missRegistered) registerMiss(n);
+    removeNoteEl(n);
+    n.finished = true;
   });
+
   startBtn.disabled = false;
   stopBtn.disabled = true;
   judgeEl.textContent = 'FINISH';
@@ -314,6 +368,14 @@ function currentMs() {
   return baseMs + Number(offsetInput.value || 0);
 }
 
+function getNoteProgress(dt, leadMs) {
+  if (dt >= 0) {
+    const raw = 1 - Math.max(0, dt) / leadMs;
+    return raw * raw * (3 - 2 * raw);
+  }
+  return 1 + Math.min(0.24, (-dt / TRAIL_MS) * 0.24);
+}
+
 function loop() {
   if (!playing) return;
   const now = currentMs();
@@ -321,23 +383,32 @@ function loop() {
   const {spawn,targetPoints} = getGeometry();
 
   for (const n of activeNotes) {
-    if (judged.has(n.idx)) continue;
+    if (n.finished) continue;
     const dt = n.timeMs - now;
-    if (dt < -180) {
-      applyJudge(n, 'miss');
+
+    if (!n.hit && !n.missRegistered && dt < -MISS_WINDOW) {
+      registerMiss(n);
+    }
+
+    if (n.hit) {
+      n.finished = true;
       continue;
     }
-    if (dt <= leadMs && dt >= -180) {
+
+    if (dt <= leadMs && dt >= -TRAIL_MS) {
       if (!n.el) n.el = createNoteEl();
-      const raw = 1 - Math.max(0, dt) / leadMs;
-      const progress = raw * raw * (3 - 2 * raw);
+      const progress = getNoteProgress(dt, leadMs);
       const p = targetPoints[n.lane];
       const x = spawn.x + (p.x - spawn.x) * progress;
       const y = spawn.y + (p.y - spawn.y) * progress;
-      const scale = 0.45 + 0.55 * progress;
+      const scale = progress <= 1 ? 0.45 + 0.55 * progress : 1;
       n.el.style.left = `${x}px`;
       n.el.style.top = `${y}px`;
       n.el.style.transform = `translate(-50%,-50%) scale(${scale})`;
+      n.el.classList.toggle('missed', n.missRegistered);
+    } else if (dt < -TRAIL_MS) {
+      removeNoteEl(n);
+      n.finished = true;
     }
   }
 
@@ -362,44 +433,45 @@ function hitLane(lane) {
   const now = currentMs();
   let candidate = null;
   let bestAbs = Infinity;
+
   for (const n of activeNotes) {
-    if (n.lane !== lane || judged.has(n.idx)) continue;
-    const diff = now - n.timeMs;
-    const abs = Math.abs(diff);
-    if (abs < bestAbs && abs <= 150) {
+    if (n.lane !== lane || n.hit || n.missRegistered || n.finished) continue;
+    const abs = Math.abs(now - n.timeMs);
+    if (abs < bestAbs && abs <= HIT_WINDOWS.good) {
       bestAbs = abs;
       candidate = n;
     }
   }
   if (!candidate) return;
 
-  let grade;
-  if (bestAbs <= 45) grade = 'perfect';
-  else if (bestAbs <= 85) grade = 'great';
-  else grade = 'good';
-  applyJudge(candidate, grade);
+  let grade = 'good';
+  if (bestAbs <= HIT_WINDOWS.perfect) grade = 'perfect';
+  else if (bestAbs <= HIT_WINDOWS.great) grade = 'great';
+
+  registerHit(candidate, grade);
   playTapSound(grade);
 }
 
-function applyJudge(note, grade) {
-  if (judged.has(note.idx)) return;
-  judged.add(note.idx);
-  note.el?.remove();
-  note.el = null;
+function registerHit(note, grade) {
+  if (note.hit || note.missRegistered) return;
+  note.hit = true;
+  note.finished = true;
+  removeNoteEl(note);
   counts[grade]++;
+  combo++;
+  maxCombo = Math.max(maxCombo, combo);
+  score += grade === 'perfect' ? 1000 : grade === 'great' ? 700 : 400;
+  judgeEl.textContent = grade.toUpperCase();
+  updateHud();
+}
 
-  if (grade === 'miss') {
-    combo = 0;
-    judgeEl.textContent = 'MISS';
-  } else {
-    combo++;
-    maxCombo = Math.max(maxCombo, combo);
-    const add = grade === 'perfect' ? 1000 : grade === 'great' ? 700 : 400;
-    score += add;
-    judgeEl.textContent = grade.toUpperCase();
-  }
-  scoreEl.textContent = score;
-  comboEl.textContent = combo;
+function registerMiss(note) {
+  if (note.hit || note.missRegistered) return;
+  note.missRegistered = true;
+  counts.miss++;
+  combo = 0;
+  judgeEl.textContent = 'MISS';
+  updateHud();
 }
 
 function flashTarget(lane) {
@@ -442,3 +514,7 @@ document.addEventListener('keydown', (e) => {
     hitLane(lane);
   }
 });
+
+loadDemoChart();
+judgeEl.textContent = 'READY';
+updateHud();
