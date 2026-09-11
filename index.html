@@ -11,16 +11,16 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json?v=0.2.6" />
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.6" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.6" />
-  <link rel="stylesheet" href="styles.css?v=0.2.6" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.2.6" />
-  <link rel="stylesheet" href="pause.css?v=0.2.6" />
-  <link rel="stylesheet" href="calibration.css?v=0.2.6" />
-  <link rel="stylesheet" href="home.css?v=0.2.6" />
+  <link rel="manifest" href="manifest.json?v=0.2.7" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.7" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.7" />
+  <link rel="stylesheet" href="styles.css?v=0.2.7" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.2.7" />
+  <link rel="stylesheet" href="pause.css?v=0.2.7" />
+  <link rel="stylesheet" href="calibration.css?v=0.2.7" />
+  <link rel="stylesheet" href="home.css?v=0.2.7" />
   <script>
-    window.APP_VERSION = '0.2.6';
+    window.APP_VERSION = '0.2.7';
     (async () => {
       try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -43,12 +43,12 @@
           <h1 class="home-title">9-Lane Rhythm</h1>
           <p class="home-subtitle">LIVE HOME</p>
         </div>
-        <div class="home-version">Ver. 0.2.6</div>
+        <div class="home-version">Ver. 0.2.7</div>
       </div>
 
       <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.6 アップデート</span></div>
-        <p class="update-text">タップ成功10回ごとに、登録した6種類の音声から1つをランダム再生する試験機能を追加しました。連続で同じ音声は出にくいようにしています。</p>
+        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.7 アップデート</span></div>
+        <p class="update-text">標準の「シャン」音を大きく聞き取りやすく調整しました。10タップごとの音声は内部音声を個別選択でき、端末ごとの音声追加にも対応しました。</p>
       </div>
 
       <div class="home-main">
@@ -73,15 +73,13 @@
       </div>
 
       <section class="panel controls" id="controlsPanel">
-        <div class="version-badge" aria-label="app version">Ver. 0.2.6</div>
+        <div class="version-badge" aria-label="app version">Ver. 0.2.7</div>
         <h2>ライブ選択</h2>
         <p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
-
         <div class="button-row">
           <button id="spicaPresetBtn" type="button">スピカテリブル</button>
           <button id="demoBtn">テスト譜面を使う</button>
         </div>
-
         <div class="file-row">
           <label>音源モード
             <select id="audioMode">
@@ -96,12 +94,10 @@
             <input id="chartFile" type="file" accept="application/json,.json" />
           </label>
         </div>
-
         <div class="button-row">
           <button id="startBtn" disabled>START</button>
           <button id="stopBtn" disabled>STOP</button>
         </div>
-
         <div class="meta-row">
           <div>曲: <strong id="songName">テスト用（無音）</strong></div>
           <div>譜面: <strong id="chartName">未選択</strong></div>
@@ -114,7 +110,6 @@
           <div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
           <div id="judge" class="judge">READY</div>
         </div>
-
         <div id="game" class="game" aria-label="9 lane rhythm game">
           <div class="live-backdrop" aria-hidden="true"></div>
           <div id="laneLayer" class="lane-layer"></div>
@@ -126,7 +121,6 @@
           <div class="judge-line"></div>
           <div id="targets" class="targets"></div>
         </div>
-
         <div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
       </section>
 
@@ -218,14 +212,16 @@
   </section>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="character-data.js?v=0.2.6"></script>
-  <script src="app.js?v=0.2.6"></script>
-  <script src="settings.js?v=0.2.6"></script>
-  <script src="voice-events.js?v=0.2.6"></script>
-  <script src="calibration.js?v=0.2.6"></script>
-  <script src="touch-guards.js?v=0.2.6"></script>
-  <script src="pause.js?v=0.2.6"></script>
-  <script src="home.js?v=0.2.6"></script>
-  <script src="song-presets.js?v=0.2.6"></script>
+  <script src="character-data.js?v=0.2.7"></script>
+  <script src="app.js?v=0.2.7"></script>
+  <script src="settings.js?v=0.2.7"></script>
+  <script src="tap-boost.js?v=0.2.7"></script>
+  <script src="voice-events.js?v=0.2.7"></script>
+  <script src="voice-manager.js?v=0.2.7"></script>
+  <script src="calibration.js?v=0.2.7"></script>
+  <script src="touch-guards.js?v=0.2.7"></script>
+  <script src="pause.js?v=0.2.7"></script>
+  <script src="home.js?v=0.2.7"></script>
+  <script src="song-presets.js?v=0.2.7"></script>
 </body>
 </html>
