@@ -7,18 +7,36 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="9-Lane Rhythm" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="touch-guards.css" />
-  <link rel="stylesheet" href="pause.css" />
+  <link rel="manifest" href="manifest.json?v=0.1.1" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.1.1" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.1.1" />
+  <link rel="stylesheet" href="styles.css?v=0.1.1" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.1.1" />
+  <link rel="stylesheet" href="pause.css?v=0.1.1" />
+  <script>
+    window.APP_VERSION = '0.1.1';
+    (async () => {
+      try {
+        const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (data.version && data.version !== window.APP_VERSION) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('v', data.version);
+          window.location.replace(url.toString());
+        }
+      } catch (_) {}
+    })();
+  </script>
 </head>
 <body>
   <main class="app-shell">
     <section class="panel controls" id="controlsPanel">
-      <div class="version-badge" aria-label="app version">Ver. 0.1.0</div>
+      <div class="version-badge" aria-label="app version">Ver. 0.1.1</div>
       <h1>9-Lane Rhythm Prototype</h1>
       <p class="sub">ローカル音源＋譜面JSONで遊ぶ試作版です。</p>
 
@@ -98,8 +116,8 @@
   </main>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="app.js"></script>
-  <script src="touch-guards.js"></script>
-  <script src="pause.js"></script>
+  <script src="app.js?v=0.1.1"></script>
+  <script src="touch-guards.js?v=0.1.1"></script>
+  <script src="pause.js?v=0.1.1"></script>
 </body>
 </html>
