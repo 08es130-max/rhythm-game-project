@@ -11,15 +11,16 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <title>9-Lane Rhythm Prototype</title>
-  <link rel="manifest" href="manifest.json?v=0.1.4" />
-  <link rel="apple-touch-icon" href="icon-192.png?v=0.1.4" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.1.4" />
-  <link rel="stylesheet" href="styles.css?v=0.1.4" />
-  <link rel="stylesheet" href="touch-guards.css?v=0.1.4" />
-  <link rel="stylesheet" href="pause.css?v=0.1.4" />
-  <link rel="stylesheet" href="calibration.css?v=0.1.4" />
+  <link rel="manifest" href="manifest.json?v=0.2.0" />
+  <link rel="apple-touch-icon" href="icon-192.png?v=0.2.0" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=0.2.0" />
+  <link rel="stylesheet" href="styles.css?v=0.2.0" />
+  <link rel="stylesheet" href="touch-guards.css?v=0.2.0" />
+  <link rel="stylesheet" href="pause.css?v=0.2.0" />
+  <link rel="stylesheet" href="calibration.css?v=0.2.0" />
+  <link rel="stylesheet" href="home.css?v=0.2.0" />
   <script>
-    window.APP_VERSION = '0.1.4';
+    window.APP_VERSION = '0.2.0';
     (async () => {
       try {
         const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -36,86 +37,154 @@
 </head>
 <body>
   <main class="app-shell">
-    <section class="panel controls" id="controlsPanel">
-      <div class="version-badge" aria-label="app version">Ver. 0.1.4</div>
-      <h1>9-Lane Rhythm Prototype</h1>
-      <p class="sub">ローカル音源＋譜面JSONで遊ぶ試作版です。</p>
-
-      <div class="file-row">
-        <label>音源モード
-          <select id="audioMode">
-            <option value="silent" selected>テスト用（無音）</option>
-            <option value="file">ファイル音源</option>
-          </select>
-        </label>
-        <label>音源ファイル
-          <input id="audioFile" type="file" accept="audio/*" />
-        </label>
-        <label>譜面JSON
-          <input id="chartFile" type="file" accept="application/json,.json" />
-        </label>
-      </div>
-
-      <div class="settings-row">
-        <label>ノーツ速度
-          <input id="speed" type="range" min="0.7" max="2.0" step="0.1" value="1.0" />
-          <span id="speedValue">1.0x</span>
-        </label>
-        <button id="timingAdjustBtn" class="timing-adjust-btn" type="button">判定調整</button>
-        <label class="assist-setting" title="ONにするとPERFECT判定を±45msから±70msへ広げます。">
-          <input id="perfectAssist" type="checkbox" />
-          <span>判定強化 ON/OFF<br><small>PERFECT判定を広げる</small></span>
-        </label>
-        <input id="offset" type="hidden" value="0" />
-      </div>
-
-      <div class="button-row">
-        <button id="startBtn" disabled>START</button>
-        <button id="stopBtn" disabled>STOP</button>
-        <button id="demoBtn">テスト譜面を使う</button>
-      </div>
-
-      <div class="meta-row">
-        <div>曲: <strong id="songName">テスト用（無音）</strong></div>
-        <div>譜面: <strong id="chartName">未選択</strong></div>
-      </div>
-    </section>
-
-    <section class="game-wrap">
-      <div class="hud">
-        <div><span class="hud-label">SCORE</span><span id="score">0</span></div>
-        <div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
-        <div id="judge" class="judge">READY</div>
-      </div>
-
-      <div id="game" class="game" aria-label="9 lane rhythm game">
-        <div class="live-backdrop" aria-hidden="true"></div>
-        <div id="laneLayer" class="lane-layer"></div>
-        <div id="comboOverlay" class="combo-overlay" hidden>
-          <span id="comboCount" class="combo-count">0</span>
-          <span class="combo-text">combo</span>
+    <section id="homeScreen" class="app-screen home-screen">
+      <div class="home-topbar">
+        <div>
+          <h1 class="home-title">9-Lane Rhythm</h1>
+          <p class="home-subtitle">LIVE HOME</p>
         </div>
-        <div id="notesLayer" class="notes-layer"></div>
-        <div class="judge-line"></div>
-        <div id="targets" class="targets"></div>
+        <div class="home-version">Ver. 0.2.0</div>
       </div>
 
-      <div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
+      <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
+        <div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.2.0 アップデート</span></div>
+        <p class="update-text">ホーム画面を追加しました。ライブ・設定・判定調整・キャラ変更へここから移動できます。9レーンのキャラアイコン設定にも対応しました。</p>
+      </div>
+
+      <div class="home-main">
+        <div class="home-character-card">
+          <img class="home-character-img" src="icon-512.png" alt="ホームキャラクター" />
+          <div class="home-character-note">ライブの準備はできています。メニューから選んでください。<div class="home-art-note">※現在は既存画像を仮表示。立ち絵画像へ差し替え可能です。</div></div>
+        </div>
+        <div class="home-menu">
+          <button id="homeLiveBtn" class="home-menu-btn home-menu-live" type="button">ライブ<span>曲・譜面を選んでプレイ</span></button>
+          <button id="homeSettingsBtn" class="home-menu-btn home-menu-settings" type="button">設定<span>速度・判定強化など</span></button>
+          <button id="homeTimingBtn" class="home-menu-btn home-menu-timing" type="button">判定調整<span>実際にノーツを叩いて調整</span></button>
+          <button id="homeCharactersBtn" class="home-menu-btn home-menu-characters" type="button">キャラ変更<span>9レーンのアイコンを設定</span></button>
+        </div>
+      </div>
     </section>
 
-    <section class="panel result" id="resultPanel" hidden>
-      <h2>RESULT</h2>
-      <div class="result-grid">
-        <div>PERFECT <strong id="rPerfect">0</strong></div>
-        <div>GREAT <strong id="rGreat">0</strong></div>
-        <div>GOOD <strong id="rGood">0</strong></div>
-        <div>MISS <strong id="rMiss">0</strong></div>
-        <div>MAX COMBO <strong id="rMaxCombo">0</strong></div>
-        <div>SCORE <strong id="rScore">0</strong></div>
+    <section id="liveScreen" class="app-screen live-screen" hidden>
+      <div class="screen-header">
+        <button class="home-back-btn" data-home type="button">ホーム</button>
+        <h1>ライブ</h1>
+        <button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button>
       </div>
-      <div class="result-actions">
-        <button id="retryBtn">もう一度</button>
-        <button id="backBtn">選択画面に戻る</button>
+
+      <section class="panel controls" id="controlsPanel">
+        <div class="version-badge" aria-label="app version">Ver. 0.2.0</div>
+        <h2>ライブ選択</h2>
+        <p class="sub">音源と譜面を選んでライブを開始します。</p>
+
+        <div class="file-row">
+          <label>音源モード
+            <select id="audioMode">
+              <option value="silent" selected>テスト用（無音）</option>
+              <option value="file">ファイル音源</option>
+            </select>
+          </label>
+          <label>音源ファイル
+            <input id="audioFile" type="file" accept="audio/*" />
+          </label>
+          <label>譜面JSON
+            <input id="chartFile" type="file" accept="application/json,.json" />
+          </label>
+        </div>
+
+        <div class="button-row">
+          <button id="startBtn" disabled>START</button>
+          <button id="stopBtn" disabled>STOP</button>
+          <button id="demoBtn">テスト譜面を使う</button>
+        </div>
+
+        <div class="meta-row">
+          <div>曲: <strong id="songName">テスト用（無音）</strong></div>
+          <div>譜面: <strong id="chartName">未選択</strong></div>
+        </div>
+      </section>
+
+      <section class="game-wrap">
+        <div class="hud">
+          <div><span class="hud-label">SCORE</span><span id="score">0</span></div>
+          <div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
+          <div id="judge" class="judge">READY</div>
+        </div>
+
+        <div id="game" class="game" aria-label="9 lane rhythm game">
+          <div class="live-backdrop" aria-hidden="true"></div>
+          <div id="laneLayer" class="lane-layer"></div>
+          <div id="comboOverlay" class="combo-overlay" hidden>
+            <span id="comboCount" class="combo-count">0</span>
+            <span class="combo-text">combo</span>
+          </div>
+          <div id="notesLayer" class="notes-layer"></div>
+          <div class="judge-line"></div>
+          <div id="targets" class="targets"></div>
+        </div>
+
+        <div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
+      </section>
+
+      <section class="panel result" id="resultPanel" hidden>
+        <h2>RESULT</h2>
+        <div class="result-grid">
+          <div>PERFECT <strong id="rPerfect">0</strong></div>
+          <div>GREAT <strong id="rGreat">0</strong></div>
+          <div>GOOD <strong id="rGood">0</strong></div>
+          <div>MISS <strong id="rMiss">0</strong></div>
+          <div>MAX COMBO <strong id="rMaxCombo">0</strong></div>
+          <div>SCORE <strong id="rScore">0</strong></div>
+        </div>
+        <div class="result-actions">
+          <button id="retryBtn">もう一度</button>
+          <button id="backBtn">ライブ選択に戻る</button>
+          <button id="resultHomeBtn" class="result-home-btn" type="button">ホームに戻る</button>
+        </div>
+      </section>
+    </section>
+
+    <section id="settingsScreen" class="app-screen" hidden>
+      <div class="screen-header">
+        <button class="home-back-btn" data-home type="button">ホーム</button>
+        <h1>設定</h1>
+      </div>
+      <div class="screen-panel settings-grid">
+        <div class="setting-card">
+          <label>ノーツ速度
+            <input id="speed" type="range" min="0.7" max="2.0" step="0.1" value="1.0" />
+            <span id="speedValue">1.0x</span>
+          </label>
+          <div>保存値: <span id="speedSummary" class="settings-value">1.0x</span></div>
+        </div>
+        <div class="setting-card">
+          <label class="assist-setting" title="ONにするとPERFECT判定を±45msから±70msへ広げます。">
+            <input id="perfectAssist" type="checkbox" />
+            <span>判定強化 ON/OFF<br><small>PERFECT判定を広げる</small></span>
+          </label>
+          <div>現在: <span id="assistSummary" class="settings-value">OFF</span></div>
+        </div>
+        <div class="setting-card">
+          <div>判定タイミング: <span id="timingCurrentValue" class="settings-value timing-current">0 ms</span></div>
+          <button id="timingAdjustBtn" class="timing-adjust-btn" type="button">判定調整を開く</button>
+          <input id="offset" type="hidden" value="0" />
+        </div>
+      </div>
+    </section>
+
+    <section id="characterScreen" class="app-screen" hidden>
+      <div class="screen-header">
+        <button class="home-back-btn" data-home type="button">ホーム</button>
+        <h1>キャラ変更</h1>
+      </div>
+      <div class="screen-panel">
+        <p class="sub">ライブ中の9つの判定円に表示するキャラをレーンごとに設定します。設定はこの端末に保存されます。</p>
+        <div id="characterGrid" class="character-grid"></div>
+        <div class="character-actions">
+          <button id="sameCharacterBtn" class="same-character" type="button">レーン1と同じキャラに統一</button>
+          <button id="saveCharactersBtn" class="save-characters" type="button">この設定を保存</button>
+        </div>
+        <div id="characterSaveStatus" class="character-help">`characters/char01.png` ～ `char09.png` をリポジトリに追加すると、登録済み候補としてそのまま使えます。画像が未登録の場合はデフォルト画像を表示します。</div>
       </div>
     </section>
   </main>
@@ -139,16 +208,18 @@
         <button id="calibrationStartBtn" class="calibration-start" type="button">START</button>
         <button id="calibrationSaveBtn" class="calibration-save" type="button" disabled>この設定を使う</button>
         <button id="calibrationRetryBtn" class="calibration-retry" type="button" disabled>もう一度</button>
-        <button id="calibrationBackBtn" class="calibration-back" type="button">戻る</button>
+        <button id="calibrationBackBtn" class="calibration-back" type="button">設定に戻る</button>
       </div>
     </div>
   </section>
 
   <audio id="audio" preload="auto"></audio>
-  <script src="app.js?v=0.1.4"></script>
-  <script src="settings.js?v=0.1.4"></script>
-  <script src="calibration.js?v=0.1.4"></script>
-  <script src="touch-guards.js?v=0.1.4"></script>
-  <script src="pause.js?v=0.1.4"></script>
+  <script src="character-data.js?v=0.2.0"></script>
+  <script src="app.js?v=0.2.0"></script>
+  <script src="settings.js?v=0.2.0"></script>
+  <script src="calibration.js?v=0.2.0"></script>
+  <script src="touch-guards.js?v=0.2.0"></script>
+  <script src="pause.js?v=0.2.0"></script>
+  <script src="home.js?v=0.2.0"></script>
 </body>
 </html>
