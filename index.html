@@ -13,12 +13,18 @@
 </head>
 <body>
   <main class="app-shell">
-    <section class="panel controls">
+    <section class="panel controls" id="controlsPanel">
       <h1>9-Lane Rhythm Prototype</h1>
       <p class="sub">ローカル音源＋譜面JSONで遊ぶ試作版です。</p>
 
       <div class="file-row">
-        <label>音源
+        <label>音源モード
+          <select id="audioMode">
+            <option value="silent" selected>テスト用（無音）</option>
+            <option value="file">ファイル音源</option>
+          </select>
+        </label>
+        <label>音源ファイル
           <input id="audioFile" type="file" accept="audio/*" />
         </label>
         <label>譜面JSON
@@ -39,11 +45,11 @@
       <div class="button-row">
         <button id="startBtn" disabled>START</button>
         <button id="stopBtn" disabled>STOP</button>
-        <button id="demoBtn">DEMO譜面を使う</button>
+        <button id="demoBtn">テスト譜面を使う</button>
       </div>
 
       <div class="meta-row">
-        <div>曲: <strong id="songName">未選択</strong></div>
+        <div>曲: <strong id="songName">テスト用（無音）</strong></div>
         <div>譜面: <strong id="chartName">未選択</strong></div>
       </div>
     </section>
@@ -74,6 +80,10 @@
         <div>MISS <strong id="rMiss">0</strong></div>
         <div>MAX COMBO <strong id="rMaxCombo">0</strong></div>
         <div>SCORE <strong id="rScore">0</strong></div>
+      </div>
+      <div class="result-actions">
+        <button id="retryBtn">もう一度</button>
+        <button id="backBtn">選択画面に戻る</button>
       </div>
     </section>
   </main>
