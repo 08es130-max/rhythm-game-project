@@ -1,6 +1,6 @@
 {
-  "name": "9-Lane Rhythm Prototype",
-  "short_name": "9-Lane Rhythm",
+  "name": "ラブフェス！",
+  "short_name": "ラブフェス！",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -9,12 +9,12 @@
   "theme_color": "#111827",
   "icons": [
     {
-      "src": "icon-192-v030.png?v=0.3.1",
+      "src": "icon-192-v030.png?v=0.3.7",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512-v030.png?v=0.3.1",
+      "src": "icon-512-v030.png?v=0.3.7",
       "sizes": "512x512",
       "type": "image/png"
     }
