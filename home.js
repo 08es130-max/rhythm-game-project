@@ -194,3 +194,9 @@ if (calibrationActions && !document.getElementById('calibrationHomeBtn')) {
 applyLaneCharacters();
 refreshSettingsSummary();
 showAppScreen('home');
+
+// Branding
+const APP_BRAND_NAME = 'ラブフェス！';
+document.title = APP_BRAND_NAME;
+const homeTitle = document.querySelector('.home-title');
+if (homeTitle) homeTitle.textContent = APP_BRAND_NAME;
