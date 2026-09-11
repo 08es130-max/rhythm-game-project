@@ -56,9 +56,12 @@ assistEl?.addEventListener('change', refreshSettingsSummary);
 document.getElementById('calibrationSaveBtn')?.addEventListener('click', () => queueMicrotask(refreshSettingsSummary));
 
 function getSavedLaneCharacters() {
+  const validIds = new Set((window.CHARACTER_LIBRARY || []).map(c => c.id));
   try {
     const parsed = JSON.parse(localStorage.getItem(LANE_CHARACTER_KEY) || 'null');
-    if (Array.isArray(parsed) && parsed.length === 9) return parsed;
+    if (Array.isArray(parsed) && parsed.length === 9) {
+      return parsed.map(id => validIds.has(id) ? id : 'default');
+    }
   } catch (_) {}
   return Array.from({length: 9}, () => 'default');
 }
@@ -69,7 +72,7 @@ function saveLaneCharacters(ids) {
 }
 
 function getCharacterById(id) {
-  return (window.CHARACTER_LIBRARY || []).find(c => c.id === id) || (window.CHARACTER_LIBRARY || [])[0];
+  return (window.CHARACTER_LIBRARY || []).find(c => c.id === id) || (window.CHARACTER_LIBRARY || []).find(c => c.id === 'default') || (window.CHARACTER_LIBRARY || [])[0];
 }
 
 function applyLaneCharacters(ids = getSavedLaneCharacters()) {
