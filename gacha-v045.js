@@ -1,4 +1,4 @@
-// Ver.0.4.5 ten-pull scouting with original envelope reveal and room unlocks.
+// Ver.0.4.7 ten-pull scouting with envelope reveal, UR spotlight and room unlocks.
 (function(){
   const N_RATE=.99;
   const UR_RATE=.01;
@@ -89,6 +89,51 @@
     return item;
   }
 
+  function ensureUrSpotlight(){
+    let overlay=document.getElementById('gachaUrSpotlight');
+    if(overlay) return overlay;
+    overlay=document.createElement('div');
+    overlay.id='gachaUrSpotlight';
+    overlay.className='gacha-ur-spotlight';
+    overlay.hidden=true;
+    overlay.innerHTML=`
+      <div class="gacha-ur-spotlight-backdrop"></div>
+      <div class="gacha-ur-spotlight-rays"></div>
+      <div class="gacha-ur-spotlight-sparkles"></div>
+      <div class="gacha-ur-spotlight-card">
+        <div class="gacha-ur-spotlight-label">UR GET!</div>
+        <div class="gacha-ur-spotlight-image-wrap">
+          <img class="gacha-ur-spotlight-image" alt="URメンバー">
+        </div>
+        <div class="gacha-ur-spotlight-series"></div>
+        <div class="gacha-ur-spotlight-name"></div>
+        <div class="gacha-ur-spotlight-new" hidden>NEW</div>
+      </div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  async function showUrSpotlight(result){
+    const overlay=ensureUrSpotlight();
+    const image=overlay.querySelector('.gacha-ur-spotlight-image');
+    const series=overlay.querySelector('.gacha-ur-spotlight-series');
+    const name=overlay.querySelector('.gacha-ur-spotlight-name');
+    const badge=overlay.querySelector('.gacha-ur-spotlight-new');
+    image.src=result.unit.icon;
+    image.alt=result.unit.name;
+    series.textContent=result.unit.series;
+    name.textContent=String(result.unit.name).replace(/【[^】]+】$/u,'');
+    badge.hidden=!result.isNew;
+    overlay.hidden=false;
+    overlay.classList.remove('is-leaving');
+    requestAnimationFrame(()=>overlay.classList.add('is-active'));
+    await sleep(1550);
+    overlay.classList.add('is-leaving');
+    await sleep(380);
+    overlay.classList.remove('is-active','is-leaving');
+    overlay.hidden=true;
+  }
+
   async function revealSlot(slot,result){
     if(result.rarity==='UR'){
       slot.classList.add('is-ur-pre');
@@ -102,6 +147,7 @@
     slot.classList.add('is-open');
     await sleep(result.rarity==='UR'?520:270);
     slot.classList.remove('is-ur-pre','is-ur-burst','is-ready');
+    if(result.rarity==='UR') await showUrSpotlight(result);
   }
 
   async function runTenPull(){
@@ -222,5 +268,6 @@
   }
 
   ensureScreen();
+  ensureUrSpotlight();
   installOwnedRoomFilter();
 })();
