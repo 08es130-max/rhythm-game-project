@@ -1,4 +1,4 @@
-// Ver.0.5.2: subtle portrait atmosphere/reaction effects for Shioriko secret modes.
+// Ver.0.5.5: tap-position heart origin for Shioriko secret modes.
 (function(){
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
@@ -42,8 +42,28 @@
     reactTimer=setTimeout(()=>card.classList.remove('shio-react'),950);
   }
 
-  card.addEventListener('pointerdown',()=>{
+  function spawnTapHearts(e){
+    if(!isShioriko()||currentMode()!=='dere') return;
+    const rect=card.getBoundingClientRect();
+    const x=Math.max(8,Math.min(rect.width-8,e.clientX-rect.left));
+    const y=Math.max(8,Math.min(rect.height-8,e.clientY-rect.top));
+    for(let i=0;i<4;i++){
+      const heart=document.createElement('span');
+      heart.className='shio-tap-heart';
+      heart.textContent='♥';
+      heart.style.left=`${x}px`;
+      heart.style.top=`${y}px`;
+      heart.style.setProperty('--dx',`${(i-1.5)*18}px`);
+      heart.style.setProperty('--dy',`${-36-(i%2)*18}px`);
+      heart.style.setProperty('--delay',`${i*55}ms`);
+      card.appendChild(heart);
+      heart.addEventListener('animationend',()=>heart.remove(),{once:true});
+    }
+  }
+
+  card.addEventListener('pointerdown',(e)=>{
     applyMode(false);
+    spawnTapHearts(e);
     react();
   },{passive:true});
 
