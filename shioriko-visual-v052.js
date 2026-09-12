@@ -35,10 +35,7 @@
     const unit=(window.CHARACTER_LIBRARY||[]).find(c=>c?.id===id);
     return String(unit?.name||'').replace(/【[^】]+】$/u,'')==='三船栞子';
   }
-  function isExpressionSrc(src){
-    const value=String(src||'');
-    return value.includes('assets/shioriko-expressions/')||value.startsWith('data:image/webp;base64,');
-  }
+  function isExpressionSrc(src){return String(src||'').includes('assets/shioriko-expressions/');}
   function setImageSrc(src){
     if(!src||image.getAttribute('src')===src) return;
     internalSwap=true;
@@ -93,25 +90,6 @@
     }
   }
 
-  async function loadSupervisedScold(){
-    try{
-      const urls=Array.from({length:6},(_,i)=>`assets/shioriko-expressions/scold-b64/${String(i).padStart(2,'0')}.txt?v=${v}`);
-      const parts=await Promise.all(urls.map(async url=>{
-        const response=await fetch(url,{cache:'force-cache'});
-        if(!response.ok) throw new Error('scold expression chunk load failed');
-        return response.text();
-      }));
-      const base64=parts.join('').replace(/\s+/g,'');
-      if(!base64.startsWith('UklG')) throw new Error('invalid supervised scold image');
-      EXPR.scold=`data:image/webp;base64,${base64}`;
-      const preload=new Image();
-      preload.src=EXPR.scold;
-      if(effectiveMode()==='scold') applyMode(false);
-    }catch(_){
-      // Keep the repository WebP as a safe fallback if any text chunk cannot be loaded.
-    }
-  }
-
   const initial=image.getAttribute('src')||'';
   if(initial&&!isExpressionSrc(initial)) normalSrc=initial;
 
@@ -152,6 +130,5 @@
   observer.observe(image,{attributes:true,attributeFilter:['src']});
 
   Object.values(EXPR).forEach(src=>{const p=new Image();p.src=src;});
-  loadSupervisedScold();
   applyMode(false);
 })();
