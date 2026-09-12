@@ -11,18 +11,18 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>ラブフェス！</title>
-<link rel="manifest" href="manifest.json?v=0.4.3" />
-<link rel="apple-touch-icon" href="icon-180-v030.png?v=0.4.3" />
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192-v030.png?v=0.4.3" />
-<link rel="stylesheet" href="styles.css?v=0.4.3" />
-<link rel="stylesheet" href="touch-guards.css?v=0.4.3" />
-<link rel="stylesheet" href="pause.css?v=0.4.3" />
-<link rel="stylesheet" href="calibration.css?v=0.4.3" />
-<link rel="stylesheet" href="home.css?v=0.4.3" />
-<link rel="stylesheet" href="home-result-v041.css?v=0.4.3" />
-<link rel="stylesheet" href="home-layout-v042.css?v=0.4.3" />
+<link rel="manifest" href="manifest.json?v=0.4.4" />
+<link rel="apple-touch-icon" href="icon-180-v030.png?v=0.4.4" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192-v030.png?v=0.4.4" />
+<link rel="stylesheet" href="styles.css?v=0.4.4" />
+<link rel="stylesheet" href="touch-guards.css?v=0.4.4" />
+<link rel="stylesheet" href="pause.css?v=0.4.4" />
+<link rel="stylesheet" href="calibration.css?v=0.4.4" />
+<link rel="stylesheet" href="home.css?v=0.4.4" />
+<link rel="stylesheet" href="home-result-v041.css?v=0.4.4" />
+<link rel="stylesheet" href="home-layout-v042.css?v=0.4.4" />
 <script>
-window.APP_VERSION = '0.4.3';
+window.APP_VERSION = '0.4.4';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -45,15 +45,15 @@ window.location.replace(url.toString());
 <h1 class="home-title">ラブフェス！</h1>
 <p class="home-subtitle">LIVE HOME</p>
 </div>
-<div class="home-version">Ver. 0.4.3</div>
+<div class="home-version">Ver. 0.4.4</div>
 </div>
 <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.4.3 アップデート</span></div>
-<p class="update-text">ホームの4メニューを画像そのものがボタンになる表示へ変更しました。画像内の文字を使い、ボタン内の余白や重複ラベルをなくしています。</p>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.4.4 アップデート</span></div>
+<p class="update-text">ホームの4つの画像ボタンを正方形に揃え、画像が見切れず全体表示されるように調整しました。</p>
 </div>
 <div class="home-main">
 <div class="home-character-card" data-character-id="default">
-<img class="home-character-img" src="icon-512-v030.png?v=0.4.3" alt="ホームキャラクター" />
+<img class="home-character-img" src="icon-512-v030.png?v=0.4.4" alt="ホームキャラクター" />
 </div>
 <div class="home-menu">
 <button id="homeLiveBtn" class="home-menu-btn home-menu-live" type="button">ライブ<span>曲・譜面を選んでプレイ</span></button>
@@ -70,7 +70,7 @@ window.location.replace(url.toString());
 <button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button>
 </div>
 <section class="panel controls" id="controlsPanel">
-<div class="version-badge" aria-label="app version">Ver. 0.4.3</div>
+<div class="version-badge" aria-label="app version">Ver. 0.4.4</div>
 <h2>ライブ選択</h2>
 <p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 <div class="button-row">
@@ -203,31 +203,31 @@ window.location.replace(url.toString());
 </div>
 </section>
 <audio id="audio" preload="auto"></audio>
-<script src="character-data.js?v=0.4.3"></script>
-<script src="character-overrides.js?v=0.4.3"></script>
-<script src="character-default-override.js?v=0.4.3"></script>
-<script src="character-series-overrides.js?v=0.4.3"></script>
-<script src="character-fixes-v037.js?v=0.4.3"></script>
-<script src="app.js?v=0.4.3"></script>
-<script src="settings.js?v=0.4.3"></script>
-<script src="tap-boost.js?v=0.4.3"></script>
-<script src="voice-events.js?v=0.4.3"></script>
-<script src="voice-manager.js?v=0.4.3"></script>
-<script src="calibration.js?v=0.4.3"></script>
-<script src="touch-guards.js?v=0.4.3"></script>
-<script src="pause.js?v=0.4.3"></script>
-<script src="home.js?v=0.4.3"></script>
-<script src="song-presets.js?v=0.4.3"></script>
-<script src="audio-fixes.js?v=0.4.3"></script>
-<script src="voice-direct.js?v=0.4.3"></script>
-<script src="voice-fullhouse-v040.js?v=0.4.3"></script>
-<script src="voice-nanisore-v040.js?v=0.4.3"></script>
-<script src="voice-dareka-v040.js?v=0.4.3"></script>
-<script src="voice-nico-v040.js?v=0.4.3"></script>
-<script src="voice-ieni-v040.js?v=0.4.3"></script>
-<script src="voice-yohane-v040.js?v=0.4.3"></script>
-<script src="voice-independent-v040.js?v=0.4.3"></script>
-<script src="home-result-v041.js?v=0.4.3"></script>
-<script src="home-layout-v042.js?v=0.4.3"></script>
+<script src="character-data.js?v=0.4.4"></script>
+<script src="character-overrides.js?v=0.4.4"></script>
+<script src="character-default-override.js?v=0.4.4"></script>
+<script src="character-series-overrides.js?v=0.4.4"></script>
+<script src="character-fixes-v037.js?v=0.4.4"></script>
+<script src="app.js?v=0.4.4"></script>
+<script src="settings.js?v=0.4.4"></script>
+<script src="tap-boost.js?v=0.4.4"></script>
+<script src="voice-events.js?v=0.4.4"></script>
+<script src="voice-manager.js?v=0.4.4"></script>
+<script src="calibration.js?v=0.4.4"></script>
+<script src="touch-guards.js?v=0.4.4"></script>
+<script src="pause.js?v=0.4.4"></script>
+<script src="home.js?v=0.4.4"></script>
+<script src="song-presets.js?v=0.4.4"></script>
+<script src="audio-fixes.js?v=0.4.4"></script>
+<script src="voice-direct.js?v=0.4.4"></script>
+<script src="voice-fullhouse-v040.js?v=0.4.4"></script>
+<script src="voice-nanisore-v040.js?v=0.4.4"></script>
+<script src="voice-dareka-v040.js?v=0.4.4"></script>
+<script src="voice-nico-v040.js?v=0.4.4"></script>
+<script src="voice-ieni-v040.js?v=0.4.4"></script>
+<script src="voice-yohane-v040.js?v=0.4.4"></script>
+<script src="voice-independent-v040.js?v=0.4.4"></script>
+<script src="home-result-v041.js?v=0.4.4"></script>
+<script src="home-layout-v042.js?v=0.4.4"></script>
 </body>
 </html>
