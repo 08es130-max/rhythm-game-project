@@ -1,4 +1,4 @@
-// Ver.0.4.4: square image buttons + tappable announcement/version history.
+// Ver.0.4.5: square image buttons + gacha + tappable announcement/version history.
 (function(){
   const homeMain=document.querySelector('.home-main');
   const updateBanner=document.getElementById('updateBanner');
@@ -16,7 +16,7 @@
 
   document.getElementById('homeTimingBtn')?.remove();
 
-  const version=window.APP_VERSION||'0.4.4';
+  const version=window.APP_VERSION||'0.4.5';
   function decorateButton(id,src,title){
     const btn=document.getElementById(id);
     if(!btn) return null;
@@ -39,10 +39,17 @@
     menu.appendChild(gacha);
   }
   decorateButton('homeGachaBtn','assets/home-gacha-v042.webp','勧誘');
-  gacha.addEventListener('click',()=>alert('勧誘は今後実装予定です。'));
+  gacha.addEventListener('click',()=>{
+    if(typeof window.openGachaScreen==='function') window.openGachaScreen();
+  });
 
-  // お知らせ・更新履歴
   const HISTORY=[
+    {version:'0.4.5',title:'勧誘（ガチャ）を実装',items:[
+      '10連勧誘を追加しました。N【音符ロリータ】99%、UR【マンスリーソング】1%です。',
+      'UR【マンスリーソング】12人を追加し、初獲得したメンバーは部室に追加されます。',
+      '同じメンバーが重複して出ることはありますが、部室への登録はシリーズごとに1人です。',
+      '封筒をモチーフにした開封演出と、URが含まれる時の開封前スペシャル演出を追加しました。'
+    ]},
     {version:'0.4.4',title:'ホーム画像ボタンの表示調整',items:[
       'ライブ・設定・部室・勧誘の4つの画像ボタンを正方形に揃えました。',
       '画像が見切れず全体表示されるように調整しました。'
@@ -54,7 +61,7 @@
     {version:'0.4.2',title:'横向きホーム画面を再構成',items:[
       '横向きスマホで左半分を立ち絵、右半分をお知らせとメニューに再構成しました。',
       'ホームから判定調整を外し、設定内から開く形に整理しました。',
-      'キャラ変更を「部室」に変更し、「勧誘」を今後実装予定のメニューとして追加しました。',
+      'キャラ変更を「部室」に変更し、「勧誘」をメニューとして追加しました。',
       'ライブ・設定・部室・勧誘に専用イラストアイコンを追加しました。'
     ]},
     {version:'0.4.1',title:'リザルト・ホーム会話を強化',items:[
