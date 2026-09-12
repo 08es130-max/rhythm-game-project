@@ -1,7 +1,6 @@
-// Ver.0.4.7 ten-pull scouting with envelope reveal, UR spotlight and room unlocks.
+// Ver.0.4.8 ten-pull scouting with envelope reveal, UR spotlight, hidden owner test rate and room unlocks.
 (function(){
-  const N_RATE=.99;
-  const UR_RATE=.01;
+  const DEFAULT_UR_RATE=.01;
   const PULL_COUNT=10;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
@@ -16,15 +15,30 @@
   function choice(pool){
     return pool[Math.floor(rand()*pool.length)];
   }
+  function getGachaSettings(){
+    if(typeof window.getAdminGachaSettings==='function') return window.getAdminGachaSettings();
+    return {urRate:DEFAULT_UR_RATE,testMode:false,saveOwned:true};
+  }
   function pullOne(){
-    const isUR=rand()<UR_RATE;
+    const urRate=getGachaSettings().urRate;
+    const isUR=rand()<urRate;
     const pool=isUR?window.GACHA_UR_POOL:window.GACHA_N_POOL;
     return {unit:choice(pool),rarity:isUR?'UR':'N'};
+  }
+  function updateRateDisplay(screen){
+    if(!screen) return;
+    const cfg=getGachaSettings();
+    const percent=Math.round(cfg.urRate*100);
+    const mini=screen.querySelector('.gacha-rate-mini');
+    const copy=screen.querySelector('.gacha-copy span');
+    if(mini) mini.innerHTML=cfg.testMode?`<b>UR</b> ${percent}% <em>TEST</em>`:`<b>UR</b> 1%`;
+    if(copy) copy.textContent=cfg.testMode?`テスト設定 ／ UR ${percent}%`:'N【音符ロリータ】99% ／ UR【マンスリーソング】1%';
+    screen.classList.toggle('is-admin-test',cfg.testMode);
   }
 
   function ensureScreen(){
     let screen=document.getElementById('gachaScreen');
-    if(screen) return screen;
+    if(screen){updateRateDisplay(screen);return screen;}
     const shell=document.querySelector('.app-shell')||document.body;
     screen=document.createElement('section');
     screen.id='gachaScreen';
@@ -60,6 +74,7 @@
       else document.getElementById('homeScreen')?.removeAttribute('hidden');
     });
     screen.querySelector('#gachaPullBtn')?.addEventListener('click',runTenPull);
+    updateRateDisplay(screen);
     return screen;
   }
 
@@ -160,9 +175,11 @@
       return;
     }
 
+    const cfg=getGachaSettings();
     const button=screen.querySelector('#gachaPullBtn');
     const grid=screen.querySelector('#gachaEnvelopeGrid');
     const omen=screen.querySelector('#gachaOmen');
+    updateRateDisplay(screen);
     screen.classList.add('is-pulling');
     button.disabled=true;
     button.textContent='勧誘中…';
@@ -178,7 +195,7 @@
       if(result.rarity==='UR') owned.add(result.unit.id);
       results.push(result);
     }
-    if(typeof window.saveGachaOwned==='function') window.saveGachaOwned(owned);
+    if(cfg.saveOwned&&typeof window.saveGachaOwned==='function') window.saveGachaOwned(owned);
 
     results.forEach((result,index)=>grid.appendChild(makeEnvelope(result,index)));
     const slots=[...grid.querySelectorAll('.gacha-envelope-slot')];
@@ -203,7 +220,8 @@
 
     const newCount=results.filter(r=>r.isNew).length;
     const urCount=results.filter(r=>r.rarity==='UR').length;
-    omen.textContent=urCount?`UR ${urCount}枚${newCount?` ／ 新規 ${newCount}人`:''}`:'勧誘結果';
+    const tempNote=cfg.testMode&&!cfg.saveOwned?' ／ 部室未登録':'';
+    omen.textContent=urCount?`UR ${urCount}枚${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'勧誘結果';
     button.disabled=false;
     button.textContent='もう一度10連する';
     screen.classList.remove('is-pulling');
@@ -212,10 +230,13 @@
   window.openGachaScreen=function(){
     const screen=ensureScreen();
     hideOtherScreens();
+    updateRateDisplay(screen);
     screen.hidden=false;
     screen.querySelector('#gachaPullBtn')?.focus({preventScroll:true});
     window.scrollTo({top:0,behavior:'auto'});
   };
+
+  window.addEventListener('rhythmGameAdminSettingsChanged',()=>updateRateDisplay(document.getElementById('gachaScreen')));
 
   // 部室は初期N＋獲得済みURだけを表示する。
   function installOwnedRoomFilter(){
