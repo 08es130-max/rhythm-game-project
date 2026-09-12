@@ -1,4 +1,4 @@
-// Ver.0.4.2 home layout/navigation polish.
+// Ver.0.4.3: image-only home menu buttons.
 (function(){
   const homeMain=document.querySelector('.home-main');
   const updateBanner=document.getElementById('updateBanner');
@@ -16,17 +16,19 @@
 
   document.getElementById('homeTimingBtn')?.remove();
 
-  const version=window.APP_VERSION||'0.4.2';
-  function decorateButton(id,src,title,sub){
+  const version=window.APP_VERSION||'0.4.3';
+  function decorateButton(id,src,title){
     const btn=document.getElementById(id);
     if(!btn) return null;
-    btn.innerHTML=`<img class="home-menu-art" src="${src}?v=${version}" alt="" aria-hidden="true"><span class="home-menu-label">${title}</span><span class="home-menu-sub">${sub}</span>`;
+    btn.setAttribute('aria-label',title);
+    btn.title=title;
+    btn.innerHTML=`<img class="home-menu-art" src="${src}?v=${version}" alt="${title}">`;
     return btn;
   }
 
-  decorateButton('homeLiveBtn','assets/home-live-v042.webp','ライブ','曲を選んでプレイ');
-  decorateButton('homeSettingsBtn','assets/home-settings-v042.webp','設定','速度・判定・タイミング調整');
-  decorateButton('homeCharactersBtn','assets/home-room-v042.webp','部室','キャラクター設定');
+  decorateButton('homeLiveBtn','assets/home-live-v042.webp','ライブ');
+  decorateButton('homeSettingsBtn','assets/home-settings-v042.webp','設定');
+  decorateButton('homeCharactersBtn','assets/home-room-v042.webp','部室');
 
   let gacha=document.getElementById('homeGachaBtn');
   if(!gacha){
@@ -36,6 +38,6 @@
     gacha.type='button';
     menu.appendChild(gacha);
   }
-  decorateButton('homeGachaBtn','assets/home-gacha-v042.webp','勧誘','ガチャ・今後実装予定');
+  decorateButton('homeGachaBtn','assets/home-gacha-v042.webp','勧誘');
   gacha.addEventListener('click',()=>alert('勧誘は今後実装予定です。'));
 })();
