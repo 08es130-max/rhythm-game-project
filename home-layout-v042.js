@@ -1,4 +1,4 @@
-// Ver.0.4.3: image-only home menu buttons.
+// Ver.0.4.4: image-only square home menu buttons, fully visible without cropping.
 (function(){
   const homeMain=document.querySelector('.home-main');
   const updateBanner=document.getElementById('updateBanner');
@@ -16,7 +16,7 @@
 
   document.getElementById('homeTimingBtn')?.remove();
 
-  const version=window.APP_VERSION||'0.4.3';
+  const version=window.APP_VERSION||'0.4.4';
   function decorateButton(id,src,title){
     const btn=document.getElementById(id);
     if(!btn) return null;
