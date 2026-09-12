@@ -1,4 +1,4 @@
-// Ver.0.4.5: square image buttons + gacha + tappable announcement/version history.
+// Ver.0.4.6: square image buttons + gacha + tappable announcement/version history.
 (function(){
   const homeMain=document.querySelector('.home-main');
   const updateBanner=document.getElementById('updateBanner');
@@ -16,7 +16,7 @@
 
   document.getElementById('homeTimingBtn')?.remove();
 
-  const version=window.APP_VERSION||'0.4.5';
+  const version=window.APP_VERSION||'0.4.6';
   function decorateButton(id,src,title){
     const btn=document.getElementById(id);
     if(!btn) return null;
@@ -43,53 +43,49 @@
     if(typeof window.openGachaScreen==='function') window.openGachaScreen();
   });
 
+  // Correct the original collage assignment: both rows are read LEFT to RIGHT.
+  const monthlyAssetMap={mia:'lanzhu',rina:'shioriko',setsuna:'setsuna',emma:'emma',shioriko:'rina',lanzhu:'mia',ai:'kanata',shizuku:'karin',ayumu:'kasumi',kasumi:'ayumu',karin:'shizuku',kanata:'ai'};
+  const monthlyNames={ayumu:'上原歩夢',kasumi:'中須かすみ',shizuku:'桜坂しずく',karin:'朝香果林',ai:'宮下愛',kanata:'近江彼方',setsuna:'優木せつ菜',emma:'エマ・ヴェルデ',rina:'天王寺璃奈',shioriko:'三船栞子',mia:'ミア・テイラー',lanzhu:'鐘嵐珠'};
+  (window.GACHA_UR_POOL||[]).forEach(unit=>{
+    const key=unit.baseId;
+    if(!monthlyAssetMap[key]) return;
+    const icon=`assets/monthly-song/${monthlyAssetMap[key]}.webp?v=${version}`;
+    unit.name=`${monthlyNames[key]}【マンスリーソング】`;
+    unit.icon=icon;
+    unit.home=icon;
+    const libUnit=(window.CHARACTER_LIBRARY||[]).find(c=>c?.id===unit.id);
+    if(libUnit){libUnit.name=unit.name;libUnit.icon=icon;libUnit.home=icon;}
+  });
+
   const HISTORY=[
+    {version:'0.4.6',title:'勧誘演出・URキャラ対応を調整',items:[
+      'マンスリーソングURのキャラクター画像と名前の対応を、集合画像の左からの並びに合わせて修正しました。',
+      'Nはピンクの封筒、URはプレミアムな赤い封筒で表示されるように変更しました。',
+      'UR入り10連の特殊演出メッセージを画面中央に大きく表示するよう調整しました。'
+    ]},
     {version:'0.4.5',title:'勧誘（ガチャ）を実装',items:[
       '10連勧誘を追加しました。N【音符ロリータ】99%、UR【マンスリーソング】1%です。',
       'UR【マンスリーソング】12人を追加し、初獲得したメンバーは部室に追加されます。',
       '同じメンバーが重複して出ることはありますが、部室への登録はシリーズごとに1人です。',
       '封筒をモチーフにした開封演出と、URが含まれる時の開封前スペシャル演出を追加しました。'
     ]},
-    {version:'0.4.4',title:'ホーム画像ボタンの表示調整',items:[
-      'ライブ・設定・部室・勧誘の4つの画像ボタンを正方形に揃えました。',
-      '画像が見切れず全体表示されるように調整しました。'
-    ]},
-    {version:'0.4.3',title:'画像そのものをホームボタン化',items:[
-      'ホームの4メニューを画像そのものがボタンになる表示へ変更しました。',
-      '重複していた文字ラベルとボタン内の余白を削除しました。'
-    ]},
-    {version:'0.4.2',title:'横向きホーム画面を再構成',items:[
-      '横向きスマホで左半分を立ち絵、右半分をお知らせとメニューに再構成しました。',
-      'ホームから判定調整を外し、設定内から開く形に整理しました。',
-      'キャラ変更を「部室」に変更し、「勧誘」をメニューとして追加しました。',
-      'ライブ・設定・部室・勧誘に専用イラストアイコンを追加しました。'
-    ]},
-    {version:'0.4.1',title:'リザルト・ホーム会話を強化',items:[
-      'リザルトにランク、FULL COMBO、MAX COMBO、曲ごとのハイスコア、NEW RECORD表示を追加しました。',
-      'ホームの栞子にランダム・時間帯・連続タップ・ライブ結果連動のセリフを追加しました。',
-      'ホームの吹き出しを追加し、キャラクター連動できる構造にしました。'
-    ]},
-    {version:'0.4.0',title:'内蔵ボイス再生方式を変更',items:[
-      '内蔵6音声を個別データとして扱う構成へ変更し、端末追加音声に近い再生経路へ整理しました。'
-    ]}
+    {version:'0.4.4',title:'ホーム画像ボタンの表示調整',items:['ライブ・設定・部室・勧誘の4つの画像ボタンを正方形に揃えました。','画像が見切れず全体表示されるように調整しました。']},
+    {version:'0.4.3',title:'画像そのものをホームボタン化',items:['ホームの4メニューを画像そのものがボタンになる表示へ変更しました。','重複していた文字ラベルとボタン内の余白を削除しました。']},
+    {version:'0.4.2',title:'横向きホーム画面を再構成',items:['横向きスマホで左半分を立ち絵、右半分をお知らせとメニューに再構成しました。','ホームから判定調整を外し、設定内から開く形に整理しました。','キャラ変更を「部室」に変更し、「勧誘」をメニューとして追加しました。','ライブ・設定・部室・勧誘に専用イラストアイコンを追加しました。']},
+    {version:'0.4.1',title:'リザルト・ホーム会話を強化',items:['リザルトにランク、FULL COMBO、MAX COMBO、曲ごとのハイスコア、NEW RECORD表示を追加しました。','ホームの栞子にランダム・時間帯・連続タップ・ライブ結果連動のセリフを追加しました。','ホームの吹き出しを追加し、キャラクター連動できる構造にしました。']},
+    {version:'0.4.0',title:'内蔵ボイス再生方式を変更',items:['内蔵6音声を個別データとして扱う構成へ変更し、端末追加音声に近い再生経路へ整理しました。']}
   ];
 
   if(updateBanner){
     const latest=HISTORY[0];
     const head=updateBanner.querySelector('.update-head');
     const text=updateBanner.querySelector('.update-text');
-    if(head){
-      head.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span class="notice-title">お知らせ</span><span class="notice-version">Ver.${latest.version}</span>`;
-    }
+    if(head) head.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span class="notice-title">お知らせ</span><span class="notice-version">Ver.${latest.version}</span>`;
     if(text) text.textContent=latest.items.join(' ');
     updateBanner.setAttribute('aria-label','お知らせ・更新履歴を開く');
 
     let overlay=null;
-    const closeHistory=()=>{
-      if(!overlay) return;
-      overlay.hidden=true;
-      document.body.classList.remove('notice-history-open');
-    };
+    const closeHistory=()=>{if(!overlay)return;overlay.hidden=true;document.body.classList.remove('notice-history-open');};
     const openHistory=()=>{
       if(!overlay){
         overlay=document.createElement('div');
@@ -105,15 +101,13 @@
           list.appendChild(card);
         });
         overlay.querySelector('.notice-history-close')?.addEventListener('click',closeHistory);
-        overlay.addEventListener('click',e=>{if(e.target===overlay) closeHistory();});
-        document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden) closeHistory();});
+        overlay.addEventListener('click',e=>{if(e.target===overlay)closeHistory();});
+        document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)closeHistory();});
       }
       overlay.hidden=false;
       document.body.classList.add('notice-history-open');
     };
     updateBanner.addEventListener('click',openHistory);
-    updateBanner.addEventListener('keydown',e=>{
-      if(e.key==='Enter'||e.key===' '){e.preventDefault();openHistory();}
-    });
+    updateBanner.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openHistory();}});
   }
 })();
