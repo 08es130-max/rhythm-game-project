@@ -1,8 +1,8 @@
-// Ver.0.5.5: tap-position hearts + secret-mode expression switching for Shioriko.
+// Ver.0.5.6: tap-position hearts + secret-mode and dialogue-linked expression switching for Shioriko.
 (function(){
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
-  const v=window.APP_VERSION||'0.5.5';
+  const v=window.APP_VERSION||'0.5.6';
   const EXPR={
     dere:`assets/shioriko-expressions/dere.webp?v=${v}`,
     yandere:`assets/shioriko-expressions/yandere.webp?v=${v}`,
@@ -19,10 +19,15 @@
   let modeTimer=0;
   let normalSrc='';
   let internalSwap=false;
+  let dialogueExpression='normal';
 
   function currentMode(){
     const value=localStorage.getItem(MODE_KEY)||'normal';
     return VALID.includes(value)?value:'normal';
+  }
+  function effectiveMode(){
+    const mode=currentMode();
+    return mode==='normal'?dialogueExpression:mode;
   }
   function isShioriko(){
     const id=String(card.dataset.characterId||localStorage.getItem('rhythmGame.homeCharacter')||'default');
@@ -47,7 +52,7 @@
     }else if(current&&!isExpressionSrc(current)) normalSrc=current;
   }
   function applyMode(animate=false){
-    const mode=isShioriko()?currentMode():'normal';
+    const mode=isShioriko()?effectiveMode():'normal';
     card.dataset.shioMode=mode;
     applyExpression(mode);
     if(animate){
@@ -67,7 +72,7 @@
     reactTimer=setTimeout(()=>card.classList.remove('shio-react'),950);
   }
   function spawnTapHearts(e){
-    if(!isShioriko()||currentMode()!=='dere') return;
+    if(!isShioriko()||effectiveMode()!=='dere') return;
     const rect=card.getBoundingClientRect();
     const x=Math.max(8,Math.min(rect.width-8,e.clientX-rect.left));
     const y=Math.max(8,Math.min(rect.height-8,e.clientY-rect.top));
@@ -84,18 +89,34 @@
       heart.addEventListener('animationend',()=>heart.remove(),{once:true});
     }
   }
+
   const initial=image.getAttribute('src')||'';
   if(initial&&!isExpressionSrc(initial)) normalSrc=initial;
+
   card.addEventListener('pointerdown',(e)=>{applyMode(false);spawnTapHearts(e);react();},{passive:true});
-  window.addEventListener('rhythmGameShiorikoModeChanged',()=>applyMode(true));
+
+  window.addEventListener('rhythmGameShiorikoDialogueExpression',e=>{
+    const requested=String(e?.detail?.mode||'normal');
+    dialogueExpression=VALID.includes(requested)?requested:'normal';
+    if(currentMode()!=='normal') dialogueExpression='normal';
+    applyMode(true);
+  });
+
+  window.addEventListener('rhythmGameShiorikoModeChanged',()=>{
+    dialogueExpression='normal';
+    applyMode(true);
+  });
+
   const originalSet=window.setShiorikoSecretMode;
   if(typeof originalSet==='function'){
     window.setShiorikoSecretMode=function(mode){
+      dialogueExpression='normal';
       const result=originalSet(mode);
       setTimeout(()=>applyMode(true),0);
       return result;
     };
   }
+
   const observer=new MutationObserver((records)=>{
     if(internalSwap) return;
     const srcChanged=records.some(r=>r.target===image&&r.attributeName==='src');
@@ -107,6 +128,7 @@
   });
   observer.observe(card,{attributes:true,attributeFilter:['data-character-id']});
   observer.observe(image,{attributes:true,attributeFilter:['src']});
+
   Object.values(EXPR).forEach(src=>{const p=new Image();p.src=src;});
   applyMode(false);
 })();
