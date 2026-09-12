@@ -11,20 +11,20 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>ラブフェス！</title>
-<link rel="manifest" href="manifest.json?v=0.5.0" />
-<link rel="apple-touch-icon" href="icon-180-v030.png?v=0.5.0" />
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192-v030.png?v=0.5.0" />
-<link rel="stylesheet" href="styles.css?v=0.5.0" />
-<link rel="stylesheet" href="touch-guards.css?v=0.5.0" />
-<link rel="stylesheet" href="pause.css?v=0.5.0" />
-<link rel="stylesheet" href="calibration.css?v=0.5.0" />
-<link rel="stylesheet" href="home.css?v=0.5.0" />
-<link rel="stylesheet" href="home-result-v041.css?v=0.5.0" />
-<link rel="stylesheet" href="home-layout-v042.css?v=0.5.0" />
-<link rel="stylesheet" href="hidden-admin-v048.css?v=0.5.0" />
-<link rel="stylesheet" href="gacha-v045.css?v=0.5.0" />
+<link rel="manifest" href="manifest.json?v=0.5.1" />
+<link rel="apple-touch-icon" href="icon-180-v030.png?v=0.5.1" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192-v030.png?v=0.5.1" />
+<link rel="stylesheet" href="styles.css?v=0.5.1" />
+<link rel="stylesheet" href="touch-guards.css?v=0.5.1" />
+<link rel="stylesheet" href="pause.css?v=0.5.1" />
+<link rel="stylesheet" href="calibration.css?v=0.5.1" />
+<link rel="stylesheet" href="home.css?v=0.5.1" />
+<link rel="stylesheet" href="home-result-v041.css?v=0.5.1" />
+<link rel="stylesheet" href="home-layout-v042.css?v=0.5.1" />
+<link rel="stylesheet" href="hidden-admin-v048.css?v=0.5.1" />
+<link rel="stylesheet" href="gacha-v045.css?v=0.5.1" />
 <script>
-window.APP_VERSION = '0.5.0';
+window.APP_VERSION = '0.5.1';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -44,14 +44,14 @@ window.location.replace(url.toString());
 <section id="homeScreen" class="app-screen home-screen">
 <div class="home-topbar">
 <div><h1 class="home-title">ラブフェス！</h1><p class="home-subtitle">LIVE HOME</p></div>
-<div class="home-version">Ver. 0.5.0</div>
+<div class="home-version">Ver. 0.5.1</div>
 </div>
 <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.5.0 アップデート</span></div>
-<p class="update-text">ホームキャラクター会話と内部設定まわりを調整しました。</p>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.5.1 アップデート</span></div>
+<p class="update-text">勧誘画面への遷移、マンスリーソングの表示、ホーム会話を調整しました。</p>
 </div>
 <div class="home-main">
-<div class="home-character-card" data-character-id="default"><img class="home-character-img" src="icon-512-v030.png?v=0.5.0" alt="ホームキャラクター" /></div>
+<div class="home-character-card" data-character-id="default"><img class="home-character-img" src="icon-512-v030.png?v=0.5.1" alt="ホームキャラクター" /></div>
 <div class="home-menu">
 <button id="homeLiveBtn" class="home-menu-btn home-menu-live" type="button">ライブ<span>曲・譜面を選んでプレイ</span></button>
 <button id="homeSettingsBtn" class="home-menu-btn home-menu-settings" type="button">設定<span>速度・判定強化など</span></button>
@@ -63,7 +63,7 @@ window.location.replace(url.toString());
 <section id="liveScreen" class="app-screen live-screen" hidden>
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
-<div class="version-badge" aria-label="app version">Ver. 0.5.0</div>
+<div class="version-badge" aria-label="app version">Ver. 0.5.1</div>
 <h2>ライブ選択</h2><p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 <div class="button-row"><button id="spicaPresetBtn" type="button">スピカテリブル</button><button id="demoBtn">テスト譜面を使う</button></div>
 <div class="file-row">
@@ -101,35 +101,36 @@ window.location.replace(url.toString());
 <div class="calibration-card"><h2>判定タイミング調整</h2><p class="calibration-note">中央の丸にノーツが重なった瞬間にタップしてください。12回の結果から、この端末向けの補正値を計算します。</p><div class="calibration-info"><div>現在: <strong id="calibrationCurrent">0 ms</strong></div><div>推奨: <strong id="calibrationRecommended">未測定</strong></div><div>回数: <strong id="calibrationProgress">0 / 12</strong></div></div><div id="calibrationStage" class="calibration-stage" aria-label="判定タイミング調整エリア"><div class="calibration-lane"></div><div class="calibration-target"></div><div id="calibrationNote" class="calibration-falling-note" hidden></div></div><div id="calibrationStatus" class="calibration-status">STARTを押して開始してください。</div><div class="calibration-actions"><button id="calibrationStartBtn" class="calibration-start" type="button">START</button><button id="calibrationSaveBtn" class="calibration-save" type="button" disabled>この設定を使う</button><button id="calibrationRetryBtn" class="calibration-retry" type="button" disabled>もう一度</button><button id="calibrationBackBtn" class="calibration-back" type="button">設定に戻る</button></div></div>
 </section>
 <audio id="audio" preload="auto"></audio>
-<script src="character-data.js?v=0.5.0"></script>
-<script src="character-overrides.js?v=0.5.0"></script>
-<script src="character-default-override.js?v=0.5.0"></script>
-<script src="character-series-overrides.js?v=0.5.0"></script>
-<script src="character-fixes-v037.js?v=0.5.0"></script>
-<script src="gacha-data-v045.js?v=0.5.0"></script>
-<script src="app.js?v=0.5.0"></script>
-<script src="settings.js?v=0.5.0"></script>
-<script src="tap-boost.js?v=0.5.0"></script>
-<script src="voice-events.js?v=0.5.0"></script>
-<script src="voice-manager.js?v=0.5.0"></script>
-<script src="calibration.js?v=0.5.0"></script>
-<script src="touch-guards.js?v=0.5.0"></script>
-<script src="pause.js?v=0.5.0"></script>
-<script src="home.js?v=0.5.0"></script>
-<script src="song-presets.js?v=0.5.0"></script>
-<script src="audio-fixes.js?v=0.5.0"></script>
-<script src="voice-direct.js?v=0.5.0"></script>
-<script src="voice-fullhouse-v040.js?v=0.5.0"></script>
-<script src="voice-nanisore-v040.js?v=0.5.0"></script>
-<script src="voice-dareka-v040.js?v=0.5.0"></script>
-<script src="voice-nico-v040.js?v=0.5.0"></script>
-<script src="voice-ieni-v040.js?v=0.5.0"></script>
-<script src="voice-yohane-v040.js?v=0.5.0"></script>
-<script src="voice-independent-v040.js?v=0.5.0"></script>
-<script src="home-result-v049.js?v=0.5.0"></script>
-<script src="home-layout-v042.js?v=0.5.0"></script>
-<script src="hidden-admin-v048.js?v=0.5.0"></script>
-<script src="shioriko-secret-modes-v050.js?v=0.5.0"></script>
-<script src="gacha-v045.js?v=0.5.0"></script>
+<script src="character-data.js?v=0.5.1"></script>
+<script src="character-overrides.js?v=0.5.1"></script>
+<script src="character-default-override.js?v=0.5.1"></script>
+<script src="character-series-overrides.js?v=0.5.1"></script>
+<script src="character-fixes-v037.js?v=0.5.1"></script>
+<script src="gacha-data-v045.js?v=0.5.1"></script>
+<script src="app.js?v=0.5.1"></script>
+<script src="settings.js?v=0.5.1"></script>
+<script src="tap-boost.js?v=0.5.1"></script>
+<script src="voice-events.js?v=0.5.1"></script>
+<script src="voice-manager.js?v=0.5.1"></script>
+<script src="calibration.js?v=0.5.1"></script>
+<script src="touch-guards.js?v=0.5.1"></script>
+<script src="pause.js?v=0.5.1"></script>
+<script src="home.js?v=0.5.1"></script>
+<script src="song-presets.js?v=0.5.1"></script>
+<script src="audio-fixes.js?v=0.5.1"></script>
+<script src="voice-direct.js?v=0.5.1"></script>
+<script src="voice-fullhouse-v040.js?v=0.5.1"></script>
+<script src="voice-nanisore-v040.js?v=0.5.1"></script>
+<script src="voice-dareka-v040.js?v=0.5.1"></script>
+<script src="voice-nico-v040.js?v=0.5.1"></script>
+<script src="voice-ieni-v040.js?v=0.5.1"></script>
+<script src="voice-yohane-v040.js?v=0.5.1"></script>
+<script src="voice-independent-v040.js?v=0.5.1"></script>
+<script src="home-result-v049.js?v=0.5.1"></script>
+<script src="home-layout-v042.js?v=0.5.1"></script>
+<script src="hidden-admin-v048.js?v=0.5.1"></script>
+<script src="shioriko-secret-modes-v050.js?v=0.5.1"></script>
+<script src="gacha-v045.js?v=0.5.1"></script>
+<script src="fixes-v051.js?v=0.5.1"></script>
 </body>
 </html>
