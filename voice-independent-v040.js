@@ -61,3 +61,10 @@
     try{ if(typeof audioCtx!=='undefined'&&audioCtx?.state==='suspended') audioCtx.resume().catch(()=>{}); }catch(_){}
   },true);
 })();
+
+// Load result enhancements with a separate cache-busted file.
+(function(){
+  const script=document.createElement('script');
+  script.src='result-enhancements-v041.js?v=0.4.1&t='+Date.now();
+  document.body.appendChild(script);
+})();
