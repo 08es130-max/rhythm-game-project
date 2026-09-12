@@ -1,4 +1,4 @@
-// Ver.0.5.5: tap-position heart origin for Shioriko secret modes.
+// Ver.0.5.5: tap-position hearts + secret-mode expression switching for Shioriko.
 (function(){
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
@@ -8,6 +8,8 @@
 
   let reactTimer=0;
   let modeTimer=0;
+  let normalSrc='';
+  let internalSwap=false;
 
   function currentMode(){
     const value=localStorage.getItem(MODE_KEY)||'normal';
@@ -21,9 +23,34 @@
     return String(unit?.name||'').replace(/【[^】]+】$/u,'')==='三船栞子';
   }
 
+  function isExpressionSrc(src){
+    return String(src||'').includes('assets/shioriko-expressions/');
+  }
+
+  function setImageSrc(src){
+    if(!src||image.getAttribute('src')===src) return;
+    internalSwap=true;
+    image.setAttribute('src',src);
+    requestAnimationFrame(()=>{internalSwap=false;});
+  }
+
+  function applyExpression(mode){
+    const map=window.SHIO_EXPR_IMAGES||{};
+    const current=image.getAttribute('src')||'';
+    if(isShioriko()&&mode!=='normal'&&map[mode]){
+      if(current&&!isExpressionSrc(current)) normalSrc=current;
+      setImageSrc(map[mode]);
+    }else if(isExpressionSrc(current)&&normalSrc){
+      setImageSrc(normalSrc);
+    }else if(current&&!isExpressionSrc(current)){
+      normalSrc=current;
+    }
+  }
+
   function applyMode(animate=false){
     const mode=isShioriko()?currentMode():'normal';
     card.dataset.shioMode=mode;
+    applyExpression(mode);
     if(animate){
       clearTimeout(modeTimer);
       card.classList.remove('shio-mode-change');
@@ -61,6 +88,9 @@
     }
   }
 
+  const initial=image.getAttribute('src')||'';
+  if(initial&&!isExpressionSrc(initial)) normalSrc=initial;
+
   card.addEventListener('pointerdown',(e)=>{
     applyMode(false);
     spawnTapHearts(e);
@@ -77,8 +107,18 @@
     };
   }
 
-  const observer=new MutationObserver(()=>applyMode(false));
+  const observer=new MutationObserver((records)=>{
+    if(internalSwap) return;
+    const srcChanged=records.some(r=>r.target===image&&r.attributeName==='src');
+    if(srcChanged){
+      const src=image.getAttribute('src')||'';
+      if(src&&!isExpressionSrc(src)) normalSrc=src;
+    }
+    setTimeout(()=>applyMode(false),0);
+  });
   observer.observe(card,{attributes:true,attributeFilter:['data-character-id']});
+  observer.observe(image,{attributes:true,attributeFilter:['src']});
 
+  Object.values(window.SHIO_EXPR_IMAGES||{}).forEach(src=>{const p=new Image();p.src=src;});
   applyMode(false);
 })();
