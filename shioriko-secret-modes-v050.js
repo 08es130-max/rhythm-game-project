@@ -1,4 +1,4 @@
-// Ver.0.5.1: secret Shioriko dialogue modes, kept close to Shioriko's calm and proper voice.
+// Ver.0.5.6: supervised Shioriko secret-mode dialogue + normal-mode surprise expressions.
 (function(){
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
@@ -13,11 +13,11 @@
       'こうしてあなたの顔を見ると安心します。……私にとって、ずいぶん大切な時間になっているようです。',
       '今日はもう少しこちらにいてください。あなたと過ごせる時間は、できるだけ長い方が嬉しいので。',
       '頑張ったのですね。では今日は、私がたくさん褒めて差し上げます。遠慮は不要ですよ。',
-      'あなたのことは、私が思っていた以上に大切みたいです。……今さら気付いたのか、と笑わないでくださいね。',
+      'あなたのことは、私が思っていた以上に大切みたいです。……笑わないでくださいね。',
       '私のそばにいてくださると落ち着きます。できれば……これからも、そうしていただけると嬉しいです。',
       'あなたが楽しそうにしていると、私まで嬉しくなるんです。ですから、その顔をもっと見せてください。',
       '今日はライブより先に、少しお話ししませんか？　せっかく来てくださったのですから。',
-      '好きですよ。……はい、きちんと言いました。何度も言わせないでください、恥ずかしいので。',
+      '好きですよ。大好きです。……はい、きちんと言いました。何度も言わせないでください、恥ずかしいので。',
       'もう帰るのですか？　……そうですか。では、あと少しだけ。少しくらいわがままを言ってもいいでしょう？',
       'あなたが来てくださるのを楽しみにしている自分がいます。……困りましたね、完全に習慣になってしまいました。',
       '今日は私に甘えても構いませんよ。あなたが頼ってくださるのは、嫌ではありませんから。'
@@ -36,7 +36,7 @@
     ]),
 
     yandere:set([
-      'おかえりなさい。……今日は少し遅かったですね。いえ、責めているわけではありません。ただ、気になっていただけです。',
+      'おかえりなさい。……今日は少し遅かったですね。いえ、責めているわけではありません。',
       'また来てくださって安心しました。あなたが来ないと、どうしても落ち着かないものですから。',
       '今日は私のところへ戻ってきてくださったのですね。……ふふ、それなら何も問題ありません。',
       '他のことを楽しむのも構いません。でも最後には、きちんと私のところへ戻ってきてくださいね。',
@@ -47,7 +47,8 @@
       '私が一番でなくても構いません。……今は、まだ。',
       'こうして近くにいると安心します。ですから、もう少しだけ離れないでください。',
       'あなたの好きなものも、苦手なものも、もっと知りたいです。全部覚えておきたいので。',
-      '大丈夫ですよ。私はいつでもここにいます。あなたが戻ってくるまで、ずっと待てますから。'
+      '大丈夫ですよ。私はいつでもここにいます。あなたが戻ってくるまで、ずっと待てますから。',
+      '私のこと、好きって言いましたよね？　なぜ他の女性のことを見ているのですか？'
     ],[
       'そんなに何度も確認しなくても、私はここにいますよ。……あなたが離れない限りは。',
       'ふふ、そんなに呼ばれると嬉しくなってしまいます。今日は私だけを見ていてくださいね。'
@@ -68,12 +69,12 @@
       '集中力が切れています。自覚がないのなら、なおさら問題ですよ。',
       '下手なのは構いません。ですが、考えずに同じ失敗を繰り返すのは感心しませんね。',
       '褒めてほしいのですか？　では、褒めるに値する結果を持ってきてください。',
-      'また甘えに来たのですね。まったく……手のかかる方です。見捨てるつもりはありませんが。',
-      'そのミスは偶然ではありません。今の実力です。まずはそこを認めるところからですね。'
+      'そのミスは偶然ではありません。今の実力です。まずはそこを認めるところからですね。',
+      '少しは頭を使われてはいかがですか？'
     ],[
       '何度押しても腕前は上がりませんよ。練習する場所を間違えています。',
       'しつこいですね。そこまで構ってほしいのなら、せめて次は良い結果を見せてください。',
-      'またですか？　……本当に、手のかかる方ですね。'
+      '触らないでください。訴えますよ。'
     ],[
       '……フルコンボですか。やればできるではありませんか。普段からそれくらい集中してください。',
       'ようやく文句のない結果ですね。今回は素直に評価します。お見事です。'
@@ -129,6 +130,9 @@
     const m=localStorage.getItem(MODE_KEY)||'normal';
     return VALID.includes(m)?m:'normal';
   }
+  function poolFor(s,kind='normal'){
+    return kind==='rapidTap'?s.rapid:kind==='fullCombo'?s.fullCombo:kind==='newRecord'?s.newRecord:kind==='sRank'?s.sRank:kind==='retry'?s.retry:s.normal;
+  }
   function pick(pool){
     if(!pool?.length) return '';
     const choices=pool.filter(x=>x!==last);
@@ -137,19 +141,34 @@
     last=text;
     return text;
   }
-  function show(kind='normal'){
-    const mode=currentMode();
+  function setExpression(mode){
+    window.dispatchEvent(new CustomEvent('rhythmGameShiorikoDialogueExpression',{detail:{mode}}));
+  }
+  function showFrom(mode,kind='normal'){
     const s=sets[mode];
     if(!s) return false;
-    const pool=kind==='rapidTap'?s.rapid:kind==='fullCombo'?s.fullCombo:kind==='newRecord'?s.newRecord:kind==='sRank'?s.sRank:kind==='retry'?s.retry:s.normal;
-    const text=pick(pool);
+    const text=pick(poolFor(s,kind));
     const bubble=document.getElementById('homeDialogue');
     if(!text||!bubble) return false;
     bubble.querySelector('.home-dialogue-name')?.replaceChildren(document.createTextNode('三船栞子'));
     bubble.querySelector('.home-dialogue-text')?.replaceChildren(document.createTextNode(text));
+    setExpression(mode);
     return true;
   }
+  function show(kind='normal'){
+    const mode=currentMode();
+    if(mode==='normal') return false;
+    return showFrom(mode,kind);
+  }
   function isSpecial(){return currentMode()!=='normal'&&!!sets[currentMode()];}
+  function tryNormalSurprise(kind='normal'){
+    if(currentMode()!=='normal') return false;
+    const roll=Math.random();
+    if(roll<0.10) return showFrom('dere',kind);
+    if(roll<0.20) return showFrom('clumsy',kind);
+    setExpression('normal');
+    return false;
+  }
 
   if(homeCard){
     homeCard.addEventListener('click',e=>{
@@ -162,18 +181,30 @@
 
   const originalShow=window.showLoveFesHomeDialogue;
   window.showLoveFesHomeDialogue=function(kind){
-    if(isSpecial()&&show(kind||'normal')) return;
+    const k=kind||'normal';
+    if(isSpecial()&&show(k)) return;
+    if(!isSpecial()&&tryNormalSurprise(k)) return;
     if(typeof originalShow==='function') originalShow(kind);
   };
   window.setShiorikoSecretMode=function(mode){
     if(!VALID.includes(mode)) mode='normal';
     localStorage.setItem(MODE_KEY,mode);
-    setTimeout(()=>{if(mode!=='normal') show('normal');else if(typeof originalShow==='function') originalShow('normal');},0);
+    setExpression(mode);
+    setTimeout(()=>{
+      if(mode!=='normal') show('normal');
+      else if(typeof originalShow==='function') originalShow('normal');
+    },0);
   };
   window.getShiorikoSecretMode=currentMode;
 
-  document.getElementById('resultHomeBtn')?.addEventListener('click',()=>setTimeout(()=>{if(isSpecial())show('normal');},20));
-  document.getElementById('retryBtn')?.addEventListener('click',()=>setTimeout(()=>{if(isSpecial())show('retry');},20));
+  document.getElementById('resultHomeBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    if(isSpecial()) show('normal');
+    else if(!tryNormalSurprise('normal')&&typeof originalShow==='function') originalShow('normal');
+  },20));
+  document.getElementById('retryBtn')?.addEventListener('click',()=>setTimeout(()=>{
+    if(isSpecial()) show('retry');
+    else tryNormalSurprise('retry');
+  },20));
 
   function injectAdmin(){
     const room=document.getElementById('hiddenAdminRoom');
@@ -183,7 +214,7 @@
     if(old) old.remove();
     const card=document.createElement('div');
     card.className='hidden-admin-card';
-    card.innerHTML=`<div class="hidden-admin-row"><div><strong>栞子 セリフモード</strong><small>栞子らしさを保ったまま、少し振り切れたホーム会話に切り替えます。</small></div><select id="hiddenAdminShiorikoMode"><option value="normal">通常</option><option value="dere">超絶デレデレ</option><option value="yandere">ヤンデレ</option><option value="scold">罵倒</option><option value="drunk">酔っ払い</option><option value="clumsy">ポンコツ</option><option value="casual">敬語解除</option></select></div>`;
+    card.innerHTML=`<div class="hidden-admin-row"><div><strong>栞子 セリフモード</strong><small>栞子らしさを保ったまま、少し振り切れたホーム会話に切り替えます。通常モードでも低確率でデレ・ポンコツ反応が出ます。</small></div><select id="hiddenAdminShiorikoMode"><option value="normal">通常</option><option value="dere">超絶デレデレ</option><option value="yandere">ヤンデレ</option><option value="scold">罵倒</option><option value="drunk">酔っ払い</option><option value="clumsy">ポンコツ</option><option value="casual">敬語解除</option></select></div>`;
     const status=body.querySelector('.hidden-admin-status');
     body.insertBefore(card,status||body.firstChild);
     const select=card.querySelector('select');select.value=currentMode();
