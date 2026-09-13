@@ -1,4 +1,4 @@
-// Ver.0.5.7: keep the normal standing art fixed and overlay only Shioriko's facial-expression region.
+// Ver.0.5.7 hotfix: keep the normal standing art fixed and overlay transparent expression assets without clipping.
 (function(){
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
@@ -7,9 +7,9 @@
     dere:`assets/shioriko-expressions/dere.webp?v=${v}`,
     yandere:`assets/shioriko-expressions/yandere.webp?v=${v}`,
     scold:`assets/shioriko-expressions/scold.webp?v=${v}`,
-    drunk:`assets/shioriko-expressions/drunk.webp?v=${v}`,
-    clumsy:`assets/shioriko-expressions/clumsy.webp?v=${v}`,
-    casual:`assets/shioriko-expressions/casual.webp?v=${v}`
+    drunk:`assets/shioriko-expressions/drunk.png?v=${v}-png1`,
+    clumsy:`assets/shioriko-expressions/clumsy.png?v=${v}-png1`,
+    casual:`assets/shioriko-expressions/casual.png?v=${v}-png1`
   };
   const card=document.querySelector('.home-character-card');
   const image=card?.querySelector('.home-character-img');
@@ -23,6 +23,10 @@
     overlay.setAttribute('aria-hidden','true');
     image.insertAdjacentElement('afterend',overlay);
   }
+  // Generated assets already have transparency. Do not mask/crop them in CSS/JS.
+  overlay.style.webkitMaskImage='none';
+  overlay.style.maskImage='none';
+  overlay.style.clipPath='none';
 
   let reactTimer=0;
   let modeTimer=0;
