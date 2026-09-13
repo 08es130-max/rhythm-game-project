@@ -1,11 +1,11 @@
-// Ver.0.6.9: optimize live rendering for dense charts on mobile/PWA.
+// Ver.0.7.0: second-stage mobile performance tuning + reliable pause button.
 (function(){
-  const VERSION='0.6.9';
+  const VERSION='0.7.0';
   let cachedGeometry=null;
-  let cachedW=0;
-  let cachedH=0;
   let noteRef=null;
   let firstActiveIndex=0;
+  const notePool=[];
+  const pooled=new WeakSet();
 
   function computeGeometry(){
     const w=game.clientWidth;
@@ -19,39 +19,55 @@
       const angle=Math.PI+(Math.PI*i/8);
       return {x:centerX+Math.cos(angle)*radiusX,y:centerY-Math.sin(angle)*radiusY};
     });
-    cachedW=w;
-    cachedH=h;
     cachedGeometry={spawn,targetPoints};
     return cachedGeometry;
   }
 
-  function liveGeometry(){
-    if(!cachedGeometry)return computeGeometry();
-    return cachedGeometry;
-  }
-
-  function invalidateGeometry(){
-    cachedGeometry=null;
-    requestAnimationFrame(()=>{
-      computeGeometry();
-      try{layoutPlayfield();}catch(_){}
-    });
-  }
-
-  if(typeof ResizeObserver!=='undefined'){
-    try{new ResizeObserver(invalidateGeometry).observe(game);}catch(_){}
-  }
+  function liveGeometry(){return cachedGeometry||computeGeometry();}
+  function invalidateGeometry(){cachedGeometry=null;}
+  window.addEventListener('resize',invalidateGeometry,{passive:true});
   window.addEventListener('orientationchange',invalidateGeometry,{passive:true});
-
-  // Replaces the original geometry helper so the animation loop no longer
-  // reads layout and rebuilds all 9 target positions on every frame.
   try{getGeometry=liveGeometry;}catch(_){}
 
-  function resetCursorIfNeeded(){
-    if(noteRef!==activeNotes){
-      noteRef=activeNotes;
-      firstActiveIndex=0;
+  // Pool note elements to avoid repeated allocation/removal and iOS GC spikes.
+  function pooledCreateNoteEl(){
+    let el=notePool.pop();
+    if(!el){
+      el=document.createElement('div');
+      el.className='note';
     }
+    el.className='note';
+    el.style.display='block';
+    el.style.left='0px';
+    el.style.top='0px';
+    el.style.opacity='';
+    el.style.filter='';
+    el.style.transform='translate3d(-9999px,-9999px,0)';
+    el.style.willChange='transform';
+    el.style.backfaceVisibility='hidden';
+    if(el.parentNode!==notesLayer)notesLayer.appendChild(el);
+    return el;
+  }
+
+  function pooledRemoveNoteEl(note){
+    const el=note?.el;
+    if(!el)return;
+    note.el=null;
+    el.style.display='none';
+    el.classList.remove('missed');
+    if(!pooled.has(el)){
+      pooled.add(el);
+      if(notePool.length<64)notePool.push(el);
+      else el.remove();
+    }
+  }
+  try{createNoteEl=pooledCreateNoteEl;}catch(_){}
+  try{removeNoteEl=pooledRemoveNoteEl;}catch(_){}
+  window.createNoteEl=pooledCreateNoteEl;
+  window.removeNoteEl=pooledRemoveNoteEl;
+
+  function resetCursorIfNeeded(){
+    if(noteRef!==activeNotes){noteRef=activeNotes;firstActiveIndex=0;}
   }
 
   function retireOldNotes(now){
@@ -60,23 +76,17 @@
       if(n.finished){firstActiveIndex++;continue;}
       const dt=n.timeMs-now;
       if(!n.hit&&!n.missRegistered&&dt<-MISS_WINDOW)registerMiss(n);
-      if(n.hit){n.finished=true;removeNoteEl(n);firstActiveIndex++;continue;}
-      if(dt<-TRAIL_MS){removeNoteEl(n);n.finished=true;firstActiveIndex++;continue;}
+      if(n.hit){n.finished=true;pooledRemoveNoteEl(n);firstActiveIndex++;continue;}
+      if(dt<-TRAIL_MS){pooledRemoveNoteEl(n);n.finished=true;firstActiveIndex++;continue;}
       break;
     }
   }
 
-  function moveNoteWithTransform(n,x,y,scale){
-    if(!n.el)n.el=createNoteEl();
-    if(n.el.dataset.gpu069!=='1'){
-      n.el.dataset.gpu069='1';
-      n.el.style.left='0px';
-      n.el.style.top='0px';
-      n.el.style.willChange='transform';
-      n.el.style.backfaceVisibility='hidden';
-    }
+  function moveNote(n,x,y,scale){
+    if(!n.el)n.el=pooledCreateNoteEl();
     n.el.style.transform=`translate3d(${x}px,${y}px,0) translate(-50%,-50%) scale(${scale})`;
-    if(n.missRegistered!==n.el.classList.contains('missed'))n.el.classList.toggle('missed',n.missRegistered);
+    const missed=n.missRegistered;
+    if(missed!==n.el.classList.contains('missed'))n.el.classList.toggle('missed',missed);
   }
 
   function optimizedLoop(){
@@ -85,26 +95,21 @@
     const now=currentMs();
     const leadMs=1600/Number(speed.value);
     const {spawn,targetPoints}=liveGeometry();
-
     retireOldNotes(now);
 
-    // activeNotes is time-sorted. Only touch notes currently near the screen;
-    // do not scan all ~1350 notes on every requestAnimationFrame.
     for(let i=firstActiveIndex;i<activeNotes.length;i++){
       const n=activeNotes[i];
       if(n.finished||n.hit)continue;
       const dt=n.timeMs-now;
       if(dt>leadMs)break;
       if(!n.missRegistered&&dt<-MISS_WINDOW)registerMiss(n);
-      if(dt<-TRAIL_MS){removeNoteEl(n);n.finished=true;continue;}
-      if(dt>=-TRAIL_MS){
-        const progress=getNoteProgress(dt,leadMs);
-        const p=targetPoints[n.lane];
-        const x=spawn.x+(p.x-spawn.x)*progress;
-        const y=spawn.y+(p.y-spawn.y)*progress;
-        const scale=progress<=1?0.45+0.55*progress:1;
-        moveNoteWithTransform(n,x,y,scale);
-      }
+      if(dt<-TRAIL_MS){pooledRemoveNoteEl(n);n.finished=true;continue;}
+      const progress=getNoteProgress(dt,leadMs);
+      const p=targetPoints[n.lane];
+      const x=spawn.x+(p.x-spawn.x)*progress;
+      const y=spawn.y+(p.y-spawn.y)*progress;
+      const scale=progress<=1?0.45+0.55*progress:1;
+      moveNote(n,x,y,scale);
     }
 
     if(isSilentMode()&&now>=silentDurationMs){finishGame();return;}
@@ -116,10 +121,8 @@
     if(!playing)return;
     resetCursorIfNeeded();
     const now=currentMs();
-    let candidate=null;
-    let bestAbs=Infinity;
     const windowMs=HIT_WINDOWS.good;
-
+    let candidate=null,bestAbs=Infinity;
     for(let i=firstActiveIndex;i<activeNotes.length;i++){
       const n=activeNotes[i];
       if(n.timeMs>now+windowMs)break;
@@ -134,21 +137,42 @@
     registerHit(candidate,grade);
     playTapSound(grade);
   }
-
   try{loop=optimizedLoop;}catch(_){}
   try{hitLane=optimizedHitLane;}catch(_){}
 
+  // Reduce expensive paint effects only while playing. Geometry and judgement stay unchanged.
+  const old=document.getElementById('performance-style-v069');if(old)old.remove();
   const style=document.createElement('style');
-  style.id='performance-style-v069';
-  style.textContent='.note{will-change:transform;backface-visibility:hidden;transform-origin:center center}';
+  style.id='performance-style-v070';
+  style.textContent=`
+    body.playing-mode:not(.finished-mode) .pause-btn{display:block!important;position:fixed!important;z-index:2147483647!important;top:max(8px,env(safe-area-inset-top))!important;right:max(10px,env(safe-area-inset-right))!important;bottom:auto!important;left:auto!important;pointer-events:auto!important;touch-action:manipulation!important}
+    .pause-menu{z-index:2147483646!important;pointer-events:auto!important}
+    body.playing-mode .game::before,body.playing-mode .game::after,body.playing-mode .live-backdrop{display:none!important}
+    body.playing-mode .game{background:#07101e!important;contain:layout paint style}
+    body.playing-mode .note{will-change:transform!important;backface-visibility:hidden!important;box-shadow:0 0 8px rgba(96,165,250,.55)!important;filter:none!important}
+    body.playing-mode .target-avatar{box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)!important}
+    body.playing-mode .target-ring{box-shadow:0 0 0 2px rgba(96,165,250,.18)!important}
+    body.playing-mode .lane{opacity:.34!important}
+  `;
   document.head.appendChild(style);
+
+  // Capture pause before the playfield can consume the touch on iOS.
+  const pauseCapture=(e)=>{
+    const btn=e.target?.closest?.('#pauseBtn');
+    if(!btn||!playing)return;
+    e.preventDefault();
+    e.stopPropagation();
+    try{openPauseMenu();}catch(_){}
+  };
+  document.addEventListener('pointerdown',pauseCapture,true);
+  document.addEventListener('touchstart',pauseCapture,{capture:true,passive:false});
 
   function syncVersion(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{const t=`Ver. ${VERSION}`;if(el.textContent!==t)el.textContent=t;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head)head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='ライブ描画を軽量化し、高密度譜面のノーツをより滑らかに表示するよう改善しました。';
+    if(text)text.textContent='ライブ描画をさらに軽量化し、ノーツのカクつきとライブ中断ボタンの操作不良を修正しました。';
   }
   syncVersion();
 })();
