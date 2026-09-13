@@ -1,19 +1,19 @@
-// Ver.0.6.1: tighter Monthly Song UR framing + face-centered live icon crops.
+// Ver.0.6.2: upper-focused Monthly Song UR framing + tighter face-centered live icon crops.
 (function(){
-  const VERSION=window.APP_VERSION||'0.6.1';
+  const VERSION=window.APP_VERSION||'0.6.2';
   const MONTHLY_META={
-    ayumu:{file:'ayumu.png',focus:'50% 18%',zoom:2.08,spotFocus:'50% 27%',spotZoom:1.24},
-    kasumi:{file:'kasumi.png',focus:'50% 18%',zoom:2.12,spotFocus:'50% 27%',spotZoom:1.24},
-    shizuku:{file:'shizuku.png',focus:'50% 18%',zoom:2.08,spotFocus:'50% 27%',spotZoom:1.24},
-    karin:{file:'karin.png',focus:'50% 18%',zoom:2.08,spotFocus:'50% 27%',spotZoom:1.24},
-    ai:{file:'ai.png',focus:'50% 18%',zoom:2.08,spotFocus:'50% 27%',spotZoom:1.24},
-    kanata:{file:'kanata.png',focus:'50% 18%',zoom:2.04,spotFocus:'50% 27%',spotZoom:1.24},
-    setsuna:{file:'setsuna.png',focus:'50% 20%',zoom:1.82,spotFocus:'50% 25%',spotZoom:1.20},
-    emma:{file:'ema.png',focus:'50% 21%',zoom:1.82,spotFocus:'50% 25%',spotZoom:1.20},
-    rina:{file:'rina.png',focus:'50% 20%',zoom:1.84,spotFocus:'50% 25%',spotZoom:1.20},
-    shioriko:{file:'shioriko.png',focus:'50% 21%',zoom:1.86,spotFocus:'50% 25%',spotZoom:1.20},
-    mia:{file:'mia.png',focus:'50% 20%',zoom:1.84,spotFocus:'50% 25%',spotZoom:1.20},
-    lanzhu:{file:'lanzhu.png',focus:'50% 20%',zoom:1.84,spotFocus:'50% 25%',spotZoom:1.20}
+    ayumu:{file:'ayumu.png',focus:'50% 12%',zoom:3.00,spotFocus:'50% 9%',spotZoom:1.08},
+    kasumi:{file:'kasumi.png',focus:'50% 12%',zoom:3.05,spotFocus:'50% 9%',spotZoom:1.08},
+    shizuku:{file:'shizuku.png',focus:'50% 12%',zoom:3.00,spotFocus:'50% 9%',spotZoom:1.08},
+    karin:{file:'karin.png',focus:'50% 12%',zoom:3.00,spotFocus:'50% 9%',spotZoom:1.08},
+    ai:{file:'ai.png',focus:'50% 12%',zoom:3.00,spotFocus:'50% 9%',spotZoom:1.08},
+    kanata:{file:'kanata.png',focus:'50% 12%',zoom:2.95,spotFocus:'50% 9%',spotZoom:1.08},
+    setsuna:{file:'setsuna.png',focus:'50% 14%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
+    emma:{file:'ema.png',focus:'50% 14%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
+    rina:{file:'rina.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    shioriko:{file:'shioriko.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    mia:{file:'mia.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    lanzhu:{file:'lanzhu.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08}
   };
   window.MONTHLY_ART_META=MONTHLY_META;
 
@@ -60,8 +60,8 @@
       if(!path)return;
       const normalized=String(path).split('?')[0];
       const unit=(window.CHARACTER_LIBRARY||[]).find(c=>[c?.art,c?.icon,c?.home].filter(Boolean).map(v=>String(v).split('?')[0]).includes(normalized));
-      const focus=unit?.iconFocus||'50% 20%';
-      const zoom=unit?.iconZoom||1.85;
+      const focus=unit?.iconFocus||'50% 13%';
+      const zoom=unit?.iconZoom||2.75;
       const img=new Image();
       img.onload=()=>{
         avatar.style.setProperty('--target-art',`url("${path}")`);
@@ -82,15 +82,16 @@
     document.getElementById('master-art-style-v059')?.remove();
     document.getElementById('master-art-style-v060')?.remove();
     document.getElementById('master-art-style-v061')?.remove();
-    const style=document.createElement('style'); style.id='master-art-style-v061';
+    document.getElementById('master-art-style-v062')?.remove();
+    const style=document.createElement('style'); style.id='master-art-style-v062';
     style.textContent=`
-      .target-avatar.master-art-crop{background-size:var(--target-zoom-size,185%)!important;background-position:var(--target-focus,50% 20%)!important;background-repeat:no-repeat!important}
+      .target-avatar.master-art-crop{background-size:var(--target-zoom-size,275%)!important;background-position:var(--target-focus,50% 13%)!important;background-repeat:no-repeat!important}
       .lane-character-preview.is-master-art{object-fit:contain!important;object-position:center!important;background:rgba(15,23,42,.35)}
       .gacha-pull-card.rarity-ur{overflow:hidden!important}
-      .gacha-pull-card.rarity-ur img{width:100%!important;height:100%!important;max-width:none!important;position:absolute!important;inset:0!important;aspect-ratio:auto!important;object-fit:cover!important;object-position:var(--spot-focus,50% 26%)!important;border:0!important;border-radius:0!important;background:transparent!important;transform:scale(var(--spot-zoom,1.22))!important;transform-origin:center!important}
+      .gacha-pull-card.rarity-ur img{width:100%!important;height:100%!important;max-width:none!important;position:absolute!important;inset:0!important;aspect-ratio:auto!important;object-fit:cover!important;object-position:var(--spot-focus,50% 9%)!important;border:0!important;border-radius:0!important;background:transparent!important;transform:scale(var(--spot-zoom,1.08))!important;transform-origin:center top!important}
       .gacha-pull-card.rarity-ur .gacha-rarity,.gacha-pull-card.rarity-ur .gacha-card-series,.gacha-pull-card.rarity-ur .gacha-card-name,.gacha-pull-card.rarity-ur .gacha-new{z-index:3!important}
       .gacha-ur-spotlight-image-wrap{overflow:hidden!important;padding:0!important}
-      .gacha-ur-spotlight-image{width:100%!important;height:100%!important;object-fit:cover!important;object-position:var(--spot-focus,50% 26%)!important;background:transparent!important;transform:scale(var(--spot-zoom,1.22))!important;transform-origin:center!important}
+      .gacha-ur-spotlight-image{width:100%!important;height:100%!important;object-fit:cover!important;object-position:var(--spot-focus,50% 9%)!important;background:transparent!important;transform:scale(var(--spot-zoom,1.08))!important;transform-origin:center top!important}
     `;
     document.head.appendChild(style);
   }
@@ -102,8 +103,8 @@
       const unit=pool.find(u=>String(u?.name||'').replace(/【[^】]+】$/u,'')===name);
       if(!unit?.art)return;
       const absolute=new URL(unit.art,location.href).href; if(img.src!==absolute)img.src=unit.art;
-      img.style.setProperty('--spot-focus',unit.spotlightFocus||'50% 26%');
-      img.style.setProperty('--spot-zoom',String(unit.spotlightZoom||1.22));
+      img.style.setProperty('--spot-focus',unit.spotlightFocus||'50% 9%');
+      img.style.setProperty('--spot-zoom',String(unit.spotlightZoom||1.08));
     });
   }
 
