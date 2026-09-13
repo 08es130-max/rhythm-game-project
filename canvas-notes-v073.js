@@ -1,6 +1,6 @@
-// Ver.0.7.3: render falling notes on a single canvas while keeping DOM targets/touch input unchanged.
+// Ver.0.7.4: canvas note rendering tuned for iPhone visibility and lower fill-rate.
 (function(){
-  const VERSION='0.7.3';
+  const VERSION='0.7.4';
   let canvas=null;
   let ctx=null;
   let sprite=null;
@@ -14,8 +14,8 @@
     const s=document.createElement('canvas');
     s.width=96;s.height=96;
     const c=s.getContext('2d');
-    const cx=48,cy=48,r=31;
-    const g=c.createRadialGradient(38,34,3,cx,cy,r);
+    const cx=48,cy=48,r=40;
+    const g=c.createRadialGradient(38,34,4,cx,cy,r);
     g.addColorStop(0,'#ffffff');
     g.addColorStop(.22,'#ffffff');
     g.addColorStop(.24,'#dbeafe');
@@ -24,12 +24,12 @@
     g.addColorStop(.68,'#60a5fa');
     g.addColorStop(.70,'#1d4ed8');
     g.addColorStop(1,'#1d4ed8');
-    c.shadowColor='rgba(96,165,250,.75)';
-    c.shadowBlur=10;
+    c.shadowColor='rgba(96,165,250,.72)';
+    c.shadowBlur=8;
     c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.fillStyle=g;c.fill();
     c.shadowBlur=0;
-    c.lineWidth=3;c.strokeStyle='#bfdbfe';c.stroke();
-    c.beginPath();c.arc(cx,cy,18,0,Math.PI*2);c.lineWidth=2;c.strokeStyle='rgba(255,255,255,.72)';c.stroke();
+    c.lineWidth=4;c.strokeStyle='#bfdbfe';c.stroke();
+    c.beginPath();c.arc(cx,cy,23,0,Math.PI*2);c.lineWidth=2.5;c.strokeStyle='rgba(255,255,255,.76)';c.stroke();
     sprite=s;
     return sprite;
   }
@@ -51,7 +51,9 @@
     ensureCanvas();
     const w=Math.max(1,game.clientWidth);
     const h=Math.max(1,game.clientHeight);
-    const dpr=Math.min(2,window.devicePixelRatio||1);
+    // iPhone Retina does not need a full 2x backing store for these simple notes.
+    // 1.35x keeps edges clean while cutting canvas pixel work substantially.
+    const dpr=Math.min(1.35,window.devicePixelRatio||1);
     const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
     if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
     ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -87,7 +89,9 @@
 
   function drawNote(x,y,scale,missed){
     const img=buildSprite();
-    const size=62*scale;
+    // v0.7.3 looked smaller than the old DOM notes because much of the 96px
+    // sprite was transparent. 76px makes the visible disc roughly the old size.
+    const size=76*scale;
     ctx.globalAlpha=missed?.76:1;
     ctx.drawImage(img,x-size/2,y-size/2,size,size);
     ctx.globalAlpha=1;
@@ -127,13 +131,9 @@
   try{loop=canvasLoop;}catch(_){window.loop=canvasLoop;}
 
   const oldFinish=finishGame;
-  try{
-    finishGame=function(){clearCanvas();return oldFinish.apply(this,arguments);};
-  }catch(_){}
+  try{finishGame=function(){clearCanvas();return oldFinish.apply(this,arguments);};}catch(_){}
   const oldStop=stopGame;
-  try{
-    stopGame=function(){clearCanvas();return oldStop.apply(this,arguments);};
-  }catch(_){}
+  try{stopGame=function(){clearCanvas();return oldStop.apply(this,arguments);};}catch(_){}
 
   window.addEventListener('resize',()=>{geomDirty=true;},{passive:true});
   window.addEventListener('orientationchange',()=>{geomDirty=true;},{passive:true});
@@ -150,7 +150,7 @@
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head)head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='落下ノーツの描画をCanvas化し、iPhoneでのカクつきを大幅に軽減するよう改善しました。';
+    if(text)text.textContent='ノーツを見やすく拡大し、Canvas描画負荷とタップ時の音声負荷をさらに軽減しました。';
   }
   syncVersion();
 })();
