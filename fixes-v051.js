@@ -1,19 +1,19 @@
-// Ver.0.6.4: upper-focused Monthly Song UR framing + tighter waist-up icon crops.
+// Ver.0.6.5: restore default icon rendering; keep Monthly Song zoom and tune crop positions.
 (function(){
-  const VERSION='0.6.4';
+  const VERSION='0.6.5';
   const MONTHLY_META={
-    ayumu:{file:'ayumu.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
-    kasumi:{file:'kasumi.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 9%',spotZoom:1.08},
-    shizuku:{file:'shizuku.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
-    karin:{file:'karin.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
-    ai:{file:'ai.png',focus:'50% 12%',zoom:3.00,spotFocus:'50% 0%',spotZoom:1.00},
-    kanata:{file:'kanata.png',focus:'50% 16%',zoom:3.75,spotFocus:'50% 0%',spotZoom:1.00},
+    ayumu:{file:'ayumu.png',focus:'50% 7%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
+    kasumi:{file:'kasumi.png',focus:'50% 11%',zoom:3.85,spotFocus:'50% 9%',spotZoom:1.08},
+    shizuku:{file:'shizuku.png',focus:'50% 7%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
+    karin:{file:'karin.png',focus:'50% 7%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
+    ai:{file:'ai.png',focus:'50% 9%',zoom:3.00,spotFocus:'50% 0%',spotZoom:1.00},
+    kanata:{file:'kanata.png',focus:'50% 7%',zoom:3.75,spotFocus:'50% 0%',spotZoom:1.00},
     setsuna:{file:'setsuna.png',focus:'50% 14%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
-    emma:{file:'ema.png',focus:'50% 14%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
-    rina:{file:'rina.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
-    shioriko:{file:'shioriko.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
-    mia:{file:'mia.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
-    lanzhu:{file:'lanzhu.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08}
+    emma:{file:'ema.png',focus:'55% 10%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
+    rina:{file:'rina.png',focus:'55% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    shioriko:{file:'shioriko.png',focus:'50% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    mia:{file:'mia.png',focus:'50% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    lanzhu:{file:'lanzhu.png',focus:'55% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08}
   };
   window.MONTHLY_ART_META=MONTHLY_META;
 
@@ -22,13 +22,15 @@
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head){const v=`Ver.${VERSION} アップデート`;if(head.textContent!==v)head.textContent=v;}
     const text=document.querySelector('#updateBanner .update-text');
-    const msg='マンスリーソングURの表示位置と、部室・ライブ中のキャラアイコンのトリミングを調整しました。';
+    const msg='通常アイコンを元の表示に戻し、マンスリーソングURの丸アイコン位置を個別調整しました。';
     if(text&&text.textContent!==msg)text.textContent=msg;
   }
 
+  function isMonthlyUnit(c){return c?.series==='マンスリーソング'&&c?.rarity==='UR';}
+
   function applyMonthlyMasterArt(){
     (window.GACHA_UR_POOL||[]).forEach(unit=>{
-      const meta=MONTHLY_META[unit?.baseId]; if(!meta) return;
+      const meta=MONTHLY_META[unit?.baseId]; if(!meta)return;
       const art=`assets/monthly-song-full/${meta.file}?v=${VERSION}`;
       Object.assign(unit,{art,icon:art,home:art,iconFocus:meta.focus,iconZoom:meta.zoom,spotlightFocus:meta.spotFocus,spotlightZoom:meta.spotZoom});
       const libUnit=(window.CHARACTER_LIBRARY||[]).find(c=>c?.id===unit.id);
@@ -37,22 +39,32 @@
   }
 
   function cleanGachaButton(){
-    const current=document.getElementById('homeGachaBtn'); if(!current||current.dataset.gachaClean051==='1') return;
+    const current=document.getElementById('homeGachaBtn'); if(!current||current.dataset.gachaClean051==='1')return;
     const clean=current.cloneNode(true); clean.dataset.gachaClean051='1'; clean.onclick=null; current.replaceWith(clean);
     clean.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(typeof window.openGachaScreen==='function')window.openGachaScreen();});
   }
   function getRoomList(){if(typeof window.getRoomCharacters==='function'){const r=window.getRoomCharacters();if(Array.isArray(r)&&r.length)return r;}return window.CHARACTER_LIBRARY||[];}
   function characterById(id,list){return list.find(c=>c?.id===id)||list.find(c=>c?.id==='default')||list[0];}
 
-  function setRoomPreview(preview,c){
-    if(!preview||!c)return;
-    const art=c?.art||c?.icon||'icon-192.png';
-    const focus=c?.iconFocus||'50% 15%';
-    const zoom=c?.iconZoom||2.75;
-    preview.style.backgroundImage=`url("${art}")`;
-    preview.style.backgroundPosition=focus;
-    preview.style.backgroundSize=`${Math.round(zoom*100)}%`;
-    preview.style.backgroundRepeat='no-repeat';
+  function makeRoomPreview(c,lane){
+    if(isMonthlyUnit(c)){
+      const preview=document.createElement('div');
+      preview.className='lane-character-preview is-master-art';
+      preview.setAttribute('role','img');
+      preview.setAttribute('aria-label',`レーン ${lane+1} キャラ`);
+      const art=c?.art||c?.icon||'icon-192.png';
+      preview.style.backgroundImage=`url("${art}")`;
+      preview.style.backgroundPosition=c?.iconFocus||'50% 14%';
+      preview.style.backgroundSize=`${Math.round((c?.iconZoom||2.55)*100)}%`;
+      preview.style.backgroundRepeat='no-repeat';
+      return preview;
+    }
+    const img=document.createElement('img');
+    img.className='lane-character-preview';
+    img.alt=`レーン ${lane+1} キャラ`;
+    img.src=c?.icon||'icon-192.png';
+    img.onerror=()=>{img.src='icon-192.png';};
+    return img;
   }
 
   function installRoomRenderer(){
@@ -64,10 +76,10 @@
       saved.forEach((id,i)=>{
         const c=characterById(id,available),card=document.createElement('div'); card.className='lane-character-card';
         const title=document.createElement('div'); title.className='lane-character-title'; title.textContent=`レーン ${i+1}`;
-        const preview=document.createElement('div'); preview.className='lane-character-preview is-master-art'; preview.setAttribute('role','img'); preview.setAttribute('aria-label',`レーン ${i+1} キャラ`); setRoomPreview(preview,c);
+        let preview=makeRoomPreview(c,i);
         const select=document.createElement('select'); select.className='lane-character-select'; select.dataset.lane=String(i);
         available.forEach(item=>{const option=document.createElement('option');option.value=item.id;option.textContent=item.name;option.selected=item.id===id;select.appendChild(option);});
-        select.addEventListener('change',()=>{const s=characterById(select.value,available);setRoomPreview(preview,s);});
+        select.addEventListener('change',()=>{const s=characterById(select.value,available),next=makeRoomPreview(s,i);preview.replaceWith(next);preview=next;});
         card.append(title,preview,select);grid.appendChild(card);
       });
       const status=document.getElementById('characterSaveStatus'); if(status){const urOwned=available.filter(c=>c?.rarity==='UR').length;status.textContent=`音符ロリータは初期加入。マンスリーソングURは勧誘で獲得すると追加されます。（UR獲得 ${urOwned}/12）`;}
@@ -80,17 +92,26 @@
       if(!path)return;
       const normalized=String(path).split('?')[0];
       const unit=(window.CHARACTER_LIBRARY||[]).find(c=>[c?.art,c?.icon,c?.home].filter(Boolean).map(v=>String(v).split('?')[0]).includes(normalized));
-      const focus=unit?.iconFocus||'50% 15%';
-      const zoom=unit?.iconZoom||2.75;
       const img=new Image();
       img.onload=()=>{
         avatar.style.setProperty('--target-art',`url("${path}")`);
-        avatar.style.setProperty('--target-focus',focus);
-        avatar.style.setProperty('--target-zoom-size',`${Math.round(zoom*100)}%`);
-        avatar.style.backgroundPosition=focus;
-        avatar.style.backgroundSize=`${Math.round(zoom*100)}%`;
-        avatar.style.backgroundRepeat='no-repeat';
-        avatar.classList.add('has-art','master-art-crop');
+        if(isMonthlyUnit(unit)){
+          const focus=unit?.iconFocus||'50% 14%',zoom=unit?.iconZoom||2.55;
+          avatar.style.setProperty('--target-focus',focus);
+          avatar.style.setProperty('--target-zoom-size',`${Math.round(zoom*100)}%`);
+          avatar.style.backgroundPosition=focus;
+          avatar.style.backgroundSize=`${Math.round(zoom*100)}%`;
+          avatar.style.backgroundRepeat='no-repeat';
+          avatar.classList.add('master-art-crop');
+        }else{
+          avatar.style.removeProperty('--target-focus');
+          avatar.style.removeProperty('--target-zoom-size');
+          avatar.style.removeProperty('background-position');
+          avatar.style.removeProperty('background-size');
+          avatar.style.removeProperty('background-repeat');
+          avatar.classList.remove('master-art-crop');
+        }
+        avatar.classList.add('has-art');
       };
       img.onerror=()=>avatar.classList.remove('has-art');
       img.src=path;
@@ -99,11 +120,11 @@
   }
 
   function injectStyles(){
-    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063','master-art-style-v064'].forEach(id=>document.getElementById(id)?.remove());
-    const style=document.createElement('style'); style.id='master-art-style-v064';
+    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063','master-art-style-v064','master-art-style-v065'].forEach(id=>document.getElementById(id)?.remove());
+    const style=document.createElement('style'); style.id='master-art-style-v065';
     style.textContent=`
-      .target-avatar.master-art-crop{background-size:var(--target-zoom-size,275%)!important;background-position:var(--target-focus,50% 15%)!important;background-repeat:no-repeat!important}
-      .lane-character-preview.is-master-art{display:block!important;overflow:hidden!important;background-position:50% 15%;background-size:275%;background-repeat:no-repeat;background-color:rgba(15,23,42,.35)}
+      .target-avatar.master-art-crop{background-size:var(--target-zoom-size,255%)!important;background-position:var(--target-focus,50% 14%)!important;background-repeat:no-repeat!important}
+      .lane-character-preview.is-master-art{display:block!important;overflow:hidden!important;background-repeat:no-repeat!important;background-color:rgba(15,23,42,.35)}
       .gacha-pull-card.rarity-ur{overflow:hidden!important}
       .gacha-pull-card.rarity-ur img{width:100%!important;height:100%!important;max-width:none!important;position:absolute!important;inset:0!important;aspect-ratio:auto!important;object-fit:cover!important;object-position:var(--spot-focus,50% 9%)!important;border:0!important;border-radius:0!important;background:transparent!important;transform:scale(var(--spot-zoom,1.08))!important;transform-origin:center top!important}
       .gacha-pull-card.rarity-ur .gacha-rarity,.gacha-pull-card.rarity-ur .gacha-card-series,.gacha-pull-card.rarity-ur .gacha-card-name,.gacha-pull-card.rarity-ur .gacha-new{z-index:3!important}
