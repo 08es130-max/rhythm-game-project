@@ -1,6 +1,7 @@
 // Ver.0.6.3: upper-focused Monthly Song UR framing + tighter waist-up icon crops.
 (function(){
-  const VERSION=window.APP_VERSION||'0.6.3';
+  const VERSION='0.6.3';
+  window.APP_VERSION=VERSION;
   const MONTHLY_META={
     ayumu:{file:'ayumu.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
     kasumi:{file:'kasumi.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 9%',spotZoom:1.08},
@@ -16,6 +17,14 @@
     lanzhu:{file:'lanzhu.png',focus:'50% 14%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08}
   };
   window.MONTHLY_ART_META=MONTHLY_META;
+
+  function updateVersionDisplay(){
+    document.querySelectorAll('.home-version,.version-badge').forEach(el=>el.textContent=`Ver. ${VERSION}`);
+    const head=document.querySelector('#updateBanner .update-head span:last-child');
+    if(head)head.textContent=`Ver.${VERSION} アップデート`;
+    const text=document.querySelector('#updateBanner .update-text');
+    if(text)text.textContent='マンスリーソングURの表示位置と、部室・ライブ中のキャラアイコンのトリミングを調整しました。';
+  }
 
   function applyMonthlyMasterArt(){
     (window.GACHA_UR_POOL||[]).forEach(unit=>{
@@ -116,8 +125,8 @@
     });
   }
 
-  applyMonthlyMasterArt();cleanGachaButton();installRoomRenderer();installLiveCrop();injectStyles();refreshGachaArt();
-  const observer=new MutationObserver(()=>{cleanGachaButton();refreshGachaArt(document);}); observer.observe(document.body,{childList:true,subtree:true});
-  window.refreshMonthlyMasterArt=function(){applyMonthlyMasterArt();installRoomRenderer();installLiveCrop();refreshGachaArt();try{if(typeof layoutPlayfield==='function')layoutPlayfield();}catch(_){}};
+  updateVersionDisplay();applyMonthlyMasterArt();cleanGachaButton();installRoomRenderer();installLiveCrop();injectStyles();refreshGachaArt();
+  const observer=new MutationObserver(()=>{updateVersionDisplay();cleanGachaButton();refreshGachaArt(document);}); observer.observe(document.body,{childList:true,subtree:true});
+  window.refreshMonthlyMasterArt=function(){updateVersionDisplay();applyMonthlyMasterArt();installRoomRenderer();installLiveCrop();refreshGachaArt();try{if(typeof layoutPlayfield==='function')layoutPlayfield();}catch(_){}};
   setTimeout(window.refreshMonthlyMasterArt,0);
 })();
