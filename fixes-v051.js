@@ -1,19 +1,19 @@
-// Ver.0.6.5: restore default icon rendering; keep Monthly Song zoom and tune crop positions.
+// Ver.0.6.6: tune Monthly Song icon crop positions only.
 (function(){
-  const VERSION='0.6.5';
+  const VERSION='0.6.6';
   const MONTHLY_META={
-    ayumu:{file:'ayumu.png',focus:'50% 7%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
+    ayumu:{file:'ayumu.png',focus:'50% 4%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
     kasumi:{file:'kasumi.png',focus:'50% 11%',zoom:3.85,spotFocus:'50% 9%',spotZoom:1.08},
-    shizuku:{file:'shizuku.png',focus:'50% 7%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
-    karin:{file:'karin.png',focus:'50% 7%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
-    ai:{file:'ai.png',focus:'50% 9%',zoom:3.00,spotFocus:'50% 0%',spotZoom:1.00},
-    kanata:{file:'kanata.png',focus:'50% 7%',zoom:3.75,spotFocus:'50% 0%',spotZoom:1.00},
+    shizuku:{file:'shizuku.png',focus:'50% 4%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
+    karin:{file:'karin.png',focus:'50% 4%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
+    ai:{file:'ai.png',focus:'50% 6%',zoom:3.00,spotFocus:'50% 0%',spotZoom:1.00},
+    kanata:{file:'kanata.png',focus:'47% 5%',zoom:3.75,spotFocus:'50% 0%',spotZoom:1.00},
     setsuna:{file:'setsuna.png',focus:'50% 14%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
-    emma:{file:'ema.png',focus:'55% 10%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
+    emma:{file:'ema.png',focus:'58% 8%',zoom:2.50,spotFocus:'50% 10%',spotZoom:1.08},
     rina:{file:'rina.png',focus:'55% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
-    shioriko:{file:'shioriko.png',focus:'50% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
-    mia:{file:'mia.png',focus:'50% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
-    lanzhu:{file:'lanzhu.png',focus:'55% 10%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08}
+    shioriko:{file:'shioriko.png',focus:'50% 7%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    mia:{file:'mia.png',focus:'53% 8%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08},
+    lanzhu:{file:'lanzhu.png',focus:'58% 8%',zoom:2.55,spotFocus:'50% 10%',spotZoom:1.08}
   };
   window.MONTHLY_ART_META=MONTHLY_META;
 
@@ -22,7 +22,7 @@
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head){const v=`Ver.${VERSION} アップデート`;if(head.textContent!==v)head.textContent=v;}
     const text=document.querySelector('#updateBanner .update-text');
-    const msg='通常アイコンを元の表示に戻し、マンスリーソングURの丸アイコン位置を個別調整しました。';
+    const msg='マンスリーソングURの丸アイコン位置をさらに個別調整しました。';
     if(text&&text.textContent!==msg)text.textContent=msg;
   }
 
@@ -120,8 +120,8 @@
   }
 
   function injectStyles(){
-    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063','master-art-style-v064','master-art-style-v065'].forEach(id=>document.getElementById(id)?.remove());
-    const style=document.createElement('style'); style.id='master-art-style-v065';
+    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063','master-art-style-v064','master-art-style-v065','master-art-style-v066'].forEach(id=>document.getElementById(id)?.remove());
+    const style=document.createElement('style'); style.id='master-art-style-v066';
     style.textContent=`
       .target-avatar.master-art-crop{background-size:var(--target-zoom-size,255%)!important;background-position:var(--target-focus,50% 14%)!important;background-repeat:no-repeat!important}
       .lane-character-preview.is-master-art{display:block!important;overflow:hidden!important;background-repeat:no-repeat!important;background-color:rgba(15,23,42,.35)}
