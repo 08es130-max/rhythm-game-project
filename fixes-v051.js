@@ -1,7 +1,6 @@
-// Ver.0.6.3: upper-focused Monthly Song UR framing + tighter waist-up icon crops.
+// Ver.0.6.4: upper-focused Monthly Song UR framing + tighter waist-up icon crops.
 (function(){
-  const VERSION='0.6.3';
-  window.APP_VERSION=VERSION;
+  const VERSION='0.6.4';
   const MONTHLY_META={
     ayumu:{file:'ayumu.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
     kasumi:{file:'kasumi.png',focus:'50% 16%',zoom:3.85,spotFocus:'50% 9%',spotZoom:1.08},
@@ -100,8 +99,8 @@
   }
 
   function injectStyles(){
-    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063'].forEach(id=>document.getElementById(id)?.remove());
-    const style=document.createElement('style'); style.id='master-art-style-v063';
+    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063','master-art-style-v064'].forEach(id=>document.getElementById(id)?.remove());
+    const style=document.createElement('style'); style.id='master-art-style-v064';
     style.textContent=`
       .target-avatar.master-art-crop{background-size:var(--target-zoom-size,275%)!important;background-position:var(--target-focus,50% 15%)!important;background-repeat:no-repeat!important}
       .lane-character-preview.is-master-art{display:block!important;overflow:hidden!important;background-position:50% 15%;background-size:275%;background-repeat:no-repeat;background-color:rgba(15,23,42,.35)}
