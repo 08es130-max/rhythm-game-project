@@ -1,130 +1,150 @@
-// Ver.0.5.7 hotfix: keep the normal standing art fixed and overlay transparent expression assets without clipping.
-(function(){
-  const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
-  const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
-  const v=window.APP_VERSION||'0.5.7';
-  const EXPR={
-    dere:`assets/shioriko-expressions/dere.webp?v=${v}`,
-    yandere:`assets/shioriko-expressions/yandere.webp?v=${v}`,
-    scold:`assets/shioriko-expressions/scold.webp?v=${v}`,
-    drunk:`assets/shioriko-expressions/drunk.png?v=${v}-png1`,
-    clumsy:`assets/shioriko-expressions/clumsy.png?v=${v}-png1`,
-    casual:`assets/shioriko-expressions/casual.png?v=${v}-png1`
+// Ver.0.5.8
+// Shioriko visual switching: use full-image swaps instead of overlay.
+// This avoids size mismatch, clipping, and double-head artifacts.
+
+(function () {
+  const MODE_KEY = 'rhythmGame.shiorikoDialogueMode.v1';
+  const MIX_STATE_KEY = 'rhythmGame.shiorikoNormalVisualState.v1';
+  const VALID = ['normal', 'dere', 'yandere', 'scold', 'drunk', 'clumsy', 'casual'];
+  const APP_VERSION = window.APP_VERSION || '0.5.8';
+
+  const ART = {
+    normal: `assets/standing/shioriko-home.png?v=${APP_VERSION}`,
+    dere: `assets/shioriko-expressions/dere-v058.png?v=${APP_VERSION}`,
+    yandere: `assets/shioriko-expressions/yandere-v058.png?v=${APP_VERSION}`,
+    scold: `assets/shioriko-expressions/scold-v058.png?v=${APP_VERSION}`,
+    drunk: `assets/shioriko-expressions/drunk-v058.png?v=${APP_VERSION}`,
+    clumsy: `assets/shioriko-expressions/clumsy-v058.png?v=${APP_VERSION}`,
+    casual: `assets/shioriko-expressions/casual-v058.png?v=${APP_VERSION}`,
   };
-  const card=document.querySelector('.home-character-card');
-  const image=card?.querySelector('.home-character-img');
-  if(!card||!image) return;
 
-  let overlay=card.querySelector('.shio-expression-overlay');
-  if(!overlay){
-    overlay=document.createElement('img');
-    overlay.className='shio-expression-overlay';
-    overlay.alt='';
-    overlay.setAttribute('aria-hidden','true');
-    image.insertAdjacentElement('afterend',overlay);
+  function getCard() {
+    return document.querySelector('.home-character-card');
   }
-  // Generated assets already have transparency. Do not mask/crop them in CSS/JS.
-  overlay.style.webkitMaskImage='none';
-  overlay.style.maskImage='none';
-  overlay.style.clipPath='none';
 
-  let reactTimer=0;
-  let modeTimer=0;
-  let dialogueExpression='normal';
+  function getImage() {
+    return document.querySelector('.home-character-card .home-character-img');
+  }
 
-  function currentMode(){
-    const value=localStorage.getItem(MODE_KEY)||'normal';
-    return VALID.includes(value)?value:'normal';
+  function getCurrentMode() {
+    const raw = localStorage.getItem(MODE_KEY) || 'normal';
+    return VALID.includes(raw) ? raw : 'normal';
   }
-  function effectiveMode(){
-    const mode=currentMode();
-    return mode==='normal'?dialogueExpression:mode;
+
+  function getMixedState() {
+    const raw = localStorage.getItem(MIX_STATE_KEY) || 'normal';
+    return VALID.includes(raw) ? raw : 'normal';
   }
-  function isShioriko(){
-    const id=String(card.dataset.characterId||localStorage.getItem('rhythmGame.homeCharacter')||'default');
-    if(id==='default'||id.includes('shioriko')) return true;
-    const unit=(window.CHARACTER_LIBRARY||[]).find(c=>c?.id===id);
-    return String(unit?.name||'').replace(/【[^】]+】$/u,'')==='三船栞子';
+
+  function setMixedState(mode) {
+    localStorage.setItem(MIX_STATE_KEY, mode);
   }
-  function applyExpression(mode){
-    const active=isShioriko()&&mode!=='normal'&&!!EXPR[mode];
-    if(active){
-      const src=EXPR[mode];
-      if(overlay.getAttribute('src')!==src) overlay.setAttribute('src',src);
-      overlay.dataset.expression=mode;
-      overlay.classList.add('is-visible');
-    }else{
-      overlay.classList.remove('is-visible');
-      overlay.dataset.expression='normal';
-    }
+
+  function resolveVisualMode(mode) {
+    if (mode !== 'normal') return mode;
+    return getMixedState();
   }
-  function applyMode(animate=false){
-    const mode=isShioriko()?effectiveMode():'normal';
-    card.dataset.shioMode=mode;
-    applyExpression(mode);
-    if(animate){
-      clearTimeout(modeTimer);
-      card.classList.remove('shio-mode-change');
-      void card.offsetWidth;
-      card.classList.add('shio-mode-change');
-      modeTimer=setTimeout(()=>card.classList.remove('shio-mode-change'),720);
-    }
+
+  function applyStandingArt(mode) {
+    const img = getImage();
+    const card = getCard();
+    if (!img || !card) return;
+
+    const visualMode = resolveVisualMode(mode);
+    const src = ART[visualMode] || ART.normal;
+
+    img.src = src;
+    img.dataset.expressionMode = visualMode;
+
+    // overlay remnants are not used anymore
+    const overlay = card.querySelector('.shio-expression-overlay');
+    if (overlay) overlay.remove();
+
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    img.style.objectPosition = 'center bottom';
+    img.style.transform = 'none';
+    img.style.filter = 'none';
   }
-  function react(){
-    if(!isShioriko()) return;
-    clearTimeout(reactTimer);
-    card.classList.remove('shio-react');
-    void card.offsetWidth;
-    card.classList.add('shio-react');
-    reactTimer=setTimeout(()=>card.classList.remove('shio-react'),950);
+
+  function chooseNormalVariant() {
+    const r = Math.random();
+    if (r < 0.10) return 'dere';
+    if (r < 0.20) return 'clumsy';
+    return 'normal';
   }
-  function spawnTapHearts(e){
-    if(!isShioriko()||effectiveMode()!=='dere') return;
-    const rect=card.getBoundingClientRect();
-    const x=Math.max(8,Math.min(rect.width-8,e.clientX-rect.left));
-    const y=Math.max(8,Math.min(rect.height-8,e.clientY-rect.top));
-    for(let i=0;i<4;i++){
-      const heart=document.createElement('span');
-      heart.className='shio-tap-heart';
-      heart.textContent='♥';
-      heart.style.left=`${x}px`;
-      heart.style.top=`${y}px`;
-      heart.style.setProperty('--dx',`${(i-1.5)*18}px`);
-      heart.style.setProperty('--dy',`${-36-(i%2)*18}px`);
-      heart.style.setProperty('--delay',`${i*55}ms`);
-      card.appendChild(heart);
-      heart.addEventListener('animationend',()=>heart.remove(),{once:true});
+
+  function updateForDialogue() {
+    const mode = getCurrentMode();
+    if (mode === 'normal') {
+      const variant = chooseNormalVariant();
+      setMixedState(variant);
+      applyStandingArt('normal');
+    } else {
+      setMixedState(mode);
+      applyStandingArt(mode);
     }
   }
 
-  card.addEventListener('pointerdown',(e)=>{applyMode(false);spawnTapHearts(e);react();},{passive:true});
-
-  window.addEventListener('rhythmGameShiorikoDialogueExpression',e=>{
-    const requested=String(e?.detail?.mode||'normal');
-    dialogueExpression=VALID.includes(requested)?requested:'normal';
-    if(currentMode()!=='normal') dialogueExpression='normal';
-    applyMode(true);
-  });
-
-  window.addEventListener('rhythmGameShiorikoModeChanged',()=>{
-    dialogueExpression='normal';
-    applyMode(true);
-  });
-
-  const originalSet=window.setShiorikoSecretMode;
-  if(typeof originalSet==='function'){
-    window.setShiorikoSecretMode=function(mode){
-      dialogueExpression='normal';
-      const result=originalSet(mode);
-      setTimeout(()=>applyMode(true),0);
-      return result;
-    };
+  function syncFromModeOnly() {
+    const mode = getCurrentMode();
+    if (mode === 'normal') {
+      setMixedState('normal');
+      applyStandingArt('normal');
+    } else {
+      setMixedState(mode);
+      applyStandingArt(mode);
+    }
   }
 
-  const observer=new MutationObserver(()=>setTimeout(()=>applyMode(false),0));
-  observer.observe(card,{attributes:true,attributeFilter:['data-character-id']});
-  observer.observe(image,{attributes:true,attributeFilter:['src']});
+  function hookDialogueChanges() {
+    const bubble = document.querySelector('.home-message, .home-dialogue, .home-speech, .home-balloon');
+    if (!bubble) return;
 
-  Object.values(EXPR).forEach(src=>{const p=new Image();p.src=src;});
-  applyMode(false);
+    const observer = new MutationObserver(() => {
+      updateForDialogue();
+    });
+    observer.observe(bubble, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+
+  function hookModeChanges() {
+    window.addEventListener('storage', (e) => {
+      if (e.key === MODE_KEY) {
+        syncFromModeOnly();
+      }
+    });
+
+    document.addEventListener('shioriko-mode-changed', () => {
+      syncFromModeOnly();
+    });
+  }
+
+  function hookCharacterTap() {
+    const card = getCard();
+    if (!card) return;
+    card.addEventListener('click', () => {
+      setTimeout(() => updateForDialogue(), 0);
+    });
+  }
+
+  function init() {
+    syncFromModeOnly();
+    hookDialogueChanges();
+    hookModeChanges();
+    hookCharacterTap();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // expose for manual refresh if needed
+  window.refreshShiorikoStandingArt = updateForDialogue;
 })();
