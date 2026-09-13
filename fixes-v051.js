@@ -1,6 +1,6 @@
-// Ver.0.6.6: tune Monthly Song icon crop positions only.
+// Ver.0.6.7: song library + Snow halation + local custom song registration.
 (function(){
-  const VERSION='0.6.6';
+  const VERSION='0.6.7';
   const MONTHLY_META={
     ayumu:{file:'ayumu.png',focus:'50% 4%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
     kasumi:{file:'kasumi.png',focus:'50% 11%',zoom:3.85,spotFocus:'50% 9%',spotZoom:1.08},
@@ -22,7 +22,7 @@
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head){const v=`Ver.${VERSION} アップデート`;if(head.textContent!==v)head.textContent=v;}
     const text=document.querySelector('#updateBanner .update-text');
-    const msg='マンスリーソングURの丸アイコン位置をさらに個別調整しました。';
+    const msg='楽曲一覧・楽曲追加ページを追加し、Snow halationを新しいプレイ楽曲として追加しました。';
     if(text&&text.textContent!==msg)text.textContent=msg;
   }
 
@@ -120,8 +120,8 @@
   }
 
   function injectStyles(){
-    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063','master-art-style-v064','master-art-style-v065','master-art-style-v066'].forEach(id=>document.getElementById(id)?.remove());
-    const style=document.createElement('style'); style.id='master-art-style-v066';
+    ['master-art-style-v059','master-art-style-v060','master-art-style-v061','master-art-style-v062','master-art-style-v063','master-art-style-v064','master-art-style-v065','master-art-style-v066','master-art-style-v067'].forEach(id=>document.getElementById(id)?.remove());
+    const style=document.createElement('style'); style.id='master-art-style-v067';
     style.textContent=`
       .target-avatar.master-art-crop{background-size:var(--target-zoom-size,255%)!important;background-position:var(--target-focus,50% 14%)!important;background-repeat:no-repeat!important}
       .lane-character-preview.is-master-art{display:block!important;overflow:hidden!important;background-repeat:no-repeat!important;background-color:rgba(15,23,42,.35)}
@@ -130,6 +130,7 @@
       .gacha-pull-card.rarity-ur .gacha-rarity,.gacha-pull-card.rarity-ur .gacha-card-series,.gacha-pull-card.rarity-ur .gacha-card-name,.gacha-pull-card.rarity-ur .gacha-new{z-index:3!important}
       .gacha-ur-spotlight-image-wrap{overflow:hidden!important;padding:0!important}
       .gacha-ur-spotlight-image{width:100%!important;height:100%!important;object-fit:cover!important;object-position:var(--spot-focus,50% 9%)!important;background:transparent!important;transform:scale(var(--spot-zoom,1.08))!important;transform-origin:center top!important}
+      .song-library-panel{max-width:900px;margin:0 auto;padding:18px}.song-library-actions{display:flex;justify-content:flex-end;margin-bottom:14px}.song-library-add{padding:12px 18px;border-radius:12px;font-weight:700}.song-library-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.song-library-card{border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:16px;background:rgba(17,24,39,.78);box-shadow:0 8px 22px rgba(0,0,0,.2)}.song-library-card h3{margin:0 0 5px;font-size:1.08rem}.song-library-card p{margin:4px 0;color:#cbd5e1;font-size:.9rem}.song-library-card button{width:100%;margin-top:12px;padding:11px;border-radius:10px;font-weight:700}.song-library-badge{display:inline-block;margin-top:6px;padding:3px 8px;border-radius:999px;background:rgba(59,130,246,.22);font-size:.78rem}.song-add-form{display:grid;gap:14px;max-width:700px;margin:0 auto}.song-add-form label{display:grid;gap:6px;font-weight:700}.song-add-form input{padding:10px;border-radius:10px}.song-add-help{color:#cbd5e1;font-size:.9rem}.song-add-status{min-height:1.4em;font-weight:700}.song-add-submit{padding:13px;border-radius:12px;font-weight:700}
     `;
     document.head.appendChild(style);
   }
@@ -146,7 +147,137 @@
     });
   }
 
-  updateVersionDisplay();applyMonthlyMasterArt();cleanGachaButton();installRoomRenderer();installLiveCrop();injectStyles();refreshGachaArt();
+  const CUSTOM_SONGS_KEY='rhythmGame.customSongs.v1';
+  const SNOW_AUDIO_KEY='snow-halation';
+
+  function readCustomSongs(){
+    try{const v=JSON.parse(localStorage.getItem(CUSTOM_SONGS_KEY)||'[]');return Array.isArray(v)?v:[];}catch(_){return [];}
+  }
+  function saveCustomSongs(list){localStorage.setItem(CUSTOM_SONGS_KEY,JSON.stringify(list));}
+  function showLibraryScreen(id){
+    document.querySelectorAll('.app-screen').forEach(el=>{el.hidden=el.id!==id;});
+    try{resultPanel.hidden=true;}catch(_){}
+    window.scrollTo({top:0,behavior:'auto'});
+  }
+  function makeSnowHalationChart(){
+    const bpm=173,beat=60000/bpm,half=beat/2,start=815,end=247751;
+    const gridCount=Math.floor((end-start)/half)+1;
+    const eventCount=900;
+    const eventTimes=[];
+    for(let i=0;i<eventCount;i++){
+      const gi=Math.min(gridCount-1,Math.floor(i*gridCount/eventCount));
+      eventTimes.push(Math.round(start+gi*half));
+    }
+    const notes=[];
+    const lanePattern=[4,5,6,7,8,7,6,5,4,3,2,1,0,1,2,3];
+    eventTimes.forEach((t,i)=>{
+      const lane=lanePattern[i%lanePattern.length];
+      notes.push({timeMs:t,lane});
+      if(i%2===0){
+        let other=8-lane;
+        if(other===lane)other=(lane+3)%9;
+        notes.push({timeMs:t,lane:other});
+      }
+    });
+    notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    return {title:'Snow halation',artist:"μ's",difficulty:'EXPERT 二本指向け',bpm,offsetMs:0,noteCount:notes.length,notes};
+  }
+  async function prepareSnowHalation(){
+    chart=makeSnowHalationChart();
+    validateChart(chart);
+    chartName.textContent=`Snow halation（${chart.notes.length} notes）`;
+    offsetInput.value=String(getSavedTimingOffset());
+    audioMode.value='file';
+    showLibraryScreen('liveScreen');
+    try{
+      const cached=await getPresetAudio(SNOW_AUDIO_KEY);
+      if(cached&&usePresetAudio(cached,'Snow halation')){canStart();return;}
+    }catch(e){console.warn('Snow halationの保存済み音源を読み込めませんでした',e);}
+    awaitingPresetAudioKey=SNOW_AUDIO_KEY;
+    songName.textContent='Snow halation（初回のみ音源ファイルを選択してください）';
+    audioFile.click();
+    canStart();
+  }
+  async function prepareSpicaFromLibrary(){
+    showLibraryScreen('liveScreen');
+    document.getElementById('spicaPresetBtn')?.click();
+  }
+  async function prepareCustomSong(song){
+    try{
+      chart=JSON.parse(JSON.stringify(song.chart));
+      validateChart(chart);
+      chartName.textContent=`${song.title}（${chart.notes.length} notes）`;
+      offsetInput.value=String(getSavedTimingOffset());
+      audioMode.value='file';
+      showLibraryScreen('liveScreen');
+      const cached=await getPresetAudio(song.audioKey);
+      if(!cached){alert('この楽曲の保存済み音源が見つかりません。楽曲をもう一度追加してください。');return;}
+      usePresetAudio(cached,song.title);
+      canStart();
+    }catch(e){alert('楽曲を読み込めませんでした: '+e.message);}
+  }
+
+  function buildSongCard(song,custom=false){
+    const card=document.createElement('article');card.className='song-library-card';
+    const title=document.createElement('h3');title.textContent=song.title;
+    const artist=document.createElement('p');artist.textContent=song.artist||'アーティスト未設定';
+    const meta=document.createElement('p');meta.textContent=`${song.difficulty||'EXPERT'}${song.bpm?` / BPM ${song.bpm}`:''}`;
+    const badge=document.createElement('span');badge.className='song-library-badge';badge.textContent=custom?'端末追加':'内蔵楽曲';
+    const btn=document.createElement('button');btn.type='button';btn.textContent='この曲をプレイ';
+    if(song.id==='spica')btn.addEventListener('click',prepareSpicaFromLibrary);
+    else if(song.id==='snow')btn.addEventListener('click',prepareSnowHalation);
+    else btn.addEventListener('click',()=>prepareCustomSong(song));
+    card.append(title,artist,meta,badge,btn);return card;
+  }
+  function renderSongLibrary(){
+    const grid=document.getElementById('songLibraryGrid');if(!grid)return;grid.innerHTML='';
+    grid.append(buildSongCard({id:'spica',title:'スピカテリブル',artist:'南ことり',difficulty:'EXPERT 二本指向け',bpm:161.499}));
+    grid.append(buildSongCard({id:'snow',title:'Snow halation',artist:"μ's",difficulty:'EXPERT 二本指向け',bpm:173}));
+    readCustomSongs().forEach(song=>grid.append(buildSongCard(song,true)));
+  }
+
+  function installSongLibrary(){
+    if(document.getElementById('songLibraryScreen'))return;
+    const shell=document.querySelector('.app-shell');if(!shell)return;
+    const list=document.createElement('section');list.id='songLibraryScreen';list.className='app-screen';list.hidden=true;
+    list.innerHTML=`<div class="screen-header"><button id="songLibraryHomeBtn" class="home-back-btn" type="button">ホーム</button><h1>楽曲一覧</h1></div><div class="song-library-panel"><div class="song-library-actions"><button id="openSongAddBtn" class="song-library-add" type="button">＋ 楽曲追加</button></div><div id="songLibraryGrid" class="song-library-grid"></div></div>`;
+    const add=document.createElement('section');add.id='songAddScreen';add.className='app-screen';add.hidden=true;
+    add.innerHTML=`<div class="screen-header"><button id="songAddBackBtn" class="home-back-btn" type="button">楽曲一覧</button><h1>楽曲追加</h1></div><div class="song-library-panel"><div class="song-add-form"><p class="song-add-help">音源ファイルと、このゲーム用の譜面JSONを端末に登録します。登録後は楽曲一覧から選べます。</p><label>楽曲名<input id="songAddTitle" type="text" placeholder="例：新しい楽曲" /></label><label>アーティスト<input id="songAddArtist" type="text" placeholder="例：μ's" /></label><label>音源ファイル<input id="songAddAudio" type="file" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" /></label><label>譜面JSON<input id="songAddChart" type="file" accept="application/json,.json" /></label><button id="songAddSubmit" class="song-add-submit" type="button">この楽曲を追加</button><div id="songAddStatus" class="song-add-status"></div></div></div>`;
+    shell.append(list,add);
+
+    const homeLive=document.getElementById('homeLiveBtn');
+    if(homeLive&&!homeLive.dataset.songLibraryNav){
+      homeLive.dataset.songLibraryNav='1';
+      homeLive.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();renderSongLibrary();showLibraryScreen('songLibraryScreen');},true);
+    }
+    document.getElementById('songLibraryHomeBtn')?.addEventListener('click',()=>showLibraryScreen('homeScreen'));
+    document.getElementById('openSongAddBtn')?.addEventListener('click',()=>showLibraryScreen('songAddScreen'));
+    document.getElementById('songAddBackBtn')?.addEventListener('click',()=>{renderSongLibrary();showLibraryScreen('songLibraryScreen');});
+    document.getElementById('songAddChart')?.addEventListener('change',async e=>{
+      const file=e.target.files?.[0];if(!file)return;
+      try{const parsed=JSON.parse(await file.text());if(!document.getElementById('songAddTitle').value&&parsed.title)document.getElementById('songAddTitle').value=parsed.title;if(!document.getElementById('songAddArtist').value&&parsed.artist)document.getElementById('songAddArtist').value=parsed.artist;}catch(_){}
+    });
+    document.getElementById('songAddSubmit')?.addEventListener('click',async()=>{
+      const title=document.getElementById('songAddTitle').value.trim();
+      const artist=document.getElementById('songAddArtist').value.trim();
+      const audioFileLocal=document.getElementById('songAddAudio').files?.[0];
+      const chartFileLocal=document.getElementById('songAddChart').files?.[0];
+      const status=document.getElementById('songAddStatus');
+      if(!title||!audioFileLocal||!chartFileLocal){status.textContent='楽曲名・音源・譜面JSONをすべて指定してください。';return;}
+      try{
+        const parsed=JSON.parse(await chartFileLocal.text());validateChart(parsed);
+        const id=`custom-${Date.now()}`,audioKey=`custom-song:${id}`;
+        await savePresetAudio(audioKey,audioFileLocal);
+        const songs=readCustomSongs();songs.push({id,title,artist:artist||parsed.artist||'',difficulty:parsed.difficulty||'CUSTOM',bpm:parsed.bpm||null,audioKey,chart:parsed});saveCustomSongs(songs);
+        status.textContent='追加しました。楽曲一覧からプレイできます。';
+        document.getElementById('songAddTitle').value='';document.getElementById('songAddArtist').value='';document.getElementById('songAddAudio').value='';document.getElementById('songAddChart').value='';
+        renderSongLibrary();setTimeout(()=>showLibraryScreen('songLibraryScreen'),500);
+      }catch(e){status.textContent='追加できませんでした: '+e.message;}
+    });
+    renderSongLibrary();
+  }
+
+  updateVersionDisplay();applyMonthlyMasterArt();cleanGachaButton();installRoomRenderer();installLiveCrop();injectStyles();refreshGachaArt();installSongLibrary();
   const observer=new MutationObserver(()=>{cleanGachaButton();refreshGachaArt(document);}); observer.observe(document.body,{childList:true,subtree:true});
   window.refreshMonthlyMasterArt=function(){updateVersionDisplay();applyMonthlyMasterArt();installRoomRenderer();installLiveCrop();refreshGachaArt();try{if(typeof layoutPlayfield==='function')layoutPlayfield();}catch(_){}};
   setTimeout(window.refreshMonthlyMasterArt,0);
