@@ -19,11 +19,12 @@
   window.MONTHLY_ART_META=MONTHLY_META;
 
   function updateVersionDisplay(){
-    document.querySelectorAll('.home-version,.version-badge').forEach(el=>el.textContent=`Ver. ${VERSION}`);
+    document.querySelectorAll('.home-version,.version-badge').forEach(el=>{const v=`Ver. ${VERSION}`;if(el.textContent!==v)el.textContent=v;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
-    if(head)head.textContent=`Ver.${VERSION} アップデート`;
+    if(head){const v=`Ver.${VERSION} アップデート`;if(head.textContent!==v)head.textContent=v;}
     const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='マンスリーソングURの表示位置と、部室・ライブ中のキャラアイコンのトリミングを調整しました。';
+    const msg='マンスリーソングURの表示位置と、部室・ライブ中のキャラアイコンのトリミングを調整しました。';
+    if(text&&text.textContent!==msg)text.textContent=msg;
   }
 
   function applyMonthlyMasterArt(){
@@ -126,7 +127,7 @@
   }
 
   updateVersionDisplay();applyMonthlyMasterArt();cleanGachaButton();installRoomRenderer();installLiveCrop();injectStyles();refreshGachaArt();
-  const observer=new MutationObserver(()=>{updateVersionDisplay();cleanGachaButton();refreshGachaArt(document);}); observer.observe(document.body,{childList:true,subtree:true});
+  const observer=new MutationObserver(()=>{cleanGachaButton();refreshGachaArt(document);}); observer.observe(document.body,{childList:true,subtree:true});
   window.refreshMonthlyMasterArt=function(){updateVersionDisplay();applyMonthlyMasterArt();installRoomRenderer();installLiveCrop();refreshGachaArt();try{if(typeof layoutPlayfield==='function')layoutPlayfield();}catch(_){}};
   setTimeout(window.refreshMonthlyMasterArt,0);
 })();
