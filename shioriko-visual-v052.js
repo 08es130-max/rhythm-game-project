@@ -16,6 +16,45 @@
   const image=card?.querySelector('.home-character-img');
   if(!card||!image) return;
 
+  // Inject the latest clumsy reaction style here as well, so iPhone/PWA CSS cache
+  // cannot keep the old circular "!" marker alive.
+  if(!document.getElementById('shio-clumsy-marker-v058')){
+    const style=document.createElement('style');
+    style.id='shio-clumsy-marker-v058';
+    style.textContent=`
+      .home-character-card[data-shio-mode="clumsy"].shio-react::before{
+        content:'…!?' !important;
+        position:absolute !important;
+        z-index:6 !important;
+        left:20% !important;
+        top:10% !important;
+        min-width:54px !important;
+        width:auto !important;
+        height:32px !important;
+        padding:0 10px !important;
+        border-radius:16px 16px 16px 6px !important;
+        display:grid !important;
+        place-items:center !important;
+        background:rgba(255,255,255,.96) !important;
+        color:#0f6ea8 !important;
+        border:2px solid #7dd3fc !important;
+        font-weight:900 !important;
+        font-size:15px !important;
+        letter-spacing:-.5px !important;
+        box-shadow:0 6px 16px rgba(14,165,233,.28),0 0 0 2px rgba(255,255,255,.45) !important;
+        pointer-events:none !important;
+        animation:shioClumsyBubbleV058 .9s ease-out both !important;
+      }
+      @keyframes shioClumsyBubbleV058{
+        0%{opacity:0;transform:translateY(5px) scale(.82)}
+        28%{opacity:1;transform:translateY(0) scale(1.04)}
+        72%{opacity:1;transform:translateY(-3px) scale(1)}
+        100%{opacity:0;transform:translateY(-12px) scale(.96)}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   let normalSrc='';
   let dialogueExpression='normal';
   let internalSwap=false;
