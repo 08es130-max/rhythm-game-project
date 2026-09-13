@@ -25,7 +25,7 @@
 <link rel="stylesheet" href="gacha-v045.css?v=0.5.7" />
 <link rel="stylesheet" href="shioriko-visual-v052.css?v=0.5.7" />
 <script>
-window.APP_VERSION = '0.6.9';
+window.APP_VERSION = '0.7.0';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -47,11 +47,11 @@ window.location.replace(url.toString());
 <section id="homeScreen" class="app-screen home-screen">
 <div class="home-topbar">
 <div><h1 class="home-title">ラブフェス！</h1><p class="home-subtitle">LIVE HOME</p></div>
-<div class="home-version">Ver. 0.6.9</div>
+<div class="home-version">Ver. 0.7.0</div>
 </div>
 <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.6.9 アップデート</span></div>
-<p class="update-text">ライブ描画を軽量化し、高密度譜面のノーツをより滑らかに表示するよう改善しました。</p>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.7.0 アップデート</span></div>
+<p class="update-text">ライブ描画をさらに軽量化し、ノーツのカクつきとライブ中断ボタンの操作不良を修正しました。</p>
 </div>
 <div class="home-main">
 <div class="home-character-card" data-character-id="default"><img class="home-character-img" src="icon-512-v030.png?v=0.5.7" alt="ホームキャラクター" /></div>
@@ -66,7 +66,7 @@ window.location.replace(url.toString());
 <section id="liveScreen" class="app-screen live-screen" hidden>
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
-<div class="version-badge" aria-label="app version">Ver. 0.6.9</div>
+<div class="version-badge" aria-label="app version">Ver. 0.7.0</div>
 <h2>ライブ選択</h2><p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 <div class="button-row"><button id="spicaPresetBtn" type="button">スピカテリブル</button><button id="demoBtn">テスト譜面を使う</button></div>
 <div class="file-row">
@@ -135,8 +135,8 @@ window.location.replace(url.toString());
 <script src="shioriko-secret-modes-v050.js?v=0.5.7"></script>
 <script src="shioriko-visual-v052.js?v=0.5.8"></script>
 <script src="gacha-v045.js?v=0.5.7"></script>
-<script src="fixes-v051.js?v=0.6.9"></script>
-<script src="tap-sound-fix-v068.js?v=0.6.9"></script>
-<script src="performance-fix-v069.js?v=0.6.9"></script>
+<script src="fixes-v051.js?v=0.7.0"></script>
+<script src="tap-sound-fix-v068.js?v=0.7.0"></script>
+<script src="performance-fix-v069.js?v=0.7.0"></script>
 </body>
 </html>
