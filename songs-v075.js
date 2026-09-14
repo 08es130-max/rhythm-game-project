@@ -9,185 +9,215 @@
     const half=beat/2;
     const notes=[];
     const seen=new Set();
+    const timeCounts=new Map();
     function addAt(t,lane){
       lane=Math.max(0,Math.min(8,Math.round(lane)));
       const time=Math.round(t);
       const key=`${time}:${lane}`;
-      if(seen.has(key)||time<startMs||time>endMs)return;
-      seen.add(key);notes.push({timeMs:time,lane});
+      const count=timeCounts.get(time)||0;
+      if(seen.has(key)||count>=2||time<startMs||time>endMs)return;
+      seen.add(key);timeCounts.set(time,count+1);notes.push({timeMs:time,lane});
     }
     function chord(t,a,b){addAt(t,a);if(b!==a)addAt(t,b);}
     function step(bar,sub){return startMs+(bar*8+sub)*half;}
-    function eightBarPattern(fromBar,toBar,fn){
-      for(let bar=fromBar;bar<toBar;bar++)for(let s=0;s<8;s++)fn(bar,s,step(bar,s));
+    function bars(fromBar,toBar,fn){
+      for(let bar=fromBar;bar<toBar;bar++)fn(bar,(sub)=>step(bar,sub));
     }
     function finish(){
       notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
       return {title,artist,difficulty:'EXPERT 二本指向け',bpm,offsetMs:0,noteCount:notes.length,notes};
     }
-    return {beat,half,addAt,chord,step,eightBarPattern,finish};
+    return {beat,half,addAt,chord,step,bars,finish};
   }
 
   function makeHappyPartyTrainChart(){
-    const B=chartBuilder('HAPPY PARTY TRAIN','Aqours',172.266,813,273850);
-    const {addAt,chord,step,eightBarPattern}=B;
+    const B=chartBuilder('HAPPY PARTY TRAIN','Aqours',172.266,813,276400);
+    const {addAt,chord,step,bars}=B;
 
-    // Intro: double-note movement and center accents, inspired by the reference SIF chart.
-    eightBarPattern(0,8,(bar,s,t)=>{
-      const pair=[[1,7],[2,6],[3,5],[2,6]][(bar+s)%4];
-      if(s%2===0)chord(t,pair[0],pair[1]);
-      else addAt(t,[4,3,4,5,4,2,4,6][s]);
+    // Intro: double-note movement and center accents, following the feel of the SIF reference.
+    bars(0,16,(bar,t)=>{
+      const pairs=[[1,7],[2,6],[3,5],[2,6]];
+      [0,2,4,6].forEach((s,i)=>{
+        const p=pairs[(bar+i)%pairs.length];
+        if(i%2===0)chord(t(s),p[0],p[1]); else addAt(t(s),4);
+      });
+      addAt(t(7),bar%2?3:5);
     });
 
-    // Intro B: center attacks + alternating 3-note fragments (525 / 8 / 464 style feel).
-    eightBarPattern(8,16,(bar,s,t)=>{
-      const p=[4,2,4,7,3,5,3,4];
-      addAt(t,p[(s+bar)%p.length]);
-      if(s===2||s===6)chord(t,1+(bar%2),7-(bar%2));
+    // A melody: 4-5 note stairs that switch hands, one of the signature HPT ideas.
+    bars(16,44,(bar,t)=>{
+      const left=[1,2,3,4,3],right=[7,6,5,4,5];
+      const seq=((bar>>1)%2===0)?left:right;
+      [0,1,3,4,6].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar%4===3)chord(t(7),2,6);
     });
 
-    // A-melody: one-hand biased 4/5-step stairs, switching sides every 2 bars.
-    eightBarPattern(16,32,(bar,s,t)=>{
-      const left=[1,2,3,4,3,2,1,2], right=[7,6,5,4,5,6,7,6];
-      const arr=((bar>>1)%2===0)?left:right;
-      addAt(t,arr[s]);
-      if(s===0||s===4)addAt(t,((bar>>1)%2===0)?7:1);
+    // A-melody end: chord / center-center "denim" feel + short crossing stairs.
+    bars(44,56,(bar,t)=>{
+      chord(t(0),bar%2?2:1,bar%2?6:7);
+      addAt(t(2),4);addAt(t(3),4);
+      const seq=bar%2?[6,5,4,3]:[2,3,4,5];
+      [4,5,6,7].forEach((s,i)=>addAt(t(s),seq[i]));
     });
 
-    // A-melody end: denim-like chord / center-center alternation and short crossing stairs.
-    eightBarPattern(32,40,(bar,s,t)=>{
-      const seq=[2,4,6,4,3,4,5,4];
-      if(s===0||s===4)chord(t,1+(bar%2),7-(bar%2));
-      else addAt(t,seq[s]);
+    // B melody: mirrored 75645 / 35465-like fragments and rhythm variation.
+    bars(56,76,(bar,t)=>{
+      const seq=bar%2?[7,5,6,4,5]:[3,5,4,6,4];
+      [0,2,3,5,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar%4===1)chord(t(6),1,7);
     });
 
-    // B-melody: rhythm-difficulty feel with mirrored 5-note fragments.
-    eightBarPattern(40,52,(bar,s,t)=>{
-      const seq=(bar%2===0)?[7,5,6,4,5,3,4,2]:[1,3,2,4,3,5,4,6];
-      if([1,4,6].includes(s))addAt(t,seq[s]);
-      else if(s%2===0)chord(t,seq[s],8-seq[s]);
-      else addAt(t,4);
+    // Pre-chorus: axis hits and opposite-hand staircase, a major feature of the reference chart.
+    bars(76,88,(bar,t)=>{
+      const mirror=bar>=82;
+      const anchor=mirror?8:0;
+      const stair=mirror?[4,3,2,1]:[4,5,6,7];
+      chord(t(0),anchor,4);
+      addAt(t(2),anchor);
+      stair.forEach((lane,i)=>chord(t(3+i),anchor,lane));
+      if(bar%3===2)addAt(t(7),mirror?6:2);
     });
 
-    // Pre-chorus: strong axis patterns. Left anchor -> right staircase, then mirrored.
-    eightBarPattern(52,60,(bar,s,t)=>{
-      if(bar<56){
-        const other=[4,5,6,7,8,7,6,5][s];
-        if(s<6)chord(t,0,other); else addAt(t,0);
-      }else{
-        const other=[4,3,2,1,0,1,2,3][s];
-        if(s<6)chord(t,8,other); else addAt(t,8);
-      }
+    // Chorus: same-single-same / anchor-answer patterns rather than a single repeating sweep.
+    bars(88,116,(bar,t)=>{
+      const flip=bar%2;
+      const A=flip?[7,2]:[1,6], Bp=flip?[6,1]:[2,7];
+      chord(t(0),A[0],A[1]);
+      addAt(t(2),4);
+      chord(t(3),Bp[0],Bp[1]);
+      addAt(t(5),flip?3:5);
+      chord(t(6),flip?7:1,flip?1:7);
+      if(bar%4===3)addAt(t(7),4);
     });
 
-    // Chorus: same-single-same style, alternating anchors and wide movement.
-    eightBarPattern(60,76,(bar,s,t)=>{
-      const patterns=[
-        [[1,6],4,[1,7],5,[2,7],4,[2,6],3],
-        [[7,2],4,[7,1],3,[6,1],4,[6,2],5]
-      ];
-      const row=patterns[bar%2];
-      const v=row[s];
-      if(Array.isArray(v))chord(t,v[0],v[1]); else addAt(t,v);
+    // Instrumental: compact 3-note alternations, cross-screen runs and intentional breathing room.
+    bars(116,132,(bar,t)=>{
+      const seq=bar%2?[8,3,7,2,6,4]:[0,5,1,6,2,4];
+      [0,1,3,4,6,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar%4===2)chord(t(5),2,6);
     });
 
-    // Instrumental: alternating triples, cross-screen runs, and small gaps for contrast.
-    eightBarPattern(76,84,(bar,s,t)=>{
-      const seq=[8,3,7,2,6,4,5,1];
-      if(s===3||s===7){chord(t,2+(bar%2),6-(bar%2));}
-      else if(!(bar%3===0&&s===5))addAt(t,seq[(s+bar)%seq.length]);
+    // Verse reprise: similar difficulty, but mirrored and with different anchor positions.
+    bars(132,156,(bar,t)=>{
+      const seq=bar%2?[6,5,4,3,2]:[2,3,4,5,6];
+      [0,2,3,5,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar%3===0)chord(t(6),bar%2?0:8,4);
     });
 
-    // Verse reprise: mirrored stairs with anchor swaps.
-    eightBarPattern(84,92,(bar,s,t)=>{
-      const seq=(bar%2===0)?[6,5,4,3,2,3,4,5]:[2,3,4,5,6,5,4,3];
-      addAt(t,seq[s]);
-      if(s===0||s===4)addAt(t,bar%2===0?0:8);
+    // Second build: center attacks, short alternations, then axis chords.
+    bars(156,172,(bar,t)=>{
+      addAt(t(0),4);
+      addAt(t(1),bar%2?2:6);
+      addAt(t(3),4);
+      chord(t(4),bar%2?1:0,bar%2?7:8);
+      addAt(t(6),bar%2?6:2);
+      if(bar>=168)chord(t(7),bar%2?8:0,4);
     });
 
-    // Final chorus / outro: denser, but still max 2 simultaneous.
-    eightBarPattern(92,98,(bar,s,t)=>{
-      const seq=[3,5,2,6,1,7,4,4];
-      if(s%2===0)chord(t,seq[s],8-seq[s]); else addAt(t,seq[s]);
+    // Final chorus: denser variation without exceeding two simultaneous notes.
+    bars(172,192,(bar,t)=>{
+      const flip=bar%2;
+      chord(t(0),flip?2:1,flip?6:7);
+      addAt(t(1),4);
+      addAt(t(3),flip?5:3);
+      chord(t(4),flip?1:2,flip?7:6);
+      addAt(t(6),4);
+      if(bar%4!==1)chord(t(7),flip?3:0,flip?5:8);
     });
-    for(let i=0;i<20;i++){
-      const t=step(98,0)+i*(B.half/2);
-      const seq=[8,3,7,2,6,4,5,3,4,5,2,6,1,7,3,5,4,2,4,6];
-      addAt(t,seq[i]);
-    }
+
+    // Outro: central scramble inspired by the reference chart's tricky finish.
+    bars(192,196,(bar,t)=>{
+      const seq=bar%2?[8,3,7,2,6,4]:[0,5,1,6,2,4];
+      [0,1,2,4,5,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      chord(t(6),3,5);
+    });
     return B.finish();
   }
 
   function makeBoooooomBeeChart(){
-    const B=chartBuilder('Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会',161.499,1370,224300);
-    const {addAt,chord,step,eightBarPattern}=B;
+    const B=chartBuilder('Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会',161.499,1370,225000);
+    const {addAt,chord,bars}=B;
 
-    // Each block deliberately changes motion so the chart never falls into one repeated loop.
-    eightBarPattern(0,8,(bar,s,t)=>{
-      const seq=[4,2,6,1,7,3,5,4];
-      if(s===0||s===4)chord(t,1+(bar%3),7-(bar%3)); else addAt(t,seq[(s+bar)%8]);
-    });
-    eightBarPattern(8,16,(bar,s,t)=>{
-      const orbit=[0,2,4,6,8,6,4,2];
-      addAt(t,orbit[(s+bar)%8]);
-      if(s===3||s===7)addAt(t,8-orbit[(s+bar)%8]);
-    });
-    eightBarPattern(16,24,(bar,s,t)=>{
-      const zig=(bar%2===0)?[1,3,5,7,6,4,2,4]:[7,5,3,1,2,4,6,4];
-      if(s%3===0)chord(t,zig[s],8-zig[s]); else addAt(t,zig[s]);
-    });
-    eightBarPattern(24,32,(bar,s,t)=>{
-      // syncopated bounce: intentionally leaves air on a few offbeats
-      if([1,5].includes(s)&&bar%2===0)return;
-      const seq=[4,5,4,6,4,3,4,2];
-      addAt(t,seq[s]);
-      if(s===2||s===6)chord(t,1,7);
-    });
-    eightBarPattern(32,40,(bar,s,t)=>{
-      // short trills that migrate left -> center -> right
-      const base=[1,2,3,4,5,6][bar%6];
-      const other=Math.min(8,base+1);
-      addAt(t,s%2===0?base:other);
-      if(s===7)chord(t,Math.max(0,base-1),Math.min(8,other+1));
-    });
-    eightBarPattern(40,48,(bar,s,t)=>{
-      const chords=[[0,8],[1,7],[2,6],[3,5]];
-      if(s%2===0){const c=chords[(bar+s/2)%4];chord(t,c[0],c[1]);}
-      else addAt(t,[4,3,5,2,6,4,4,4][s]);
-    });
-    eightBarPattern(48,56,(bar,s,t)=>{
-      // diagonal runs with direction change mid-bar
-      const a=[0,1,2,3,4,5,6,7],b=[8,7,6,5,4,3,2,1];
-      addAt(t,(bar%2===0?a:b)[s]);
-      if(s===3)chord(t,0,8);
-    });
-    eightBarPattern(56,64,(bar,s,t)=>{
-      // chorus: big "boom" hits on downbeats + quick answers
-      if(s===0||s===4)chord(t,bar%2?1:0,bar%2?7:8);
-      else addAt(t,[4,2,5,3,4,6,3,5][(s+bar)%8]);
-    });
-    eightBarPattern(64,72,(bar,s,t)=>{
-      // call-and-response: left phrase then mirrored right phrase
-      const seq=bar%2===0?[1,2,4,3,1,4,2,3]:[7,6,4,5,7,4,6,5];
-      addAt(t,seq[s]);
-      if(s===6)chord(t,2,6);
-    });
-    eightBarPattern(72,80,(bar,s,t)=>{
-      // pinball section
-      const seq=[0,4,8,3,7,2,6,4];
-      if(s===1||s===5)chord(t,1+(bar%2),7-(bar%2)); else addAt(t,seq[(s+bar)%8]);
+    // Intro: big outside hits with center answers.
+    bars(0,16,(bar,t)=>{
+      chord(t(0),bar%2?1:0,bar%2?7:8);
+      addAt(t(2),4);
+      addAt(t(4),bar%2?6:2);
+      addAt(t(6),bar%2?3:5);
+      if(bar%4===3)chord(t(7),2,6);
     });
 
-    // Last bars: mix prior motifs, then a compact finale instead of repeating one loop.
-    eightBarPattern(80,88,(bar,s,t)=>{
-      const seq=[3,4,5,2,6,1,7,4];
-      if((bar+s)%4===0)chord(t,0+(bar%3),8-(bar%3)); else addAt(t,seq[s]);
+    // Verse A: orbit motion.
+    bars(16,32,(bar,t)=>{
+      const seq=bar%2?[0,2,4,6,8]:[8,6,4,2,0];
+      [0,2,3,5,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar%4===1)chord(t(6),3,5);
     });
-    for(let i=0;i<24;i++){
-      const t=step(88,0)+i*(B.half/2);
-      const seq=[0,2,4,6,8,5,3,1,4,7,5,3,1,2,4,6,8,6,4,2,3,5,4,4];
-      if(i%6===0)chord(t,seq[i],8-seq[i]); else addAt(t,seq[i]);
-    }
+
+    // Verse B: zigzag and short mirrored fragments.
+    bars(32,48,(bar,t)=>{
+      const seq=bar%2?[1,3,5,7,4]:[7,5,3,1,4];
+      [0,1,3,5,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar%3===0)chord(t(6),2,6);
+    });
+
+    // Build: syncopated center bounce.
+    bars(48,64,(bar,t)=>{
+      addAt(t(0),4);
+      addAt(t(2),bar%2?5:3);
+      chord(t(3),1,7);
+      addAt(t(5),4);
+      if(bar%2===0)addAt(t(7),6);else chord(t(7),2,6);
+    });
+
+    // Chorus 1: "boom" downbeats + quick answers.
+    bars(64,84,(bar,t)=>{
+      chord(t(0),bar%2?1:0,bar%2?7:8);
+      addAt(t(1),4);
+      addAt(t(3),bar%2?2:6);
+      chord(t(4),bar%2?2:1,bar%2?6:7);
+      addAt(t(6),bar%2?5:3);
+      if(bar%4===3)addAt(t(7),4);
+    });
+
+    // Break: migrating two-lane trills with gaps.
+    bars(84,100,(bar,t)=>{
+      const base=[1,2,3,4,5,6][bar%6],other=Math.min(8,base+1);
+      [0,1,3,4,6].forEach((s,i)=>addAt(t(s),i%2?other:base));
+      if(bar%4===2)chord(t(7),Math.max(0,base-1),Math.min(8,other+1));
+    });
+
+    // Verse reprise: diagonal runs and reversals.
+    bars(100,116,(bar,t)=>{
+      const seq=bar%2?[0,1,3,5,7,8]:[8,7,5,3,1,0];
+      [0,1,2,4,6,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar%4===1)chord(t(5),0,8);
+    });
+
+    // Build 2: call-and-response across left/right halves.
+    bars(116,132,(bar,t)=>{
+      const seq=bar%2?[1,2,4,3,1]:[7,6,4,5,7];
+      [0,2,3,5,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      if(bar>=128)chord(t(6),2,6);
+    });
+
+    // Chorus 2: wider chords and changing answer lanes.
+    bars(132,144,(bar,t)=>{
+      const pairs=[[0,8],[1,7],[2,6],[3,5]];
+      const p=pairs[bar%4];
+      chord(t(0),p[0],p[1]);
+      addAt(t(2),[4,3,5,2][bar%4]);
+      chord(t(4),pairs[(bar+2)%4][0],pairs[(bar+2)%4][1]);
+      addAt(t(6),[5,4,3,6][bar%4]);
+      addAt(t(7),4);
+    });
+
+    // Finale: mixed motifs instead of looping one gesture.
+    bars(144,150,(bar,t)=>{
+      const seq=bar%2?[0,2,4,7,5,3]:[8,6,4,1,3,5];
+      [0,1,3,4,6,7].forEach((s,i)=>addAt(t(s),seq[i]));
+      chord(t(5),bar%2?1:2,bar%2?7:6);
+    });
     return B.finish();
   }
 
