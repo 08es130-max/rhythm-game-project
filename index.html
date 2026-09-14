@@ -18,14 +18,15 @@
 <link rel="stylesheet" href="touch-guards.css?v=0.5.7" />
 <link rel="stylesheet" href="pause.css?v=0.5.7" />
 <link rel="stylesheet" href="calibration.css?v=0.5.7" />
-<link rel="stylesheet" href="home.css?v=0.5.7" />
+<link rel="stylesheet" href="home.css?v=0.7.9" />
+<link rel="stylesheet" href="home-night-v079.css?v=0.7.9" />
 <link rel="stylesheet" href="home-result-v041.css?v=0.5.7" />
 <link rel="stylesheet" href="home-layout-v042.css?v=0.5.7" />
 <link rel="stylesheet" href="hidden-admin-v048.css?v=0.5.7" />
 <link rel="stylesheet" href="gacha-v045.css?v=0.5.7" />
 <link rel="stylesheet" href="shioriko-visual-v052.css?v=0.5.7" />
 <script>
-window.APP_VERSION = '0.7.8';
+window.APP_VERSION = '0.7.9';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -47,11 +48,11 @@ window.location.replace(url.toString());
 <section id="homeScreen" class="app-screen home-screen">
 <div class="home-topbar">
 <div><h1 class="home-title">ラブフェス！</h1><p class="home-subtitle">LIVE HOME</p></div>
-<div class="home-version">Ver. 0.7.8</div>
+<div class="home-version">Ver. 0.7.9</div>
 </div>
 <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.7.8 アップデート</span></div>
-<p class="update-text">ライブ中のタップ入力を強化し、処理落ち時や同じレーンの連打でも入力を取りこぼしにくくしました。</p>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.7.9 アップデート</span></div>
+<p class="update-text">ホーム画面を夜空ネイビー基調に一新し、星空を思わせる落ち着いたデザインに調整しました。</p>
 </div>
 <div class="home-main">
 <div class="home-character-card" data-character-id="default"><img class="home-character-img" src="icon-512-v030.png?v=0.5.7" alt="ホームキャラクター" /></div>
@@ -66,7 +67,7 @@ window.location.replace(url.toString());
 <section id="liveScreen" class="app-screen live-screen" hidden>
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
-<div class="version-badge" aria-label="app version">Ver. 0.7.8</div>
+<div class="version-badge" aria-label="app version">Ver. 0.7.9</div>
 <h2>ライブ選択</h2><p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 <div class="button-row"><button id="spicaPresetBtn" type="button">スピカテリブル</button><button id="demoBtn">テスト譜面を使う</button></div>
 <div class="file-row">
@@ -116,7 +117,7 @@ window.location.replace(url.toString());
 <script src="voice-events.js?v=0.5.7"></script>
 <script src="voice-manager.js?v=0.5.7"></script>
 <script src="calibration.js?v=0.5.7"></script>
-<script src="touch-guards.js?v=0.7.8"></script>
+<script src="touch-guards.js?v=0.7.9"></script>
 <script src="pause.js?v=0.5.7"></script>
 <script src="home.js?v=0.5.7"></script>
 <script src="song-presets.js?v=0.5.7"></script>
@@ -135,14 +136,14 @@ window.location.replace(url.toString());
 <script src="shioriko-secret-modes-v050.js?v=0.5.7"></script>
 <script src="shioriko-visual-v052.js?v=0.5.8"></script>
 <script src="gacha-v045.js?v=0.5.7"></script>
-<script src="fixes-v051.js?v=0.7.8"></script>
-<script src="tap-sound-fix-v068.js?v=0.7.8"></script>
-<script src="stability-fix-v071.js?v=0.7.8"></script>
-<script src="smooth-clock-v072.js?v=0.7.8"></script>
-<script src="canvas-notes-v073.js?v=0.7.8"></script>
-<script src="runtime-tuning-v074.js?v=0.7.8"></script>
-<script src="songs-v075.js?v=0.7.8"></script>
-<script src="songs-v077.js?v=0.7.8"></script>
-<script src="input-fix-v077.js?v=0.7.8"></script>
+<script src="fixes-v051.js?v=0.7.9"></script>
+<script src="tap-sound-fix-v068.js?v=0.7.9"></script>
+<script src="stability-fix-v071.js?v=0.7.9"></script>
+<script src="smooth-clock-v072.js?v=0.7.9"></script>
+<script src="canvas-notes-v073.js?v=0.7.9"></script>
+<script src="runtime-tuning-v074.js?v=0.7.9"></script>
+<script src="songs-v075.js?v=0.7.9"></script>
+<script src="songs-v077.js?v=0.7.9"></script>
+<script src="input-fix-v077.js?v=0.7.9"></script>
 </body>
 </html>
