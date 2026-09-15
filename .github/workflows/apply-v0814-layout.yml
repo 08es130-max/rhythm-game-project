@@ -1,0 +1,106 @@
+name: Apply home character layout v0.8.14
+
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-v0814-layout.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update home character layout and version
+        run: |
+          set -e
+          cat > home-layering-v0814.css <<'EOF'
+/* Ver.0.8.14: larger standing art, lowered below the LoveFes logo. */
+.home-screen .home-topbar{
+  position:relative;
+  z-index:30!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  overflow:visible!important;
+}
+.home-screen .home-topbar > div:first-child{
+  position:relative;
+  z-index:31;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.home-screen .home-lovefes-logo-v085{
+  position:relative;
+  z-index:32;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.home-screen .home-main{z-index:2!important;overflow:visible!important}
+.home-screen .home-character-card{z-index:1;overflow:visible!important}
+.home-screen .home-character-cutout-v084{z-index:4!important}
+.home-screen .home-character-note,.home-screen .home-dialogue{z-index:8!important}
+.home-screen .home-version{position:relative;z-index:33}
+
+@media (orientation:landscape){
+  .home-screen .home-character-cutout-v084{
+    width:122%!important;
+    height:132%!important;
+    max-width:none!important;
+    object-fit:contain!important;
+    object-position:center bottom!important;
+    left:50%!important;
+    bottom:-46px!important;
+    transform:translateX(-50%)!important;
+  }
+}
+@media (orientation:landscape) and (max-height:620px){
+  .home-screen .home-character-cutout-v084{
+    width:124%!important;
+    height:134%!important;
+    bottom:-50px!important;
+  }
+}
+EOF
+
+          python3 - <<'PY'
+          from pathlib import Path
+          idx=Path('index.html')
+          s=idx.read_text()
+          s=s.replace('home-layering-v0813.css?v=0.8.13','home-layering-v0814.css?v=0.8.14')
+          s=s.replace('home-cutout-v084.js?v=0.8.13','home-cutout-v084.js?v=0.8.14')
+          s=s.replace('fixes-v051.js?v=0.8.13','fixes-v051.js?v=0.8.14')
+          s=s.replace("window.APP_VERSION = '0.8.13'","window.APP_VERSION = '0.8.14'")
+          s=s.replace('Ver. 0.8.13','Ver. 0.8.14')
+          s=s.replace('Ver.0.8.13 アップデート','Ver.0.8.14 アップデート')
+          s=s.replace('manifest-v0812.json?v=0.8.13','manifest-v0812.json?v=0.8.14')
+          s=s.replace('ホーム左上のロゴを完全透過レイヤーとして前面にし、栞子の立ち絵が背面から自然に見えるよう配置を調整しました。','栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。')
+          idx.write_text(s)
+          Path('fresh-v0814.html').write_text(s)
+          Path('version.json').write_text('{\n  "version": "0.8.14"\n}\n')
+
+          p=Path('home-cutout-v084.js')
+          j=p.read_text()
+          j=j.replace("window.APP_VERSION || '0.8.11'","window.APP_VERSION || '0.8.14'")
+          j=j.replace('新しいアプリアイコンとホーム左上の「ラブフェス！」ロゴ、栞子の新しい立ち絵候補を追加しました。','栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。')
+          p.write_text(j)
+
+          p=Path('fixes-v051.js')
+          f=p.read_text()
+          f=f.replace("window.APP_VERSION || '0.8.11'","window.APP_VERSION || '0.8.14'")
+          p.write_text(f)
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add home-layering-v0814.css home-cutout-v084.js fixes-v051.js index.html fresh-v0814.html version.json
+          git commit -m "Apply enlarged Shioriko standing art layout v0.8.14"
+          git push
