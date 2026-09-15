@@ -12,6 +12,10 @@ on:
       - 'assets/shioriko-expressions/drunk-v058.png'
       - 'assets/shioriko-expressions/clumsy-v058.png'
       - 'assets/shioriko-expressions/casual-v058.png'
+      - 'assets/home-live-v042.webp'
+      - 'assets/home-settings-v042.webp'
+      - 'assets/home-room-v042.webp'
+      - 'assets/home-gacha-v042.webp'
 
 permissions:
   contents: write
@@ -36,38 +40,42 @@ jobs:
           from PIL import Image
           import io
 
-          out = Path('assets/home-characters/shioriko')
-          out.mkdir(parents=True, exist_ok=True)
+          character_out = Path('assets/home-characters/shioriko')
+          ui_out = Path('assets/home-ui')
+          character_out.mkdir(parents=True, exist_ok=True)
+          ui_out.mkdir(parents=True, exist_ok=True)
 
           files = {
-              'normal': Path('icon-512-v030.png'),
-              'dere': Path('assets/shioriko-expressions/dere-v058.png'),
-              'yandere': Path('assets/shioriko-expressions/yandere-v058.png'),
-              'scold': Path('assets/shioriko-expressions/scold-v058.png'),
-              'drunk': Path('assets/shioriko-expressions/drunk-v058.png'),
-              'clumsy': Path('assets/shioriko-expressions/clumsy-v058.png'),
-              'casual': Path('assets/shioriko-expressions/casual-v058.png'),
+              character_out / 'normal.png': Path('icon-512-v030.png'),
+              character_out / 'dere.png': Path('assets/shioriko-expressions/dere-v058.png'),
+              character_out / 'yandere.png': Path('assets/shioriko-expressions/yandere-v058.png'),
+              character_out / 'scold.png': Path('assets/shioriko-expressions/scold-v058.png'),
+              character_out / 'drunk.png': Path('assets/shioriko-expressions/drunk-v058.png'),
+              character_out / 'clumsy.png': Path('assets/shioriko-expressions/clumsy-v058.png'),
+              character_out / 'casual.png': Path('assets/shioriko-expressions/casual-v058.png'),
+              ui_out / 'live.png': Path('assets/home-live-v042.webp'),
+              ui_out / 'settings.png': Path('assets/home-settings-v042.webp'),
+              ui_out / 'room.png': Path('assets/home-room-v042.webp'),
+              ui_out / 'gacha.png': Path('assets/home-gacha-v042.webp'),
           }
 
-          for name, src in files.items():
+          for dest, src in files.items():
               result = remove(src.read_bytes(), alpha_matting=True,
                               alpha_matting_foreground_threshold=240,
                               alpha_matting_background_threshold=10,
                               alpha_matting_erode_size=8)
               img = Image.open(io.BytesIO(result)).convert('RGBA')
-              img.save(out / f'{name}.png', optimize=True)
-              print(name, src, '->', out / f'{name}.png', img.size)
+              img.save(dest, optimize=True)
+              print(src, '->', dest, img.size)
           PY
       - name: Commit generated assets
         run: |
-          if git status --porcelain assets/home-characters/shioriko | grep .; then
+          if git status --porcelain assets/home-characters/shioriko assets/home-ui | grep .; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add assets/home-characters/shioriko
-            git commit -m 'Generate transparent home character assets'
+            git add assets/home-characters/shioriko assets/home-ui
+            git commit -m 'Generate transparent home assets'
             git push
           else
             echo 'No generated changes.'
           fi
-
-# This workflow runs only when source standing-art files change or this workflow is updated.
