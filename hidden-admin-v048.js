@@ -1,4 +1,4 @@
-// Ver.0.8.16 hidden owner room. Secret command uses version taps + visible LoveFes logo hold.
+// Ver.0.8.17 hidden owner room. Secret command uses version taps + visible LoveFes logo hold, including iOS touch handling.
 (function(){
   const RATE_KEY='rhythmGame.adminGachaUrRate.v1';
   const SAVE_KEY='rhythmGame.adminGachaSaveOwned.v1';
@@ -126,6 +126,7 @@
   function installSecretCommand(){
     const version=document.querySelector('.home-version');
     const title=document.querySelector('.home-topbar > div:first-child');
+    const logo=title?.querySelector('.home-lovefes-logo-v085');
     if(!version||!title) return;
 
     let taps=[];
@@ -154,12 +155,22 @@
         }
       },1400);
     };
-    const cancelHold=()=>{clearTimeout(holdTimer);holdTimer=0;};
+    const cancelHold=e=>{
+      if(e && Date.now()<=armedUntil && e.cancelable) e.preventDefault();
+      clearTimeout(holdTimer);
+      holdTimer=0;
+    };
+
     title.addEventListener('pointerdown',startHold);
     title.addEventListener('pointerup',cancelHold);
     title.addEventListener('pointercancel',cancelHold);
     title.addEventListener('pointerleave',cancelHold);
+    title.addEventListener('touchstart',startHold,{passive:false});
+    title.addEventListener('touchend',cancelHold,{passive:false});
+    title.addEventListener('touchcancel',cancelHold,{passive:false});
     title.addEventListener('contextmenu',e=>{if(Date.now()<=armedUntil)e.preventDefault();});
+    logo?.addEventListener('contextmenu',e=>e.preventDefault());
+    logo?.addEventListener('dragstart',e=>e.preventDefault());
   }
 
   ensureRoom();
