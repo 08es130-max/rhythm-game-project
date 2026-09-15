@@ -1,0 +1,67 @@
+name: Finalize direct standing art v0.8.15
+
+on:
+  push:
+    paths:
+      - '.github/workflows/finalize-v0815-direct.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate and finalize v0.8.15
+        run: |
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+
+          modes=['normal','dere','yandere','scold','drunk','clumsy','casual']
+          for mode in modes:
+              p=Path(f'assets/home-characters/shioriko/{mode}.webp')
+              b=p.read_bytes()
+              assert b[:4]==b'RIFF' and b[8:12]==b'WEBP', f'{mode}: invalid WEBP header'
+              declared=struct.unpack('<I',b[4:8])[0]+8
+              missing=declared-len(b)
+              assert 0 <= missing <= 2, f'{mode}: unexpected size {len(b)} / {declared}'
+              if missing:
+                  b += b'\x00'*missing
+                  p.write_bytes(b)
+              assert len(p.read_bytes())==declared
+              print(mode, declared)
+
+          p=Path('home-cutout-v084.js')
+          s=p.read_text()
+          s=s.replace("window.APP_VERSION || '0.8.14'","window.APP_VERSION || '0.8.15'")
+          s=s.replace("window.APP_VERSION || '0.8.11'","window.APP_VERSION || '0.8.15'")
+          s=s.replace("assets/home-characters/shioriko/${mode}.png", "assets/home-characters/shioriko/${mode}.webp")
+          p.write_text(s)
+
+          p=Path('index.html')
+          s=p.read_text().replace('0.8.14','0.8.15')
+          s=s.replace('栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。','栞子の通常立ち絵と隠しモード全7種を、新しい左右補完済み立ち絵へ差し替えました。')
+          p.write_text(s)
+          Path('fresh-v0815.html').write_text(s)
+          Path('version.json').write_text('{\n  "version": "0.8.15"\n}\n')
+
+          f=Path('fixes-v051.js')
+          if f.exists():
+              t=f.read_text().replace("window.APP_VERSION || '0.8.14'","window.APP_VERSION || '0.8.15'").replace("window.APP_VERSION || '0.8.11'","window.APP_VERSION || '0.8.15'")
+              f.write_text(t)
+          PY
+
+          grep -q "window.APP_VERSION = '0.8.15'" index.html
+          grep -q 'assets/home-characters/shioriko/${mode}.webp' home-cutout-v084.js
+          grep -q '"version": "0.8.15"' version.json
+
+      - name: Commit finalized release
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/home-characters/shioriko/*.webp home-cutout-v084.js fixes-v051.js index.html fresh-v0815.html version.json
+          git commit -m "Release complete Shioriko standing art v0.8.15"
+          git push
