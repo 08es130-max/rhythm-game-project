@@ -3,7 +3,7 @@
   const VERSION=window.APP_VERSION || '0.8.15';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
-  const ART=Object.fromEntries(VALID.map(mode=>[mode,`assets/home-characters/shioriko/${mode}.webp?v=${VERSION}`]));
+  const ART=Object.fromEntries(VALID.map(mode=>[mode,`assets/home-characters/shioriko/${mode}.${mode==='normal'?'png':'webp'}?v=${VERSION}`]));
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
     homeSettingsBtn:`assets/home-ui/settings.png?v=${VERSION}`,
