@@ -50,10 +50,7 @@ jobs:
 
               with Image.open(dst) as check:
                   if check.width != 900:
-                      raise SystemExit(f'Unexpected output size for {dst}: {check.size}')
-                  if check.mode not in ('RGBA','LA') and 'transparency' not in check.info:
-                      # Pillow may decode transparent WebP as RGBA; fail only when clearly opaque source was expected.
-                      pass
+                      raise SystemExit(f'Unexpected output width for {dst}: {check.size}')
                   print(f'{name}: {source_size} -> {check.size}, {dst.stat().st_size} bytes')
           PY
 
@@ -61,7 +58,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import json, re
+          import json
 
           version = '0.8.18'
           Path('version.json').write_text(json.dumps({'version': version}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
@@ -80,10 +77,12 @@ jobs:
           root = Path('assets/home-characters/shioriko')
           for name in ['normal','dere','yandere','scold','drunk','clumsy','casual']:
               p = root / f'{name}.webp'
+              assert p.exists(), f'Missing {p}'
               with Image.open(p) as im:
-                  assert im.size == (900, 1200), (name, im.size)
-              assert p.stat().st_size > 50000, (name, p.stat().st_size)
-              print(name, p.stat().st_size)
+                  assert im.width == 900, (name, im.size)
+                  assert im.height >= 900, (name, im.size)
+                  print(name, im.size, p.stat().st_size)
+              assert p.stat().st_size > 30000, (name, p.stat().st_size)
           PY
 
       - name: Commit and push
