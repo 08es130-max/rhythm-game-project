@@ -1,6 +1,6 @@
 // Ver.0.6.7: song library + Snow halation + local custom song registration.
 (function(){
-  const VERSION=window.APP_VERSION || '0.8.14';
+  const VERSION=window.APP_VERSION || '0.8.15';
   const MONTHLY_META={
     ayumu:{file:'ayumu.png',focus:'50% 4%',zoom:3.85,spotFocus:'50% 0%',spotZoom:1.00},
     kasumi:{file:'kasumi.png',focus:'50% 11%',zoom:3.85,spotFocus:'50% 9%',spotZoom:1.08},
