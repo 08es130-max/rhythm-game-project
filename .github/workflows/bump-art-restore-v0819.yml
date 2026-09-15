@@ -1,0 +1,39 @@
+name: Bump art restore v0.8.19
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bump-art-restore-v0819.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bump app version and clean staging file
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['index.html', 'fresh-v0812.html', 'manifest-v0812.json']:
+              p = Path(name)
+              if p.exists():
+                  s = p.read_text()
+                  s = s.replace('0.8.18', '0.8.19')
+                  p.write_text(s)
+          Path('version.json').write_text('{\n  "version": "0.8.19"\n}\n')
+          p = Path('.shio-normal-v0819.b64')
+          if p.exists(): p.unlink()
+          PY
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Bump official Shioriko art restore to v0.8.19"
+          git push
