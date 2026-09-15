@@ -22,6 +22,14 @@ jobs:
           cp apple-touch-icon-v0812.png apple-touch-icon.png
           python3 - <<'PY'
           from pathlib import Path
+          import struct
+          b=Path('apple-touch-icon-v0812.png').read_bytes()
+          assert b.startswith(b'\x89PNG\r\n\x1a\n'), 'not a PNG'
+          assert b.endswith(b'IEND\xaeB`\x82'), 'truncated PNG'
+          w,h=struct.unpack('>II', b[16:24])
+          assert (w,h)==(180,180), (w,h)
+          print('verified PNG:', w, h, len(b), 'bytes')
+
           p=Path('index.html')
           s=p.read_text()
           s=s.replace('0.8.11','0.8.12')
@@ -41,13 +49,6 @@ jobs:
           }
           ''')
           Path('fresh-v0812.html').write_text(s)
-          PY
-          python3 - <<'PY'
-          from pathlib import Path
-          b=Path('apple-touch-icon-v0812.png').read_bytes()
-          assert b.startswith(b'\x89PNG\r\n\x1a\n'), 'not a PNG'
-          assert len(b) > 10000, f'icon too small: {len(b)}'
-          print('verified icon bytes:', len(b))
           PY
       - name: Commit
         run: |
