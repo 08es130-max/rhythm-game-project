@@ -19,24 +19,20 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          # Make only the visible logo area and version badge interactive.
           p=Path('home-branding-v085.css')
           s=p.read_text()
-          s=s.replace('  pointer-events:none;\n  position:relative;\n  z-index:3;', '  pointer-events:none;\n  position:relative;\n  z-index:3;')
           s=s.replace('  display:flex;\n  align-items:flex-start;\n}', '  display:flex;\n  align-items:flex-start;\n  pointer-events:auto;\n  touch-action:manipulation;\n}')
           s=s.replace('  pointer-events:none;\n}\n@media (max-height:520px)', '  pointer-events:auto;\n  touch-action:manipulation;\n}\n@media (max-height:520px)')
           if '.home-lovefes-logo-v085{' in s and 'cursor:pointer' not in s:
               s=s.replace('  -webkit-user-drag:none;\n}', '  -webkit-user-drag:none;\n  pointer-events:auto;\n  touch-action:manipulation;\n  cursor:pointer;\n}')
           p.write_text(s)
 
-          # The old hidden title is display:none, so use its visible host/logo area for the hold gesture.
           p=Path('hidden-admin-v048.js')
           s=p.read_text()
           s=s.replace('// Ver.0.4.8 hidden owner room. No visible entry point is added to the home screen.', '// Ver.0.8.16 hidden owner room. Secret command uses version taps + visible LoveFes logo hold.')
           s=s.replace("const title=document.querySelector('.home-title');", "const title=document.querySelector('.home-topbar > div:first-child');")
           p.write_text(s)
 
-          # Bump visible app version and cache-bust the two fixed assets.
           for name in ['index.html','fresh-v0815.html']:
               p=Path(name)
               s=p.read_text()
@@ -62,3 +58,5 @@ jobs:
           git add hidden-admin-v048.js home-branding-v085.css index.html fresh-v0815.html version.json
           git commit -m "Fix hidden command trigger v0.8.16"
           git push
+
+# retrigger 2
