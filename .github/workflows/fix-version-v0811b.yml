@@ -1,0 +1,53 @@
+name: Apply version display fix v0.8.11
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-version-v0811b.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch stale version overrides
+        run: |
+          set -e
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p=Path('home-cutout-v084.js')
+          s=p.read_text()
+          s=s.replace("const VERSION='0.8.6';", "const VERSION=window.APP_VERSION || '0.8.11';")
+          p.write_text(s)
+
+          p=Path('fixes-v051.js')
+          s=p.read_text()
+          s=s.replace("const VERSION='0.6.7';", "const VERSION=window.APP_VERSION || '0.8.11';")
+          p.write_text(s)
+
+          for name in ['index.html','fresh-v0810.html']:
+              p=Path(name)
+              if not p.exists():
+                  continue
+              s=p.read_text()
+              s=s.replace('0.8.10','0.8.11')
+              s=s.replace('fixes-v051.js?v=0.8.2','fixes-v051.js?v=0.8.11')
+              s=s.replace('home-cutout-v084.js?v=0.8.5','home-cutout-v084.js?v=0.8.11')
+              p.write_text(s)
+
+          Path('version.json').write_text('{\n  "version": "0.8.11"\n}\n')
+
+          if Path('fresh-v0810.html').exists():
+              Path('fresh-v0811.html').write_text(Path('fresh-v0810.html').read_text())
+          PY
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add home-cutout-v084.js fixes-v051.js index.html fresh-v0810.html fresh-v0811.html version.json
+          git commit -m "Fix stale version display and bump to v0.8.11"
+          git push
