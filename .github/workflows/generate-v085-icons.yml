@@ -41,3 +41,4 @@ jobs:
           git commit -m 'Generate v0.8.5 app icon sizes'
           git pull --rebase origin main
           git push origin HEAD:main
+# retrigger: 2026-09-15
