@@ -14,11 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Write verified bright icon and bump version
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          gh api repos/${GITHUB_REPOSITORY}/git/blobs/baa93c0a47e00a9d73bbd3c094219b8c58f06e7f --jq .content | tr -d '\n' | base64 -d > apple-touch-icon-v0812.png
+          cat .icon-v0812/chunk0.txt .icon-v0812/chunk1.txt .icon-v0812/chunk2.txt .icon-v0812/chunk3.txt | base64 -d > apple-touch-icon-v0812.png
           cp apple-touch-icon-v0812.png apple-touch-icon.png
           python3 - <<'PY'
           from pathlib import Path
@@ -28,6 +26,7 @@ jobs:
           assert b.endswith(b'IEND\xaeB`\x82'), 'truncated PNG'
           w,h=struct.unpack('>II', b[16:24])
           assert (w,h)==(180,180), (w,h)
+          assert len(b) > 15000, len(b)
           print('verified PNG:', w, h, len(b), 'bytes')
 
           p=Path('index.html')
