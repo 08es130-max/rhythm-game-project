@@ -1,0 +1,54 @@
+name: Publish v0.8.4 transparent home assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-v084.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch v0.8.4 files
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('<link rel="stylesheet" href="home-transparent-v083.css?v=0.8.3" />',
+                      '<link rel="stylesheet" href="home-transparent-v083.css?v=0.8.4" />\n<link rel="stylesheet" href="home-cutout-v084.css?v=0.8.4" />')
+          s=s.replace("window.APP_VERSION = '0.8.3';", "window.APP_VERSION = '0.8.4';")
+          s=s.replace('Ver. 0.8.3','Ver. 0.8.4')
+          s=s.replace('Ver.0.8.3 アップデート','Ver.0.8.4 アップデート')
+          s=s.replace('ホームの立ち絵とメニューボタン周囲を透過し、星空背景が自然につながる表示に調整しました。',
+                      'ホームの栞子と4つのメニューボタンを、画像そのものから背景を除去した透過素材へ変更しました。')
+          s=s.replace('<script src="home-transparent-v083.js?v=0.8.3"></script>',
+                      '<script src="home-transparent-v083.js?v=0.8.4"></script>\n<script src="home-cutout-v084.js?v=0.8.4"></script>')
+          p.write_text(s,encoding='utf-8')
+
+          v=Path('version.json')
+          v.write_text('{\n  "version": "0.8.4"\n}\n',encoding='utf-8')
+
+          hp=Path('home-transparent-v083.js')
+          hs=hp.read_text(encoding='utf-8')
+          hs=hs.replace("const VERSION='0.8.3';","const VERSION='0.8.4';")
+          hs=hs.replace('ホームの立ち絵とメニューボタン周囲を透過し、星空背景が自然につながる表示に調整しました。',
+                        'ホームの栞子と4つのメニューボタンを、画像そのものから背景を除去した透過素材へ変更しました。')
+          hp.write_text(hs,encoding='utf-8')
+          PY
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html version.json home-transparent-v083.js
+          git commit -m 'Publish v0.8.4 transparent home assets'
+          git pull --rebase origin main
+          git push origin main
