@@ -1,0 +1,59 @@
+name: Normalize Shioriko normal PNG for iPhone
+
+on:
+  push:
+    paths:
+      - '.github/workflows/normalize-normal-png-v0820.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Convert indexed PNG to truecolor RGBA
+        run: |
+          set -euo pipefail
+          p='assets/home-characters/shioriko/normal.png'
+          python - <<'PY'
+          from pathlib import Path
+          import struct
+          p=Path('assets/home-characters/shioriko/normal.png')
+          b=p.read_bytes()
+          assert b[:8] == b'\x89PNG\r\n\x1a\n'
+          w,h=struct.unpack('>II',b[16:24])
+          assert (w,h)==(540,720), (w,h)
+          assert len(b) > 100000, len(b)
+          print('before:', len(b), 'bytes', w, h, 'color_type', b[25])
+          PY
+          if command -v magick >/dev/null 2>&1; then
+            magick "$p" PNG32:/tmp/normal-rgba.png
+          elif command -v convert >/dev/null 2>&1; then
+            convert "$p" PNG32:/tmp/normal-rgba.png
+          else
+            echo 'ImageMagick not available' >&2
+            exit 1
+          fi
+          mv /tmp/normal-rgba.png "$p"
+          python - <<'PY'
+          from pathlib import Path
+          import struct, hashlib
+          p=Path('assets/home-characters/shioriko/normal.png')
+          b=p.read_bytes()
+          assert b[:8] == b'\x89PNG\r\n\x1a\n'
+          w,h=struct.unpack('>II',b[16:24])
+          assert (w,h)==(540,720), (w,h)
+          assert b[25] == 6, f'expected RGBA color type 6, got {b[25]}'
+          assert len(b) > 100000, len(b)
+          print('after:', len(b), 'bytes', w, h, 'color_type', b[25], 'sha256', hashlib.sha256(b).hexdigest())
+          PY
+      - name: Commit normalized PNG
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/home-characters/shioriko/normal.png
+          git diff --cached --quiet && exit 0
+          git commit -m "Normalize Shioriko normal PNG to truecolor RGBA"
+          git push
