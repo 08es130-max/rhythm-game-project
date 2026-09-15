@@ -20,12 +20,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Generate 180 and 192 icons
+      - name: Repair and generate app icons
         run: |
           pip install pillow
           python - <<'PY'
-          from PIL import Image
-          img = Image.open('icon-512-v085.png').convert('RGBA')
+          from PIL import Image, ImageFile
+          from pathlib import Path
+          ImageFile.LOAD_TRUNCATED_IMAGES = True
+          src = Path('icon-512-v085.png')
+          img = Image.open(src).convert('RGBA')
+          repaired = Path('icon-512-v085-repaired.png')
+          img.save(repaired, optimize=True)
+          repaired.replace(src)
+          img = Image.open(src).convert('RGBA')
           for size in (180, 192):
               out = img.resize((size, size), Image.Resampling.LANCZOS)
               out.save(f'icon-{size}-v085.png', optimize=True)
@@ -34,11 +41,11 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add icon-180-v085.png icon-192-v085.png
+          git add icon-180-v085.png icon-192-v085.png icon-512-v085.png
           if git diff --cached --quiet; then
             exit 0
           fi
-          git commit -m 'Generate v0.8.5 app icon sizes'
+          git commit -m 'Repair and generate v0.8.5 app icons'
           git pull --rebase origin main
           git push origin HEAD:main
-# retrigger: 2026-09-15
+# retrigger: repair source and generate sizes
