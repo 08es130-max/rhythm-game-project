@@ -18,15 +18,40 @@ jobs:
           set -e
           mkdir -p assets/home-characters/shioriko
           for mode in normal dere yandere scold drunk clumsy casual; do
-            base64 -d ".v0814-assets/direct-${mode}.b64" > "assets/home-characters/shioriko/${mode}.webp"
+            base64 --decode --ignore-garbage ".v0814-assets/direct-${mode}.b64" > "assets/home-characters/shioriko/${mode}.webp"
             test -s "assets/home-characters/shioriko/${mode}.webp"
-            python3 -c "import pathlib,sys; b=pathlib.Path(sys.argv[1]).read_bytes(); assert b[:4]==b'RIFF' and b[8:12]==b'WEBP'" "assets/home-characters/shioriko/${mode}.webp"
+            python3 - "$mode" <<'PY'
+          import pathlib,struct,sys
+          mode=sys.argv[1]
+          p=pathlib.Path(f'assets/home-characters/shioriko/{mode}.webp')
+          b=p.read_bytes()
+          assert b[:4] == b'RIFF' and b[8:12] == b'WEBP', f'{mode}: invalid WEBP header'
+          declared=struct.unpack('<I',b[4:8])[0]+8
+          assert len(b) >= declared, f'{mode}: truncated WEBP {len(b)} < {declared}'
+          print(mode, len(b), declared)
+          PY
           done
-          sed -i "s/window.APP_VERSION || '0.8.14'/window.APP_VERSION || '0.8.15'/g; s/window.APP_VERSION || '0.8.11'/window.APP_VERSION || '0.8.15'/g; s#assets/home-characters/shioriko/\${mode}\.png#assets/home-characters/shioriko/\${mode}.webp#g" home-cutout-v084.js
-          sed -i "s/0.8.14/0.8.15/g" index.html fixes-v051.js
-          sed -i "s/栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。/栞子の通常立ち絵と隠しモード全7種を新しい左右補完済み立ち絵へ差し替えました。/g" index.html home-cutout-v084.js
-          cp index.html fresh-v0815.html
-          printf '{\n  "version": "0.8.15"\n}\n' > version.json
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('home-cutout-v084.js')
+          s=p.read_text()
+          s=s.replace("window.APP_VERSION || '0.8.14'","window.APP_VERSION || '0.8.15'")
+          s=s.replace("window.APP_VERSION || '0.8.11'","window.APP_VERSION || '0.8.15'")
+          s=s.replace("`assets/home-characters/shioriko/${mode}.png?v=${VERSION}`","`assets/home-characters/shioriko/${mode}.webp?v=${VERSION}`")
+          s=s.replace('栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。','栞子の通常立ち絵と隠しモード全7種を新しい左右補完済み立ち絵へ差し替えました。')
+          p.write_text(s)
+
+          p=Path('index.html')
+          s=p.read_text().replace('0.8.14','0.8.15')
+          s=s.replace('栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。','栞子の通常立ち絵と隠しモード全7種を新しい左右補完済み立ち絵へ差し替えました。')
+          p.write_text(s)
+          Path('fresh-v0815.html').write_text(s)
+          Path('version.json').write_text('{\n  "version": "0.8.15"\n}\n')
+
+          p=Path('fixes-v051.js')
+          f=p.read_text().replace("window.APP_VERSION || '0.8.14'","window.APP_VERSION || '0.8.15'").replace("window.APP_VERSION || '0.8.11'","window.APP_VERSION || '0.8.15'")
+          p.write_text(f)
+          PY
       - name: Commit installed assets
         run: |
           git config user.name "github-actions[bot]"
