@@ -1,5 +1,6 @@
 name: Install verified Shioriko normal PNG
 
+# retry after verified chunk repair
 on:
   push:
     branches:
