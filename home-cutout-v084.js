@@ -6,7 +6,7 @@
   const ART=Object.fromEntries(VALID.map(mode=>[
     mode,
     mode==='normal'
-      ? `assets/home-characters/shioriko/normal.png?v=${VERSION}-clean3`
+      ? `assets/home-characters/shioriko/normal.png?v=${VERSION}-clean4`
       : `assets/home-characters/shioriko/${mode}.webp?v=${VERSION}`
   ]));
   const MENU={
