@@ -1,0 +1,69 @@
+/* Ver.0.8.13: let the standing art extend behind the transparent LoveFes logo. */
+.home-screen .home-topbar{
+  position:relative;
+  z-index:30!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  overflow:visible!important;
+}
+.home-screen .home-topbar > div:first-child{
+  position:relative;
+  z-index:31;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.home-screen .home-lovefes-logo-v085{
+  position:relative;
+  z-index:32;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.home-screen .home-main{
+  z-index:2!important;
+  overflow:visible!important;
+}
+.home-screen .home-character-card{
+  z-index:1;
+  overflow:visible!important;
+}
+.home-screen .home-character-cutout-v084{
+  z-index:4!important;
+}
+.home-screen .home-character-note,
+.home-screen .home-dialogue{
+  z-index:8!important;
+}
+.home-screen .home-version{
+  position:relative;
+  z-index:33;
+}
+
+/* Landscape PWA: raise only the character art into the topbar area.
+   The logo stays in front, while its transparent pixels reveal the hair/ornaments behind it. */
+@media (orientation:landscape) and (pointer:coarse){
+  .home-screen .home-character-cutout-v084{
+    height:calc(100% + 58px)!important;
+    width:106%!important;
+    max-width:none!important;
+    object-fit:contain!important;
+    object-position:center bottom!important;
+    bottom:0!important;
+  }
+}
+
+/* Keep the same relationship on short desktop landscape previews. */
+@media (orientation:landscape) and (max-height:620px){
+  .home-screen .home-character-cutout-v084{
+    height:calc(100% + 58px)!important;
+    width:106%!important;
+    max-width:none!important;
+    object-fit:contain!important;
+    object-position:center bottom!important;
+  }
+}
