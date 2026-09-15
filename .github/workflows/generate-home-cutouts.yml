@@ -5,17 +5,6 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/generate-home-cutouts.yml'
-      - 'icon-512-v030.png'
-      - 'assets/shioriko-expressions/dere-v058.png'
-      - 'assets/shioriko-expressions/yandere-v058.png'
-      - 'assets/shioriko-expressions/scold-v058.png'
-      - 'assets/shioriko-expressions/drunk-v058.png'
-      - 'assets/shioriko-expressions/clumsy-v058.png'
-      - 'assets/shioriko-expressions/casual-v058.png'
-      - 'assets/home-live-v042.webp'
-      - 'assets/home-settings-v042.webp'
-      - 'assets/home-room-v042.webp'
-      - 'assets/home-gacha-v042.webp'
 
 permissions:
   contents: write
@@ -32,50 +21,40 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install rembg onnxruntime pillow
-      - name: Generate transparent PNGs
+      - name: Generate transparent menu PNGs
         run: |
           python - <<'PY'
           from pathlib import Path
-          from rembg import remove
+          from rembg import remove, new_session
           from PIL import Image
           import io
 
-          character_out = Path('assets/home-characters/shioriko')
           ui_out = Path('assets/home-ui')
-          character_out.mkdir(parents=True, exist_ok=True)
           ui_out.mkdir(parents=True, exist_ok=True)
-
+          session = new_session('u2netp')
           files = {
-              character_out / 'normal.png': Path('icon-512-v030.png'),
-              character_out / 'dere.png': Path('assets/shioriko-expressions/dere-v058.png'),
-              character_out / 'yandere.png': Path('assets/shioriko-expressions/yandere-v058.png'),
-              character_out / 'scold.png': Path('assets/shioriko-expressions/scold-v058.png'),
-              character_out / 'drunk.png': Path('assets/shioriko-expressions/drunk-v058.png'),
-              character_out / 'clumsy.png': Path('assets/shioriko-expressions/clumsy-v058.png'),
-              character_out / 'casual.png': Path('assets/shioriko-expressions/casual-v058.png'),
               ui_out / 'live.png': Path('assets/home-live-v042.webp'),
               ui_out / 'settings.png': Path('assets/home-settings-v042.webp'),
               ui_out / 'room.png': Path('assets/home-room-v042.webp'),
               ui_out / 'gacha.png': Path('assets/home-gacha-v042.webp'),
           }
-
           for dest, src in files.items():
-              result = remove(src.read_bytes(), alpha_matting=True,
+              result = remove(src.read_bytes(), session=session, alpha_matting=True,
                               alpha_matting_foreground_threshold=240,
                               alpha_matting_background_threshold=10,
-                              alpha_matting_erode_size=8)
-              img = Image.open(io.BytesIO(result)).convert('RGBA')
-              img.save(dest, optimize=True)
-              print(src, '->', dest, img.size)
+                              alpha_matting_erode_size=4)
+              Image.open(io.BytesIO(result)).convert('RGBA').save(dest, optimize=True)
+              print(src, '->', dest)
           PY
       - name: Commit generated assets
         run: |
-          if git status --porcelain assets/home-characters/shioriko assets/home-ui | grep .; then
+          if git status --porcelain assets/home-ui | grep .; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add assets/home-characters/shioriko assets/home-ui
-            git commit -m 'Generate transparent home assets'
-            git push
+            git add assets/home-ui
+            git commit -m 'Generate transparent home menu assets'
+            git pull --rebase origin main
+            git push origin main
           else
             echo 'No generated changes.'
           fi
