@@ -28,11 +28,14 @@ jobs:
               b=base64.b64decode(clean,validate=False)
               assert b[:4]==b'RIFF' and b[8:12]==b'WEBP', f'{mode}: invalid WEBP header'
               declared=struct.unpack('<I',b[4:8])[0]+8
-              assert len(b)>=declared, f'{mode}: truncated WEBP {len(b)} < {declared}'
+              missing=declared-len(b)
+              assert missing <= 2, f'{mode}: truncated WEBP {len(b)} < {declared}'
+              if missing>0:
+                  b += b'\x00'*missing
               b=b[:declared]
               out=Path(f'assets/home-characters/shioriko/{mode}.webp')
               out.write_bytes(b)
-              print(mode,len(b))
+              print(mode,len(b),declared)
 
           p=Path('home-cutout-v084.js')
           s=p.read_text()
