@@ -1,0 +1,99 @@
+name: Upgrade Shioriko art v0.8.18b
+
+on:
+  push:
+    paths:
+      - '.github/workflows/upgrade-shioriko-art-v0818b.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shioriko-art-v0818b
+  cancel-in-progress: false
+
+jobs:
+  upgrade-art:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Pillow
+        run: python -m pip install --quiet pillow
+
+      - name: Rebuild high-resolution transparent WebP art
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+
+          root = Path('assets/home-characters/shioriko')
+          names = ['normal','dere','yandere','scold','drunk','clumsy','casual']
+
+          for name in names:
+              src = root / f'{name}.png'
+              dst = root / f'{name}.webp'
+              if not src.exists():
+                  raise SystemExit(f'Missing source: {src}')
+
+              with Image.open(src) as image:
+                  image = image.convert('RGBA')
+                  source_size = image.size
+                  target_w = 900
+                  target_h = round(image.height * target_w / image.width)
+                  image = image.resize((target_w, target_h), Image.Resampling.LANCZOS)
+                  image.save(dst, 'WEBP', quality=90, method=6, exact=True)
+
+              with Image.open(dst) as check:
+                  if check.width != 900:
+                      raise SystemExit(f'Unexpected output width for {dst}: {check.size}')
+                  print(f'{name}: {source_size} -> {check.size}, {dst.stat().st_size} bytes')
+          PY
+
+      - name: Bump app version to 0.8.18
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+
+          version = '0.8.18'
+          Path('version.json').write_text(json.dumps({'version': version}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace('0.8.16', version).replace('0.8.17', version)
+          p.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Verify outputs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          root = Path('assets/home-characters/shioriko')
+          for name in ['normal','dere','yandere','scold','drunk','clumsy','casual']:
+              p = root / f'{name}.webp'
+              assert p.exists(), f'Missing {p}'
+              with Image.open(p) as im:
+                  assert im.width == 900, (name, im.size)
+                  assert im.height >= 900, (name, im.size)
+                  print(name, im.size, p.stat().st_size)
+              assert p.stat().st_size > 30000, (name, p.stat().st_size)
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/home-characters/shioriko/*.webp version.json index.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git commit -m 'Upgrade Shioriko home art to high resolution v0.8.18'
+          git pull --rebase origin main
+          git push origin HEAD:main
