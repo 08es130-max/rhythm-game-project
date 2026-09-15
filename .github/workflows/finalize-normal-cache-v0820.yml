@@ -33,8 +33,8 @@ jobs:
 
           js=Path('home-cutout-v084.js')
           s=js.read_text()
-          assert '0.8.20-clean3' in s
-          js.write_text(s.replace('0.8.20-clean3','0.8.20-clean4'))
+          assert '-clean3' in s
+          js.write_text(s.replace('-clean3','-clean4'))
 
           idx=Path('index.html')
           s=idx.read_text()
