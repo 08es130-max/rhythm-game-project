@@ -1,9 +1,14 @@
-// Ver.0.8.15: use complete transparent standing-art assets on the home screen.
+// Ver.0.8.20: use clean official PNG for Shioriko normal art; keep secret-mode assets unchanged.
 (function(){
-  const VERSION=window.APP_VERSION || '0.8.15';
+  const VERSION=window.APP_VERSION || '0.8.20';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
-  const ART=Object.fromEntries(VALID.map(mode=>[mode,`assets/home-characters/shioriko/${mode}.${mode==='normal'?'png':'webp'}?v=${VERSION}`]));
+  const ART=Object.fromEntries(VALID.map(mode=>[
+    mode,
+    mode==='normal'
+      ? `assets/home-characters/shioriko/normal.png?v=${VERSION}-clean2`
+      : `assets/home-characters/shioriko/${mode}.webp?v=${VERSION}`
+  ]));
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
     homeSettingsBtn:`assets/home-ui/settings.png?v=${VERSION}`,
