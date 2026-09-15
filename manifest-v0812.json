@@ -1,0 +1,10 @@
+{
+  "name": "ラブフェス！",
+  "short_name": "ラブフェス！",
+  "start_url": "./fresh-v0812.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#07101e",
+  "theme_color": "#07101e"
+}
