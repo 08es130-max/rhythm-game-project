@@ -1,0 +1,14 @@
+{
+  "name": "ラブフェス！",
+  "short_name": "ラブフェス！",
+  "start_url": "./fresh-v0810.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#07101e",
+  "theme_color": "#07101e",
+  "icons": [
+    {"src":"icon-192-v0810.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"icon-512-v0810.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}
