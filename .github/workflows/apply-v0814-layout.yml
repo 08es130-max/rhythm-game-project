@@ -16,62 +16,64 @@ jobs:
       - name: Update home character layout and version
         run: |
           set -e
-          cat > home-layering-v0814.css <<'EOF'
-/* Ver.0.8.14: larger standing art, lowered below the LoveFes logo. */
-.home-screen .home-topbar{
-  position:relative;
-  z-index:30!important;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  overflow:visible!important;
-}
-.home-screen .home-topbar > div:first-child{
-  position:relative;
-  z-index:31;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-  overflow:visible!important;
-}
-.home-screen .home-lovefes-logo-v085{
-  position:relative;
-  z-index:32;
-  background:transparent!important;
-  border:0!important;
-  box-shadow:none!important;
-}
-.home-screen .home-main{z-index:2!important;overflow:visible!important}
-.home-screen .home-character-card{z-index:1;overflow:visible!important}
-.home-screen .home-character-cutout-v084{z-index:4!important}
-.home-screen .home-character-note,.home-screen .home-dialogue{z-index:8!important}
-.home-screen .home-version{position:relative;z-index:33}
-
-@media (orientation:landscape){
-  .home-screen .home-character-cutout-v084{
-    width:122%!important;
-    height:132%!important;
-    max-width:none!important;
-    object-fit:contain!important;
-    object-position:center bottom!important;
-    left:50%!important;
-    bottom:-46px!important;
-    transform:translateX(-50%)!important;
-  }
-}
-@media (orientation:landscape) and (max-height:620px){
-  .home-screen .home-character-cutout-v084{
-    width:124%!important;
-    height:134%!important;
-    bottom:-50px!important;
-  }
-}
-EOF
-
           python3 - <<'PY'
           from pathlib import Path
+
+          css = '''/* Ver.0.8.14: larger standing art, lowered below the LoveFes logo. */
+          .home-screen .home-topbar{
+            position:relative;
+            z-index:30!important;
+            background:transparent!important;
+            border:0!important;
+            box-shadow:none!important;
+            -webkit-backdrop-filter:none!important;
+            backdrop-filter:none!important;
+            overflow:visible!important;
+          }
+          .home-screen .home-topbar > div:first-child{
+            position:relative;
+            z-index:31;
+            background:transparent!important;
+            border:0!important;
+            box-shadow:none!important;
+            overflow:visible!important;
+          }
+          .home-screen .home-lovefes-logo-v085{
+            position:relative;
+            z-index:32;
+            background:transparent!important;
+            border:0!important;
+            box-shadow:none!important;
+          }
+          .home-screen .home-main{z-index:2!important;overflow:visible!important}
+          .home-screen .home-character-card{z-index:1;overflow:visible!important}
+          .home-screen .home-character-cutout-v084{z-index:4!important}
+          .home-screen .home-character-note,.home-screen .home-dialogue{z-index:8!important}
+          .home-screen .home-version{position:relative;z-index:33}
+
+          @media (orientation:landscape){
+            .home-screen .home-character-cutout-v084{
+              width:122%!important;
+              height:132%!important;
+              max-width:none!important;
+              object-fit:contain!important;
+              object-position:center bottom!important;
+              left:50%!important;
+              bottom:-46px!important;
+              transform:translateX(-50%)!important;
+            }
+          }
+          @media (orientation:landscape) and (max-height:620px){
+            .home-screen .home-character-cutout-v084{
+              width:124%!important;
+              height:134%!important;
+              bottom:-50px!important;
+            }
+          }
+          '''
+          css='\n'.join(line[10:] if line.startswith('          ') else line for line in css.splitlines())+'\n'
+          Path('home-layering-v0814.css').write_text(css)
+
           idx=Path('index.html')
           s=idx.read_text()
           s=s.replace('home-layering-v0813.css?v=0.8.13','home-layering-v0814.css?v=0.8.14')
