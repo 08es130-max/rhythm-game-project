@@ -1,9 +1,9 @@
-// Ver.0.8.5: use pre-generated transparent assets only on the home screen.
+// Ver.0.8.15: use complete transparent standing-art assets on the home screen.
 (function(){
-  const VERSION=window.APP_VERSION || '0.8.14';
+  const VERSION=window.APP_VERSION || '0.8.15';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
-  const ART=Object.fromEntries(VALID.map(mode=>[mode,`assets/home-characters/shioriko/${mode}.png?v=${VERSION}`]));
+  const ART=Object.fromEntries(VALID.map(mode=>[mode,`assets/home-characters/shioriko/${mode}.webp?v=${VERSION}`]));
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
     homeSettingsBtn:`assets/home-ui/settings.png?v=${VERSION}`,
@@ -66,7 +66,7 @@
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head)head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。';
+    if(text)text.textContent='栞子の通常立ち絵と隠しモード全7種を、新しい左右補完済み立ち絵へ差し替えました。';
   }
 
   new MutationObserver(()=>applyCharacter()).observe(card,{attributes:true,attributeFilter:['data-character-id','data-shio-mode']});
