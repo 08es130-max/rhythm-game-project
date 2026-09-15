@@ -1,0 +1,29 @@
+/* Ver.0.8.4: transparent home standing art + menu assets */
+.home-character-card .home-character-img.home-original-hidden-v084{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+.home-character-cutout-v084{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  z-index:3;
+  width:100%;
+  height:100%;
+  max-width:none;
+  object-fit:contain;
+  object-position:center bottom;
+  transform:translateX(-50%);
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-drag:none;
+  filter:drop-shadow(0 18px 28px rgba(0,0,0,.34));
+}
+.home-character-cutout-v084[hidden]{display:none!important}
+.home-menu-art{
+  background:transparent!important;
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.24));
+}
+@media (orientation:landscape) and (pointer:coarse){
+  .home-character-cutout-v084{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+}
