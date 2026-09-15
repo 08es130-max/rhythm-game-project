@@ -1,4 +1,4 @@
-/* Ver.0.8.5: LoveFes home branding. Keep the title area visually transparent so it never masks character hair. */
+/* Ver.0.8.17: LoveFes home branding. Keep the title area transparent and make the logo usable for the secret hold gesture on iOS. */
 .home-screen .home-topbar{
   background:transparent !important;
   border:0 !important;
@@ -19,6 +19,9 @@
   align-items:flex-start;
   pointer-events:auto;
   touch-action:manipulation;
+  -webkit-touch-callout:none;
+  -webkit-user-select:none;
+  user-select:none;
 }
 .home-screen .home-title,
 .home-screen .home-subtitle{
@@ -32,7 +35,9 @@
   object-position:left top;
   filter:drop-shadow(0 3px 8px rgba(4,10,28,.42));
   user-select:none;
+  -webkit-user-select:none;
   -webkit-user-drag:none;
+  -webkit-touch-callout:none;
   pointer-events:auto;
   touch-action:manipulation;
   cursor:pointer;
