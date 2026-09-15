@@ -17,22 +17,23 @@ jobs:
         run: |
           set -e
           mkdir -p assets/home-characters/shioriko
-          for mode in normal dere yandere scold drunk clumsy casual; do
-            base64 --decode --ignore-garbage ".v0814-assets/direct-${mode}.b64" > "assets/home-characters/shioriko/${mode}.webp"
-            test -s "assets/home-characters/shioriko/${mode}.webp"
-            python3 - "$mode" <<'PY'
-          import pathlib,struct,sys
-          mode=sys.argv[1]
-          p=pathlib.Path(f'assets/home-characters/shioriko/{mode}.webp')
-          b=p.read_bytes()
-          assert b[:4] == b'RIFF' and b[8:12] == b'WEBP', f'{mode}: invalid WEBP header'
-          declared=struct.unpack('<I',b[4:8])[0]+8
-          assert len(b) >= declared, f'{mode}: truncated WEBP {len(b)} < {declared}'
-          print(mode, len(b), declared)
-          PY
-          done
           python3 - <<'PY'
           from pathlib import Path
+          import base64,re,struct
+          modes=['normal','dere','yandere','scold','drunk','clumsy','casual']
+          for mode in modes:
+              src=Path(f'.v0814-assets/direct-{mode}.b64').read_text(errors='ignore')
+              clean=''.join(re.findall(r'[A-Za-z0-9+/=]',src))
+              clean=clean.rstrip('=') + '='*((-len(clean))%4)
+              b=base64.b64decode(clean,validate=False)
+              assert b[:4]==b'RIFF' and b[8:12]==b'WEBP', f'{mode}: invalid WEBP header'
+              declared=struct.unpack('<I',b[4:8])[0]+8
+              assert len(b)>=declared, f'{mode}: truncated WEBP {len(b)} < {declared}'
+              b=b[:declared]
+              out=Path(f'assets/home-characters/shioriko/{mode}.webp')
+              out.write_bytes(b)
+              print(mode,len(b))
+
           p=Path('home-cutout-v084.js')
           s=p.read_text()
           s=s.replace("window.APP_VERSION || '0.8.14'","window.APP_VERSION || '0.8.15'")
