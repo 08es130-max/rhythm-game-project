@@ -6,7 +6,7 @@
   const ART=Object.fromEntries(VALID.map(mode=>[
     mode,
     mode==='normal'
-      ? `assets/home-characters/shioriko/normal.png?v=${VERSION}-clean2`
+      ? `assets/home-characters/shioriko/normal.png?v=${VERSION}-clean3`
       : `assets/home-characters/shioriko/${mode}.webp?v=${VERSION}`
   ]));
   const MENU={
@@ -30,6 +30,17 @@
     original.insertAdjacentElement('afterend',cutout);
   }
 
+  cutout.addEventListener('error',()=>{
+    cutout.hidden=true;
+    original.classList.remove('home-original-hidden-v084');
+  });
+  cutout.addEventListener('load',()=>{
+    if(isShioriko()){
+      original.classList.add('home-original-hidden-v084');
+      cutout.hidden=false;
+    }
+  });
+
   function isShioriko(){
     const id=String(card.dataset.characterId||localStorage.getItem('rhythmGame.homeCharacter')||'default');
     if(id==='default'||id.includes('shioriko'))return true;
@@ -52,9 +63,13 @@
     }
     const mode=activeMode();
     const src=ART[mode]||ART.normal;
-    original.classList.add('home-original-hidden-v084');
     cutout.hidden=false;
-    if(cutout.getAttribute('src')!==src)cutout.setAttribute('src',src);
+    if(cutout.getAttribute('src')!==src){
+      original.classList.remove('home-original-hidden-v084');
+      cutout.setAttribute('src',src);
+    }else if(cutout.complete && cutout.naturalWidth>0){
+      original.classList.add('home-original-hidden-v084');
+    }
     cutout.dataset.mode=mode;
   }
 
