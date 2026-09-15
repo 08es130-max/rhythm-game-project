@@ -1,0 +1,85 @@
+name: Apply bright app icon v0.8.9
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-bright-icon-v089.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build brighter full-color icons and bump version
+        run: |
+          pip install pillow
+          python - <<'PY'
+          from PIL import Image, ImageEnhance
+          from pathlib import Path
+          import json, re
+
+          # Use the current approved composition as the base, but restore the
+          # bright saturated look requested for the home-screen icon.
+          src = Path('icon-512-v086.png')
+          if not src.exists():
+              src = Path('icon-512.png')
+          im = Image.open(src).convert('RGB')
+          im = ImageEnhance.Color(im).enhance(1.32)
+          im = ImageEnhance.Contrast(im).enhance(1.14)
+          im = ImageEnhance.Brightness(im).enhance(1.08)
+          im = ImageEnhance.Sharpness(im).enhance(1.08)
+
+          for size in (512, 192, 180):
+              out = im.resize((size, size), Image.Resampling.LANCZOS)
+              out.save(f'icon-{size}-v089.png', 'PNG', optimize=True)
+
+          # Canonical iOS/PWA names, deliberately without query strings for iOS.
+          Image.open('icon-180-v089.png').save('apple-touch-icon.png', 'PNG', optimize=True)
+          Image.open('icon-180-v089.png').save('icon-180.png', 'PNG', optimize=True)
+          Image.open('icon-192-v089.png').save('icon-192.png', 'PNG', optimize=True)
+          Image.open('icon-512-v089.png').save('icon-512.png', 'PNG', optimize=True)
+
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          manifest['icons'] = [
+              {'src':'icon-192.png','sizes':'192x192','type':'image/png','purpose':'any'},
+              {'src':'icon-512.png','sizes':'512x512','type':'image/png','purpose':'any'}
+          ]
+          Path('manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = re.sub(r"manifest\.json\?v=[0-9.]+", 'manifest.json?v=0.8.9', s)
+          s = re.sub(r"window\.APP_VERSION\s*=\s*'[0-9.]+'", "window.APP_VERSION = '0.8.9'", s)
+          s = re.sub(r'Ver\.\s*0\.8\.8', 'Ver. 0.8.9', s)
+          s = re.sub(r'Ver\.0\.8\.8', 'Ver.0.8.9', s)
+          # Keep canonical no-query apple icon and favicon.
+          s = re.sub(r'<link rel="apple-touch-icon"[^>]*>', '<link rel="apple-touch-icon" href="apple-touch-icon.png" />', s)
+          s = re.sub(r'<link rel="icon" type="image/png" sizes="192x192"[^>]*>', '<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />', s)
+          p.write_text(s, encoding='utf-8')
+
+          Path('version.json').write_text('{\n  "version": "0.8.9"\n}\n', encoding='utf-8')
+
+          # Keep home branding cache-buster in sync without touching APP_VERSION.
+          hb = Path('home-branding-v085.js')
+          if hb.exists():
+              t = hb.read_text(encoding='utf-8')
+              t = re.sub(r"const VERSION='[0-9.]+'", "const VERSION='0.8.9'", t)
+              hb.write_text(t, encoding='utf-8')
+          PY
+      - name: Commit bright icon update
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add icon-180-v089.png icon-192-v089.png icon-512-v089.png apple-touch-icon.png icon-180.png icon-192.png icon-512.png manifest.json index.html version.json home-branding-v085.js
+          git commit -m 'Apply brighter app icon and bump to v0.8.9'
+          git pull --rebase origin main
+          git push origin HEAD:main
