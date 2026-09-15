@@ -29,7 +29,7 @@ jobs:
           print('normal.png', len(b), w, h, sha)
           assert (w,h)==(540,720), (w,h)
           assert len(b)==75792, len(b)
-          assert sha=='81098e283e9bc2096c3ca8b0e61f06ce5791c0b89bac11e7322b6d51bcd89f4c', sha
+          assert sha=='f94bfb65d84ff6741ece4a03c15d0b1408c71f397dcef5cdc0086a706433526a', sha
 
           js=Path('home-cutout-v084.js')
           s=js.read_text()
