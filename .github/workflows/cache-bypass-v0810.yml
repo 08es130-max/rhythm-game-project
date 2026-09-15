@@ -1,0 +1,71 @@
+name: Cache bypass v0.8.10
+
+on:
+  push:
+    paths:
+      - '.github/workflows/cache-bypass-v0810.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create fresh entry and bump version
+        run: |
+          set -e
+          # Bump the canonical app version everywhere it is visible/referenced.
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('0.8.9','0.8.10')
+          p.write_text(s)
+          Path('version.json').write_text('{\n  "version": "0.8.10"\n}\n')
+          PY
+
+          # Give iOS completely new icon URLs so no old touch-icon cache can be reused.
+          cp apple-touch-icon.png apple-touch-icon-v0810.png
+          cp icon-192.png icon-192-v0810.png
+          cp icon-512.png icon-512-v0810.png
+
+          # A dedicated manifest/start URL bypasses the old cached root document too.
+          cat > manifest-v0810.json <<'JSON'
+          {
+            "name": "ラブフェス！",
+            "short_name": "ラブフェス！",
+            "start_url": "./fresh-v0810.html",
+            "scope": "./",
+            "display": "standalone",
+            "orientation": "landscape",
+            "background_color": "#07101e",
+            "theme_color": "#07101e",
+            "icons": [
+              {"src":"icon-192-v0810.png","sizes":"192x192","type":"image/png","purpose":"any"},
+              {"src":"icon-512-v0810.png","sizes":"512x512","type":"image/png","purpose":"any"}
+            ]
+          }
+          JSON
+
+          cp index.html fresh-v0810.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('fresh-v0810.html')
+          s=p.read_text()
+          s=s.replace('manifest.json?v=0.8.10','manifest-v0810.json?v=0.8.10')
+          s=s.replace('href="apple-touch-icon.png"','href="apple-touch-icon-v0810.png"')
+          s=s.replace('href="icon-192.png"','href="icon-192-v0810.png"')
+          # Avoid stale browser caches for the fresh entry's main assets.
+          s=s.replace('</head>','<script>window.__FRESH_ENTRY_V0810__=true;</script>\n</head>')
+          p.write_text(s)
+          PY
+
+      - name: Commit cache-bypass entry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html version.json fresh-v0810.html manifest-v0810.json apple-touch-icon-v0810.png icon-192-v0810.png icon-512-v0810.png
+          git commit -m "Add fresh cache-bypass entry and bump to v0.8.10"
+          git push
