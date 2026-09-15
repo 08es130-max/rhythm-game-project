@@ -30,11 +30,13 @@
     original.insertAdjacentElement('afterend',cutout);
   }
 
-  cutout.addEventListener('error',()=>{
+  function showFallback(){
     cutout.hidden=true;
     original.classList.remove('home-original-hidden-v084');
-  });
-  cutout.addEventListener('load',()=>{
+  }
+
+  cutout.addEventListener('error', showFallback);
+  cutout.addEventListener('load', ()=>{
     if(isShioriko()){
       original.classList.add('home-original-hidden-v084');
       cutout.hidden=false;
