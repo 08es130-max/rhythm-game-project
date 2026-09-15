@@ -1,6 +1,6 @@
 // Ver.0.8.5: inject the approved LoveFes logo at the top-left and register the new standing-art candidate.
 (function(){
-  const VERSION='0.8.8';
+  const VERSION='0.8.9';
   const titleHost=document.querySelector('.home-topbar > div:first-child');
   if(titleHost && !titleHost.querySelector('.home-lovefes-logo-v085')){
     const img=document.createElement('img');
