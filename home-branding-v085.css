@@ -17,6 +17,8 @@
   min-width:0;
   display:flex;
   align-items:flex-start;
+  pointer-events:auto;
+  touch-action:manipulation;
 }
 .home-screen .home-title,
 .home-screen .home-subtitle{
@@ -31,6 +33,9 @@
   filter:drop-shadow(0 3px 8px rgba(4,10,28,.42));
   user-select:none;
   -webkit-user-drag:none;
+  pointer-events:auto;
+  touch-action:manipulation;
+  cursor:pointer;
 }
 .home-screen .home-version{
   background:rgba(5,12,28,.34) !important;
@@ -38,7 +43,8 @@
   box-shadow:none !important;
   -webkit-backdrop-filter:blur(4px);
   backdrop-filter:blur(4px);
-  pointer-events:none;
+  pointer-events:auto;
+  touch-action:manipulation;
 }
 @media (max-height:520px){
   .home-lovefes-logo-v085{width:clamp(118px,20vw,184px)}

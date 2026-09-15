@@ -1,4 +1,4 @@
-// Ver.0.4.8 hidden owner room. No visible entry point is added to the home screen.
+// Ver.0.8.16 hidden owner room. Secret command uses version taps + visible LoveFes logo hold.
 (function(){
   const RATE_KEY='rhythmGame.adminGachaUrRate.v1';
   const SAVE_KEY='rhythmGame.adminGachaSaveOwned.v1';
@@ -125,7 +125,7 @@
 
   function installSecretCommand(){
     const version=document.querySelector('.home-version');
-    const title=document.querySelector('.home-title');
+    const title=document.querySelector('.home-topbar > div:first-child');
     if(!version||!title) return;
 
     let taps=[];
