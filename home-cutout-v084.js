@@ -1,6 +1,6 @@
 // Ver.0.8.5: use pre-generated transparent assets only on the home screen.
 (function(){
-  const VERSION=window.APP_VERSION || '0.8.11';
+  const VERSION=window.APP_VERSION || '0.8.14';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const ART=Object.fromEntries(VALID.map(mode=>[mode,`assets/home-characters/shioriko/${mode}.png?v=${VERSION}`]));
@@ -66,7 +66,7 @@
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head)head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='新しいアプリアイコンとホーム左上の「ラブフェス！」ロゴ、栞子の新しい立ち絵候補を追加しました。';
+    if(text)text.textContent='栞子の通常立ち絵と隠しモード全種を大きく表示し、頭が左上ロゴより低くなるよう配置を調整しました。';
   }
 
   new MutationObserver(()=>applyCharacter()).observe(card,{attributes:true,attributeFilter:['data-character-id','data-shio-mode']});
