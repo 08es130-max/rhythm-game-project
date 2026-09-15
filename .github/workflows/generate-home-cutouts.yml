@@ -1,0 +1,71 @@
+name: Generate home character cutouts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/generate-home-cutouts.yml'
+      - 'icon-512-v030.png'
+      - 'assets/shioriko-expressions/dere-v058.png'
+      - 'assets/shioriko-expressions/yandere-v058.png'
+      - 'assets/shioriko-expressions/scold-v058.png'
+      - 'assets/shioriko-expressions/drunk-v058.png'
+      - 'assets/shioriko-expressions/clumsy-v058.png'
+      - 'assets/shioriko-expressions/casual-v058.png'
+
+permissions:
+  contents: write
+
+jobs:
+  cutout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install background remover
+        run: |
+          python -m pip install --upgrade pip
+          pip install rembg onnxruntime pillow
+      - name: Generate transparent PNGs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from rembg import remove
+          from PIL import Image
+          import io
+
+          out = Path('assets/home-characters/shioriko')
+          out.mkdir(parents=True, exist_ok=True)
+
+          files = {
+              'normal': Path('icon-512-v030.png'),
+              'dere': Path('assets/shioriko-expressions/dere-v058.png'),
+              'yandere': Path('assets/shioriko-expressions/yandere-v058.png'),
+              'scold': Path('assets/shioriko-expressions/scold-v058.png'),
+              'drunk': Path('assets/shioriko-expressions/drunk-v058.png'),
+              'clumsy': Path('assets/shioriko-expressions/clumsy-v058.png'),
+              'casual': Path('assets/shioriko-expressions/casual-v058.png'),
+          }
+
+          for name, src in files.items():
+              result = remove(src.read_bytes(), alpha_matting=True,
+                              alpha_matting_foreground_threshold=240,
+                              alpha_matting_background_threshold=10,
+                              alpha_matting_erode_size=8)
+              img = Image.open(io.BytesIO(result)).convert('RGBA')
+              img.save(out / f'{name}.png', optimize=True)
+              print(name, src, '->', out / f'{name}.png', img.size)
+          PY
+      - name: Commit generated assets
+        run: |
+          if git status --porcelain assets/home-characters/shioriko | grep .; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add assets/home-characters/shioriko
+            git commit -m 'Generate transparent home character assets'
+            git push
+          else
+            echo 'No generated changes.'
+          fi
