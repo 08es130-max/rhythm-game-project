@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Fix hidden command trigger and bump version
         run: |
           set -e
@@ -51,12 +53,14 @@ jobs:
           grep -q "document.querySelector('.home-topbar > div:first-child')" hidden-admin-v048.js
           grep -q 'pointer-events:auto' home-branding-v085.css
 
-      - name: Commit v0.8.16 hotfix
+      - name: Commit and rebase v0.8.16 hotfix
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add hidden-admin-v048.js home-branding-v085.css index.html fresh-v0815.html version.json
           git commit -m "Fix hidden command trigger v0.8.16"
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
 
-# retrigger 2
+# retrigger 3
