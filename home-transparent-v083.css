@@ -1,0 +1,50 @@
+/* Ver.0.8.3: transparent home character/menu surfaces */
+.home-character-card{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.home-character-card::after{
+  background:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+  opacity:0!important;
+}
+.home-character-card[data-shio-mode="normal"],
+.home-character-card[data-shio-mode="dere"],
+.home-character-card[data-shio-mode="yandere"],
+.home-character-card[data-shio-mode="scold"],
+.home-character-card[data-shio-mode="drunk"],
+.home-character-card[data-shio-mode="clumsy"],
+.home-character-card[data-shio-mode="casual"]{
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.home-character-card .home-character-img{
+  filter:drop-shadow(0 18px 28px rgba(0,0,0,.34))!important;
+}
+.home-menu-btn,
+.home-menu-live,
+.home-menu-settings,
+.home-menu-timing,
+.home-menu-characters,
+.home-menu-gacha{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.home-menu-btn:hover,
+.home-menu-btn:active{
+  box-shadow:none!important;
+  background:transparent!important;
+}
+.home-menu-art{
+  filter:drop-shadow(0 10px 18px rgba(0,0,0,.24));
+}
+@media (orientation:landscape) and (pointer:coarse){
+  .home-character-card{background:transparent!important;box-shadow:none!important}
+}
