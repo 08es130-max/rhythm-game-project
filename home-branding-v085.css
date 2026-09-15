@@ -1,0 +1,45 @@
+/* Ver.0.8.5: LoveFes home branding. Keep the title area visually transparent so it never masks character hair. */
+.home-screen .home-topbar{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+  pointer-events:none;
+  position:relative;
+  z-index:3;
+}
+.home-screen .home-topbar > div:first-child{
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+  padding:0 !important;
+  min-width:0;
+  display:flex;
+  align-items:flex-start;
+}
+.home-screen .home-title,
+.home-screen .home-subtitle{
+  display:none !important;
+}
+.home-lovefes-logo-v085{
+  display:block;
+  width:clamp(132px,22vw,220px);
+  height:auto;
+  object-fit:contain;
+  object-position:left top;
+  filter:drop-shadow(0 3px 8px rgba(4,10,28,.42));
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.home-screen .home-version{
+  background:rgba(5,12,28,.34) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:none !important;
+  -webkit-backdrop-filter:blur(4px);
+  backdrop-filter:blur(4px);
+  pointer-events:none;
+}
+@media (max-height:520px){
+  .home-lovefes-logo-v085{width:clamp(118px,20vw,184px)}
+}
