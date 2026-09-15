@@ -1,0 +1,1 @@
+Ver.0.8.5 branding assets: app icons, LoveFes home logo, and Shioriko stage standing-art candidate are stored in this directory/tree.
