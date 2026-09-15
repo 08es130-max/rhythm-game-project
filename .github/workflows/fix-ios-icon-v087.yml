@@ -1,0 +1,59 @@
+name: Fix iOS app icon v0.8.7
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-ios-icon-v087.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Publish canonical iOS and PWA icons
+        run: |
+          cp icon-180-v086.png apple-touch-icon.png
+          cp icon-192-v086.png icon-192.png
+          cp icon-512-v086.png icon-512.png
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('index.html')
+          s = p.read_text()
+          s = s.replace('manifest.json?v=0.8.6', 'manifest.json?v=0.8.7')
+          s = s.replace('href="icon-180-v086.png?v=0.8.6"', 'href="apple-touch-icon.png"')
+          s = s.replace('href="icon-192-v086.png?v=0.8.6"', 'href="icon-192.png"')
+          s = s.replace("window.APP_VERSION = '0.8.6';", "window.APP_VERSION = '0.8.7';")
+          s = s.replace('Ver. 0.8.6', 'Ver. 0.8.7')
+          s = s.replace('Ver.0.8.6 アップデート', 'Ver.0.8.7 アップデート')
+          p.write_text(s)
+
+          p = Path('manifest.json')
+          s = p.read_text()
+          s = s.replace('icon-192-v086.png?v=0.8.6', 'icon-192.png')
+          s = s.replace('icon-512-v086.png?v=0.8.6', 'icon-512.png')
+          p.write_text(s)
+
+          Path('version.json').write_text('{\n  "version": "0.8.7"\n}\n')
+
+          for name in ('home-cutout-v084.js','home-branding-v085.js'):
+              p = Path(name)
+              if p.exists():
+                  s = p.read_text().replace("const VERSION='0.8.5';", "const VERSION='0.8.7';")
+                  s = s.replace("const VERSION = '0.8.5';", "const VERSION = '0.8.7';")
+                  p.write_text(s)
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apple-touch-icon.png icon-192.png icon-512.png index.html manifest.json version.json home-cutout-v084.js home-branding-v085.js
+          git commit -m 'Fix iOS home screen icon with canonical filenames' || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
