@@ -1,0 +1,38 @@
+name: Bump recovery version v0.8.20
+
+on:
+  push:
+    paths:
+      - '.github/workflows/bump-v0820.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump app version and PWA entry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          s = s.replace('0.8.19', '0.8.20')
+          p.write_text(s)
+          Path('version.json').write_text('{\n  "version": "0.8.20"\n}\n')
+          m = Path('manifest-v0812.json')
+          ms = m.read_text()
+          import re
+          ms = re.sub(r'"start_url"\s*:\s*"[^"]+"', '"start_url": "./?v=0.8.20"', ms)
+          m.write_text(ms)
+          PY
+      - name: Commit
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html version.json manifest-v0812.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Bump recovery to v0.8.20"
+          git push
