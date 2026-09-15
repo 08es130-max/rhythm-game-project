@@ -1,6 +1,6 @@
 // Ver.0.8.5: use pre-generated transparent assets only on the home screen.
 (function(){
-  const VERSION='0.8.6';
+  const VERSION=window.APP_VERSION || '0.8.11';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const ART=Object.fromEntries(VALID.map(mode=>[mode,`assets/home-characters/shioriko/${mode}.png?v=${VERSION}`]));

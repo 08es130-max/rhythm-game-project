@@ -11,7 +11,7 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>ラブフェス！</title>
-<link rel="manifest" href="manifest.json?v=0.8.10" />
+<link rel="manifest" href="manifest.json?v=0.8.11" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="stylesheet" href="styles.css?v=0.5.7" />
@@ -32,7 +32,7 @@
 <link rel="stylesheet" href="home-cutout-v084.css?v=0.8.5" />
 <link rel="stylesheet" href="home-branding-v085.css?v=0.8.5" />
 <script>
-window.APP_VERSION = '0.8.10';
+window.APP_VERSION = '0.8.11';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -54,10 +54,10 @@ window.location.replace(url.toString());
 <section id="homeScreen" class="app-screen home-screen">
 <div class="home-topbar">
 <div><h1 class="home-title">ラブフェス！</h1><p class="home-subtitle">LIVE HOME</p></div>
-<div class="home-version">Ver. 0.8.10</div>
+<div class="home-version">Ver. 0.8.11</div>
 </div>
 <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver. 0.8.10 アップデート</span></div>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver. 0.8.11 アップデート</span></div>
 <p class="update-text">新しいアプリアイコンとホーム左上の「ラブフェス！」ロゴ、栞子の新しい立ち絵候補を追加しました。</p>
 </div>
 <div class="home-main">
@@ -73,7 +73,7 @@ window.location.replace(url.toString());
 <section id="liveScreen" class="app-screen live-screen" hidden>
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
-<div class="version-badge" aria-label="app version">Ver. 0.8.10</div>
+<div class="version-badge" aria-label="app version">Ver. 0.8.11</div>
 <h2>ライブ選択</h2><p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 <div class="button-row"><button id="spicaPresetBtn" type="button">スピカテリブル</button><button id="demoBtn">テスト譜面を使う</button></div>
 <div class="file-row">
@@ -142,7 +142,7 @@ window.location.replace(url.toString());
 <script src="shioriko-secret-modes-v050.js?v=0.5.7"></script>
 <script src="shioriko-visual-v052.js?v=0.5.8"></script>
 <script src="gacha-v045.js?v=0.5.7"></script>
-<script src="fixes-v051.js?v=0.8.2"></script>
+<script src="fixes-v051.js?v=0.8.11"></script>
 <script src="tap-sound-fix-v068.js?v=0.8.2"></script>
 <script src="stability-fix-v071.js?v=0.8.2"></script>
 <script src="smooth-clock-v072.js?v=0.8.2"></script>
@@ -153,7 +153,7 @@ window.location.replace(url.toString());
 <script src="input-fix-v077.js?v=0.8.2"></script>
 <script src="song-select-v082.js?v=0.8.2"></script>
 <script src="home-transparent-v083.js?v=0.8.4"></script>
-<script src="home-cutout-v084.js?v=0.8.5"></script>
+<script src="home-cutout-v084.js?v=0.8.11"></script>
 <script src="home-branding-v085.js?v=0.8.5"></script>
 </body>
 </html>
