@@ -69,3 +69,5 @@ jobs:
           else
             echo 'No generated changes.'
           fi
+
+# This workflow runs only when source standing-art files change or this workflow is updated.
