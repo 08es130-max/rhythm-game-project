@@ -1,0 +1,51 @@
+name: Publish v0.8.5 assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-v085-assets.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare generated assets from repository variables
+        run: |
+          echo 'Asset binaries are committed separately; this workflow only patches text files.'
+      - name: Patch app references and home title
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace("window.APP_VERSION = '0.8.4';","window.APP_VERSION = '0.8.5';")
+          s=s.replace('Ver. 0.8.4','Ver. 0.8.5')
+          s=s.replace('Ver.0.8.4 アップデート','Ver.0.8.5 アップデート')
+          s=s.replace('ホームの栞子と4つのメニューボタンを、画像そのものから背景を除去した透過素材へ変更しました。','アプリアイコンとホームロゴを刷新し、新しい栞子立ち絵候補を追加しました。')
+          s=s.replace('icon-180-v030.png?v=0.5.7','icon-180-v085.png?v=0.8.5')
+          s=s.replace('icon-192-v030.png?v=0.5.7','icon-192-v085.png?v=0.8.5')
+          s=s.replace('home-cutout-v084.css?v=0.8.4','home-cutout-v084.css?v=0.8.5')
+          s=s.replace('home-cutout-v084.js?v=0.8.4','home-cutout-v084.js?v=0.8.5')
+          p.write_text(s)
+
+          Path('version.json').write_text('{\n  "version": "0.8.5"\n}\n')
+
+          m=Path('manifest.json')
+          ms=m.read_text()
+          ms=ms.replace('icon-192-v030.png?v=0.4.6','icon-192-v085.png?v=0.8.5')
+          ms=ms.replace('icon-512-v030.png?v=0.4.6','icon-512-v085.png?v=0.8.5')
+          m.write_text(ms)
+          PY
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html version.json manifest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Publish v0.8.5 app icon and home branding'
+          git push
