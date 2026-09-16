@@ -1,13 +1,11 @@
-// Ver.0.8.20: use clean official PNG for Shioriko normal art; keep secret-mode assets unchanged.
+// Ver.0.8.20: use clean official PNG for all Shioriko home art; keep layout unchanged.
 (function(){
   const VERSION=window.APP_VERSION || '0.8.20';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const ART=Object.fromEntries(VALID.map(mode=>[
     mode,
-    mode==='normal'
-      ? `assets/home-characters/shioriko/normal.png?v=${VERSION}-clean4`
-      : `assets/home-characters/shioriko/${mode}.webp?v=${VERSION}`
+    `assets/home-characters/shioriko/${mode}.png?v=${VERSION}-pngset1`
   ]));
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
@@ -18,89 +16,52 @@
 
   const card=document.querySelector('.home-character-card');
   const original=card?.querySelector('.home-character-img');
-  if(!card||!original)return;
+  if(!card||!original) return;
 
   let cutout=card.querySelector('.home-character-cutout-v084');
   if(!cutout){
     cutout=document.createElement('img');
     cutout.className='home-character-cutout-v084';
-    cutout.alt='ホームキャラクター';
+    cutout.alt='三船栞子';
     cutout.decoding='async';
     cutout.draggable=false;
-    original.insertAdjacentElement('afterend',cutout);
+    card.appendChild(cutout);
   }
 
-  function showFallback(){
+  const fallbackToOriginal=()=>{
     cutout.hidden=true;
     original.classList.remove('home-original-hidden-v084');
-  }
+  };
 
-  cutout.addEventListener('error', showFallback);
-  cutout.addEventListener('load', ()=>{
-    if(isShioriko()){
-      original.classList.add('home-original-hidden-v084');
-      cutout.hidden=false;
-    }
-  });
-
-  function isShioriko(){
-    const id=String(card.dataset.characterId||localStorage.getItem('rhythmGame.homeCharacter')||'default');
-    if(id==='default'||id.includes('shioriko'))return true;
-    const unit=(window.CHARACTER_LIBRARY||[]).find(c=>c?.id===id);
-    return String(unit?.name||'').replace(/【[^】]+】$/u,'')==='三船栞子';
-  }
-
-  function activeMode(){
-    const dataMode=String(card.dataset.shioMode||'');
-    if(VALID.includes(dataMode))return dataMode;
-    const stored=String(localStorage.getItem(MODE_KEY)||'normal');
-    return VALID.includes(stored)?stored:'normal';
-  }
-
-  function applyCharacter(){
-    if(!isShioriko()){
-      original.classList.remove('home-original-hidden-v084');
-      cutout.hidden=true;
-      return;
-    }
-    const mode=activeMode();
-    const src=ART[mode]||ART.normal;
+  cutout.addEventListener('load',()=>{
     cutout.hidden=false;
-    if(cutout.getAttribute('src')!==src){
-      original.classList.remove('home-original-hidden-v084');
-      cutout.setAttribute('src',src);
-    }else if(cutout.complete && cutout.naturalWidth>0){
-      original.classList.add('home-original-hidden-v084');
+    original.classList.add('home-original-hidden-v084');
+  });
+  cutout.addEventListener('error',fallbackToOriginal);
+
+  const getMode=()=>{
+    const m=document.documentElement.dataset.shioMode || localStorage.getItem(MODE_KEY) || 'normal';
+    return VALID.includes(m)?m:'normal';
+  };
+
+  const applyMode=(mode)=>{
+    const m=VALID.includes(mode)?mode:'normal';
+    document.documentElement.dataset.shioMode=m;
+    const src=ART[m];
+    if(cutout.src!==new URL(src,location.href).href){
+      cutout.hidden=true;
+      cutout.src=src;
     }
-    cutout.dataset.mode=mode;
-  }
+  };
 
-  function applyMenu(){
-    Object.entries(MENU).forEach(([id,src])=>{
-      const img=document.getElementById(id)?.querySelector('.home-menu-art');
-      if(!img)return;
-      if(img.getAttribute('src')!==src)img.setAttribute('src',src);
-    });
-  }
+  applyMode(getMode());
 
-  function syncVersion(){
-    document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
-    const head=document.querySelector('#updateBanner .update-head span:last-child');
-    if(head)head.textContent=`Ver.${VERSION} アップデート`;
-    const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='栞子の通常立ち絵と隠しモード全7種を、新しい左右補完済み立ち絵へ差し替えました。';
-  }
+  window.addEventListener('rhythmGameShiorikoModeChanged',(e)=>applyMode(e.detail?.mode||getMode()));
+  window.addEventListener('rhythmGameShiorikoDialogueExpression',(e)=>applyMode(e.detail?.mode||getMode()));
+  window.addEventListener('storage',(e)=>{ if(e.key===MODE_KEY) applyMode(e.newValue||'normal'); });
 
-  new MutationObserver(()=>applyCharacter()).observe(card,{attributes:true,attributeFilter:['data-character-id','data-shio-mode']});
-  new MutationObserver(()=>{applyMenu();}).observe(document.body,{childList:true,subtree:true});
-  window.addEventListener('rhythmGameShiorikoModeChanged',()=>requestAnimationFrame(applyCharacter));
-  window.addEventListener('rhythmGameShiorikoDialogueExpression',()=>requestAnimationFrame(applyCharacter));
-
-  Object.values(ART).forEach(src=>{const img=new Image();img.src=src;});
-  Object.values(MENU).forEach(src=>{const img=new Image();img.src=src;});
-
-  applyCharacter();
-  applyMenu();
-  syncVersion();
-  setTimeout(()=>{applyCharacter();applyMenu();syncVersion();},250);
+  Object.entries(MENU).forEach(([id,src])=>{
+    const el=document.getElementById(id);
+    if(el && el.tagName==='IMG') el.src=src;
+  });
 })();
