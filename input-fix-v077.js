@@ -68,7 +68,7 @@
     }
     if(!candidate)return;
     let grade='good';
-    if(best<=HIT_WINDOWS.perfect)grade='perfect';
+    if(best<=getPerfectWindow())grade='perfect';
     else if(best<=HIT_WINDOWS.great)grade='great';
     registerHit(candidate,grade);
     playTapSound(grade);

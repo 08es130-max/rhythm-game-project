@@ -59,8 +59,6 @@ GitHub Pagesはmainのルートを既存のGitHub生成 `pages build and deploym
 
 今回の整理とは分けて扱う。ユーザー確認なしに挙動を変えない。
 
-- 最後の `home-transparent-v083.js` が画面表示を0.8.4に上書きする（APP_VERSIONは0.8.20）。
-- 最終入力がgetPerfectWindow()を参照しないため、判定強化ONでも実判定は±45ms。設定画面の表示は±70ms。
 - 結果表示の2系統でIDとrank基準が重複。保存キーは両方維持。
 - 現役manifest-v0812.jsonにはicons配列がない（manifest.jsonには存在）。
 - 10成功ボイスには複数のカウンタと再生経路がある。音源・端末追加互換性を含めて調べてから整理する。
