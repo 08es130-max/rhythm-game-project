@@ -5,14 +5,6 @@
   const menu=document.querySelector('.home-menu');
   if(!homeMain||!menu) return;
 
-  if(!document.querySelector('link[data-gacha-patch="046"]')){
-    const patch=document.createElement('link');
-    patch.rel='stylesheet';
-    patch.href='gacha-v045.css?v=0.4.6';
-    patch.dataset.gachaPatch='046';
-    document.head.appendChild(patch);
-  }
-
   let right=document.querySelector('.home-right-panel');
   if(!right){right=document.createElement('div');right.className='home-right-panel';homeMain.appendChild(right);}
   if(updateBanner) right.appendChild(updateBanner);
