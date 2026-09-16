@@ -5,8 +5,8 @@
   const HOME_ART_KEY='rhythmGame.shiorikoHomeArt.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const NORMAL_ART={
-    new:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart2`,
-    old:`assets/home-characters/shioriko/candidates/stage-v085.webp?v=${VERSION}-homeart2`
+    new:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart3`,
+    old:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart3`
   };
   const ART={
     dere:`assets/home-characters/shioriko/dere.png?v=${VERSION}-pngset1`,
@@ -96,12 +96,12 @@
     const status=wrap.querySelector('.home-art-current');
     const defs=[
       {id:'new',label:'新しい立ち絵',src:NORMAL_ART.new},
-      {id:'old',label:'以前の立ち絵',src:NORMAL_ART.old}
+      {id:'old',label:'以前の立ち絵（Ver.0.8.14）',src:NORMAL_ART.old}
     ];
     const refresh=()=>{
       const selected=getHomeArt();
       wrap.querySelectorAll('.home-art-option').forEach(btn=>btn.classList.toggle('is-selected',btn.dataset.art===selected));
-      status.textContent=`現在：${selected==='old'?'以前の立ち絵':'新しい立ち絵'}`;
+      status.textContent=`現在：${selected==='old'?'以前の立ち絵（Ver.0.8.14）':'新しい立ち絵'}`;
     };
     defs.forEach(def=>{
       const btn=document.createElement('button');
