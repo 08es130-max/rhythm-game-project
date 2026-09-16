@@ -1,1 +1,0 @@
-Direct binary install staging for v0.8.15 character assets.
