@@ -1,0 +1,71 @@
+name: Apply remaining Shioriko PNG modes v0.8.20
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/apply-shioriko-six-png-v0820.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Convert six Shioriko mode assets to PNG
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pillow
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import hashlib
+
+          modes=['dere','yandere','scold','drunk','clumsy','casual']
+          root=Path('assets/home-characters/shioriko')
+          for mode in modes:
+              src=root/f'{mode}.webp'
+              dst=root/f'{mode}.png'
+              if not src.exists():
+                  raise FileNotFoundError(src)
+              with Image.open(src) as im:
+                  im=im.convert('RGBA')
+                  if im.size != (540,720):
+                      im=im.resize((540,720), Image.Resampling.LANCZOS)
+                  im.save(dst, 'PNG', optimize=True)
+              b=dst.read_bytes()
+              with Image.open(dst) as check:
+                  assert check.size==(540,720), (mode, check.size)
+              assert b[:8]==b'\x89PNG\r\n\x1a\n', mode
+              print(mode, len(b), hashlib.sha256(b).hexdigest())
+
+          js=Path('home-cutout-v084.js')
+          s=js.read_text()
+          assert 'pngset1' in s, 'home-cutout-v084.js is not configured for PNG set'
+
+          idx=Path('index.html')
+          s=idx.read_text()
+          if 'home-cutout-v084.js?v=0.8.20-png4' in s:
+              s=s.replace('home-cutout-v084.js?v=0.8.20-png4','home-cutout-v084.js?v=0.8.20-pngset1')
+          elif 'home-cutout-v084.js?v=0.8.20-pngset1' not in s:
+              raise AssertionError('unexpected home-cutout cache key')
+          idx.write_text(s)
+          PY
+      - name: Commit generated PNG assets
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add assets/home-characters/shioriko/dere.png \
+                  assets/home-characters/shioriko/yandere.png \
+                  assets/home-characters/shioriko/scold.png \
+                  assets/home-characters/shioriko/drunk.png \
+                  assets/home-characters/shioriko/clumsy.png \
+                  assets/home-characters/shioriko/casual.png \
+                  index.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Apply PNG assets for remaining Shioriko modes'
+          git push
