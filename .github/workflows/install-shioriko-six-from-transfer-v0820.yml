@@ -1,0 +1,98 @@
+name: Install official Shioriko six PNG modes v0.8.20
+
+on:
+  push:
+    branches:
+      - transfer-shio6-avif-v0820
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout transfer branch
+        uses: actions/checkout@v4
+        with:
+          ref: transfer-shio6-avif-v0820
+
+      - name: Install AVIF decoder and Pillow
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libavif-bin
+          python -m pip install --quiet pillow
+
+      - name: Reconstruct verified official-source transports
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/shio6
+
+          cat .art-transfer-shio6-q30/dere-00.b64 .art-transfer-shio6-q30/dere-01.b64 | base64 -d > /tmp/shio6/dere.avif
+          cat .art-transfer-shio6-q30/yandere-00.b64 .art-transfer-shio6-q30/yandere-01.b64 | base64 -d > /tmp/shio6/yandere.avif
+          cat .art-transfer-shio6-q30/scold-00.b64 .art-transfer-shio6-q30/scold-mid.b64 .art-transfer-shio6-q30/scold-01.b64 | base64 -d > /tmp/shio6/scold.avif
+          cat .art-transfer-shio6-q30/drunk-00.b64 .art-transfer-shio6-q30/drunk-mid.b64 .art-transfer-shio6-q30/drunk-01.b64 | base64 -d > /tmp/shio6/drunk.avif
+          cat .art-transfer-shio6-q30/clumsy-00.b64 .art-transfer-shio6-q30/clumsy-01.b64 | base64 -d > /tmp/shio6/clumsy.avif
+          cat .art-transfer-shio6-q30/casual-00.b64 .art-transfer-shio6-q30/casual-01.b64 | base64 -d > /tmp/shio6/casual.avif
+
+          echo 'a5c758bb387ea24d483068bc1aadea7a47e9f67bff11febe5320c1eff23ecf35  /tmp/shio6/dere.avif' | sha256sum -c -
+          echo '491a701ca8a956e2d3a7eb6d18795cc98ff4e3aebf454748c52e26a32aaa5223  /tmp/shio6/yandere.avif' | sha256sum -c -
+          echo 'e8039b6da3b526cdcd7b80648bf185ebf4cf6eb1cffe21061e126722f9f4159d  /tmp/shio6/scold.avif' | sha256sum -c -
+          echo 'd4f1f56b578784477c1c347810878a707a85db042ee1dc727f23d0251d747f56  /tmp/shio6/drunk.avif' | sha256sum -c -
+          echo '1b959af5f938d41096557c652dfe90acb2e12b50c72451e120dda6f30d896020  /tmp/shio6/clumsy.avif' | sha256sum -c -
+          echo 'e5506625a95d998bb1b7ab5e10f6d099b369b56416306f88b5900362078758de  /tmp/shio6/casual.avif' | sha256sum -c -
+
+      - name: Decode to PNG and validate
+        run: |
+          set -euo pipefail
+          for mode in dere yandere scold drunk clumsy casual; do
+            avifdec /tmp/shio6/${mode}.avif assets/home-characters/shioriko/${mode}.png
+          done
+
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          modes=['dere','yandere','scold','drunk','clumsy','casual']
+          for mode in modes:
+              p=Path(f'assets/home-characters/shioriko/{mode}.png')
+              b=p.read_bytes()
+              assert b[:8] == b'\x89PNG\r\n\x1a\n', mode
+              with Image.open(p) as im:
+                  assert im.size == (540,720), (mode, im.size)
+                  im.load()
+                  print(mode, im.size, im.mode, len(b))
+          PY
+
+      - name: Finalize references and clean transport files
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          js=Path('home-cutout-v084.js').read_text()
+          assert 'assets/home-characters/shioriko/${mode}.png?v=${VERSION}-pngset1' in js
+          assert "cutout.addEventListener('error',fallbackToOriginal)" in js
+
+          p=Path('index.html')
+          s=p.read_text()
+          old='home-cutout-v084.js?v=0.8.20-png4'
+          new='home-cutout-v084.js?v=0.8.20-pngset1'
+          if old in s:
+              s=s.replace(old,new)
+          assert new in s
+          p.write_text(s)
+          PY
+
+          rm -rf .art-transfer-shio6-q30 .art-transfer-shio6
+          rm -f .github/workflows/apply-shioriko-six-png-v0820.yml
+          rm -f .github/workflows/install-shioriko-six-from-transfer-v0820.yml
+
+      - name: Commit installed assets
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'Install official Shioriko PNG mode assets'
+          git push origin HEAD:transfer-shio6-avif-v0820
