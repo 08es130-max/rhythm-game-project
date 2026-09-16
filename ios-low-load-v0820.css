@@ -1,0 +1,26 @@
+/* iPhone-only live performance profile. Keeps layout, judgement and controls unchanged. */
+@supports (-webkit-touch-callout:none){
+  @media (orientation:landscape) and (pointer:coarse){
+    body.playing-mode .game::before{
+      mix-blend-mode:normal;
+      opacity:.55;
+    }
+    body.playing-mode .live-backdrop::before,
+    body.playing-mode .live-backdrop::after{
+      filter:none;
+    }
+    body.playing-mode .target-avatar{
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);
+    }
+    body.playing-mode .target-ring{
+      box-shadow:0 0 0 2px rgba(96,165,250,.18);
+      transition:transform .04s,border-color .04s;
+    }
+    body.playing-mode .target.active .target-ring{
+      box-shadow:0 0 0 3px rgba(255,255,255,.18);
+    }
+    body.playing-mode .target::before{
+      opacity:.18;
+    }
+  }
+}
