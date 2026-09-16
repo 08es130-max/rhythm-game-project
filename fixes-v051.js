@@ -137,7 +137,10 @@
 
   function refreshGachaArt(root=document){
     const pool=window.GACHA_UR_POOL||[];
-    root.querySelectorAll?.('.gacha-pull-card.rarity-ur img,.gacha-ur-spotlight-image').forEach(img=>{
+    const selector='.gacha-pull-card.rarity-ur img,.gacha-ur-spotlight-image';
+    const images=[...(root.querySelectorAll?.(selector)||[])];
+    if(root.matches?.(selector)) images.unshift(root);
+    images.forEach(img=>{
       const name=String(img.alt||'').replace(/【[^】]+】$/u,'');
       const unit=pool.find(u=>String(u?.name||'').replace(/【[^】]+】$/u,'')===name);
       if(!unit?.art)return;
@@ -278,7 +281,23 @@
   }
 
   updateVersionDisplay();applyMonthlyMasterArt();cleanGachaButton();installRoomRenderer();installLiveCrop();injectStyles();refreshGachaArt();installSongLibrary();
-  const observer=new MutationObserver(()=>{cleanGachaButton();refreshGachaArt(document);}); observer.observe(document.body,{childList:true,subtree:true});
+  // HUD text changes also emit childList records. Only inspect newly inserted
+  // elements so scoring never triggers a full-document gacha image scan.
+  const observer=new MutationObserver(records=>{
+    const roots=new Set();
+    for(const record of records){
+      // The spotlight reuses its image and updates the adjacent name text.
+      const gacha=record.target.closest?.('.gacha-ur-spotlight,.gacha-pull-card');
+      if(gacha) roots.add(gacha);
+      for(const node of record.addedNodes){
+        if(node.nodeType!==Node.ELEMENT_NODE) continue;
+        if(node.id==='homeGachaBtn'||node.querySelector('#homeGachaBtn')) cleanGachaButton();
+        roots.add(node);
+      }
+    }
+    roots.forEach(root=>refreshGachaArt(root));
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
   window.refreshMonthlyMasterArt=function(){updateVersionDisplay();applyMonthlyMasterArt();installRoomRenderer();installLiveCrop();refreshGachaArt();try{if(typeof layoutPlayfield==='function')layoutPlayfield();}catch(_){}};
   setTimeout(window.refreshMonthlyMasterArt,0);
 })();

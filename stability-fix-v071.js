@@ -36,18 +36,8 @@
   `;
   document.head.appendChild(style);
 
-  // Pause button: bind one direct pointer handler only. Avoid the extra
-  // document-level capture/touchstart hooks used in v0.7.0.
-  const pauseBtn=document.getElementById('pauseBtn');
-  if(pauseBtn && pauseBtn.dataset.stable071!=='1'){
-    pauseBtn.dataset.stable071='1';
-    pauseBtn.addEventListener('pointerdown',(e)=>{
-      if(!playing)return;
-      e.preventDefault();
-      e.stopPropagation();
-      try{openPauseMenu();}catch(_){}
-    },{passive:false});
-  }
+  // pause.js owns the direct handler; input-fix-v077.js captures in-game
+  // pointer/touch input. An additional handler here would call it twice.
 
   function syncVersion(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{
