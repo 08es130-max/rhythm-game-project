@@ -95,11 +95,7 @@ function quitFromPause() {
   window.scrollTo({top:0, behavior:'auto'});
 }
 
-pauseBtn.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openPauseMenu();
-});
+// input-fix-v077.js owns pointer/touch activation of pauseBtn.
 
 pauseResumeBtn.addEventListener('click', resumeFromPause);
 pauseQuitBtn.addEventListener('click', quitFromPause);

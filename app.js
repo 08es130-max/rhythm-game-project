@@ -120,10 +120,7 @@ function layoutPlayfield() {
 
     target.appendChild(avatar);
     target.appendChild(ring);
-    target.addEventListener('pointerdown', (e) => {
-      e.preventDefault();
-      hitLane(i);
-    });
+    // input-fix-v077.js delegates live input, including rebuilt targets.
     targets.appendChild(target);
   });
 }

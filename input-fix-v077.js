@@ -5,7 +5,10 @@
   let lanes=Array.from({length:9},()=>[]);
   let cursors=Array(9).fill(0);
   const flashTimers=Array(9).fill(0);
-  let lastHandledPointer={lane:-1,ts:-Infinity};
+  // Choose one event family per input device, never by the previous tap's time.
+  // On touch-capable browsers this also works if touch pointers are cancelled
+  // or stop arriving. Mouse/pen (and pointer-only browsers) use pointerdown.
+  const useTouchEvents='ontouchstart' in window;
 
   function rebuild(){
     ref=activeNotes;
@@ -90,44 +93,28 @@
     return Number.isInteger(lane)&&lane>=0&&lane<9?lane:-1;
   }
 
-  // Capture taps before per-button handlers. Event timestamps are converted back to
-  // song time so a brief iOS/PWA main-thread stall does not turn a valid tap into a miss.
-  game.addEventListener('pointerdown',(e)=>{
-    if(!playing)return;
-    const lane=laneFromTarget(e.target);
+  function handleLivePress(target,e){
+    if(!playing||gamePaused)return;
+    if(target?.closest?.('#pauseBtn')){
+      if(e.cancelable)e.preventDefault();
+      openPauseMenu();
+      return;
+    }
+    if(!game.contains(target))return;
+    const lane=laneFromTarget(target);
     if(lane<0)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    lastHandledPointer={lane,ts:performance.now()};
+    if(e.cancelable)e.preventDefault();
     fastHitLaneAt(lane,songTimeForEvent(e.timeStamp));
-  },true);
+  }
 
-  // iOS touch fallback for cases where a pointer event is dropped during repeated taps.
-  game.addEventListener('touchstart',(e)=>{
-    if(!playing)return;
-    const lane=laneFromTarget(e.target);
-    if(lane<0)return;
-    const now=performance.now();
-    if(lastHandledPointer.lane===lane&&now-lastHandledPointer.ts<45)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    fastHitLaneAt(lane,songTimeForEvent(e.timeStamp));
-  },{capture:true,passive:false});
-
-  // Pause taps are also captured early so a tap made during a brief stall is not lost.
+  // The only live input owner. Do not stop propagation: audio gesture listeners
+  // must still receive presses. No down/up state can survive a cancel event.
   document.addEventListener('pointerdown',(e)=>{
-    const btn=e.target?.closest?.('#pauseBtn');
-    if(!btn||!playing)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    try{openPauseMenu();}catch(_){}
-  },true);
-  document.addEventListener('touchstart',(e)=>{
-    const btn=e.target?.closest?.('#pauseBtn');
-    if(!btn||!playing)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    try{openPauseMenu();}catch(_){}
+    if(useTouchEvents&&e.pointerType==='touch')return;
+    handleLivePress(e.target,e);
+  },{capture:true,passive:false});
+  if(useTouchEvents)document.addEventListener('touchstart',(e)=>{
+    for(const touch of e.changedTouches)handleLivePress(touch.target,e);
   },{capture:true,passive:false});
 
   document.getElementById('startBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);});
