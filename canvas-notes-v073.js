@@ -1,6 +1,7 @@
 // Ver.0.7.4: canvas note rendering tuned for iPhone visibility and lower fill-rate.
 (function(){
   const VERSION='0.7.4';
+  const IS_IOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
   let canvas=null;
   let ctx=null;
   let sprite=null;
@@ -51,9 +52,9 @@
     ensureCanvas();
     const w=Math.max(1,game.clientWidth);
     const h=Math.max(1,game.clientHeight);
-    // iPhone Retina does not need a full 2x backing store for these simple notes.
-    // 1.35x keeps edges clean while cutting canvas pixel work substantially.
-    const dpr=Math.min(1.35,window.devicePixelRatio||1);
+    // iPhone uses a 1x backing store to reduce sustained GPU/thermal load.
+    // Other devices keep the previous 1.35x cap.
+    const dpr=IS_IOS?1:Math.min(1.35,window.devicePixelRatio||1);
     const pw=Math.round(w*dpr),ph=Math.round(h*dpr);
     if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
     ctx.setTransform(dpr,0,0,dpr,0,0);
@@ -89,8 +90,6 @@
 
   function drawNote(x,y,scale,missed){
     const img=buildSprite();
-    // v0.7.3 looked smaller than the old DOM notes because much of the 96px
-    // sprite was transparent. 76px makes the visible disc roughly the old size.
     const size=76*scale;
     ctx.globalAlpha=missed?.76:1;
     ctx.drawImage(img,x-size/2,y-size/2,size,size);
@@ -126,8 +125,6 @@
     rafId=requestAnimationFrame(canvasLoop);
   }
 
-  // Keep the proven DOM targets, hitLane(), pause button and sound handling intact.
-  // Only replace the falling-note renderer. No document-level touch interception.
   try{loop=canvasLoop;}catch(_){window.loop=canvasLoop;}
 
   const oldFinish=finishGame;
@@ -146,11 +143,7 @@
   document.head.appendChild(style);
 
   function syncVersion(){
-    document.querySelectorAll('.home-version,.version-badge').forEach(el=>{const t=`Ver. ${VERSION}`;if(el.textContent!==t)el.textContent=t;});
-    const head=document.querySelector('#updateBanner .update-head span:last-child');
-    if(head)head.textContent=`Ver.${VERSION} アップデート`;
-    const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='ノーツを見やすく拡大し、Canvas描画負荷とタップ時の音声負荷をさらに軽減しました。';
+    document.querySelectorAll('.home-version,.version-badge').forEach(el=>{const t=`Ver. ${window.APP_VERSION||VERSION}`;if(el.textContent!==t)el.textContent=t;});
   }
   syncVersion();
 })();
