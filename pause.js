@@ -24,10 +24,13 @@ const pauseResumeBtn = document.getElementById('pauseResumeBtn');
 const pauseQuitBtn = document.getElementById('pauseQuitBtn');
 let gamePaused = false;
 let pauseStartedAt = 0;
+let resumeInProgress = false;
+let pauseSession = 0;
 
 function openPauseMenu() {
   if (!playing || gamePaused) return;
   gamePaused = true;
+  pauseSession++;
   pauseStartedAt = performance.now();
   cancelAnimationFrame(rafId);
   if (!isSilentMode()) audio.pause();
@@ -36,22 +39,28 @@ function openPauseMenu() {
 }
 
 async function resumeFromPause() {
-  if (!gamePaused) return;
+  if (!gamePaused || resumeInProgress) return;
+  resumeInProgress = true;
+  const session = pauseSession;
 
-  if (isSilentMode()) {
-    silentStartAt += performance.now() - pauseStartedAt;
-  } else {
-    try {
+  try {
+    if (isSilentMode()) {
+      silentStartAt += performance.now() - pauseStartedAt;
+    } else {
       await audio.play();
-    } catch (e) {
-      return;
     }
-  }
 
-  gamePaused = false;
-  pauseMenu.classList.remove('open');
-  judgeEl.textContent = 'GO!';
-  loop();
+    // A quit or a newer pause must not restart this paused live.
+    if (!playing || !gamePaused || session !== pauseSession) return;
+    gamePaused = false;
+    pauseMenu.classList.remove('open');
+    judgeEl.textContent = 'GO!';
+    loop();
+  } catch (e) {
+    // Keep the pause menu available if media playback fails.
+  } finally {
+    resumeInProgress = false;
+  }
 }
 
 function quitFromPause() {
