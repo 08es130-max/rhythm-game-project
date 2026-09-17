@@ -1,7 +1,7 @@
-// Ver.0.8.21: story UI polish only. Keeps story data/gameplay logic untouched.
+// Ver.0.8.22: story UI polish + in-app refresh control.
 (function(){
   'use strict';
-  const VERSION='0.8.21';
+  const VERSION='0.8.22';
   window.APP_VERSION=VERSION;
   const overlay=document.getElementById('storyOverlay');
   const reader=document.getElementById('storyReader');
@@ -9,32 +9,27 @@
   const storyBtn=document.getElementById('homeStoryBtn');
   if(!overlay||!reader||!message||!storyBtn)return;
 
-  // Keep the visible version and update notice in sync with the deployed build.
   document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ストーリー機能を追加し、メッセージ表示・操作性・ホームのストーリーボタンを調整しました。';
+  if(updateText) updateText.textContent='ストーリー機能とホーム表示を調整し、設定に「最新版に更新」を追加しました。';
 
   if(!document.getElementById('storyPolishV087Style')){
     const style=document.createElement('style');
     style.id='storyPolishV087Style';
     style.textContent=`
-      /* Home: five image buttons, with STORY slightly larger and centered on the lower row. */
       .home-menu{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;justify-items:center!important;align-items:center!important}
       .home-menu-story{grid-column:2!important;grid-row:2!important;width:106%!important;height:106%!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;aspect-ratio:1/1!important;padding:0!important;border:0!important;border-radius:14px!important;overflow:hidden!important;line-height:0!important;background:transparent!important;box-shadow:0 14px 30px rgba(0,0,0,.26)!important;display:block!important;letter-spacing:normal!important;font-size:inherit!important;z-index:2!important}
       .home-menu-story::before{display:none!important;content:none!important}
       .home-menu-story .home-menu-art{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;border:0!important;margin:0!important;padding:0!important;pointer-events:none!important}
-
-      /* Reader: larger type and speaker name at the upper-left edge of the box. */
       .story-message{font-size:clamp(17px,2.55vw,25px)!important;line-height:1.65!important;padding:34px 30px 25px!important}
       .story-nameplate{left:18px!important;right:auto!important;top:-22px!important;min-width:116px!important;max-width:48%!important;text-align:left!important;padding:7px 16px!important;font-size:14px!important}
       .story-progress{font-size:9px!important}
-
-      /* Story MENU: pull it inward from the screen edge and enlarge its touch target. */
       .story-top{padding-left:clamp(18px,4vw,42px)!important;padding-right:clamp(24px,7vw,74px)!important}
       .story-menu-btn{min-width:82px!important;min-height:40px!important;padding:10px 18px!important;font-size:13px!important;border-radius:999px!important}
-
+      .update-refresh-card{grid-column:1/-1!important;border-color:rgba(56,189,248,.38)!important;background:linear-gradient(135deg,rgba(14,116,144,.18),rgba(30,41,59,.9))!important}
+      .update-refresh-title{font-weight:900;margin-bottom:5px}.update-refresh-note{font-size:11px;line-height:1.5;color:#cbd5e1;margin-bottom:10px}.update-refresh-btn{width:100%;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(100deg,#0891b2,#2563eb);color:#fff;font-weight:900;cursor:pointer}.update-refresh-btn:disabled{opacity:.65;cursor:default}
       @media (orientation:landscape) and (pointer:coarse){
         .home-menu{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         .home-menu-story{grid-column:2!important;grid-row:2!important;width:108%!important;height:108%!important;border-radius:14px!important}
@@ -44,6 +39,7 @@
         .story-progress{font-size:7px!important}
         .story-top{padding-left:22px!important;padding-right:56px!important}
         .story-menu-btn{min-width:88px!important;min-height:42px!important;padding:10px 18px!important;font-size:11px!important}
+        .update-refresh-note{font-size:9px}.update-refresh-btn{padding:9px 12px;font-size:11px}
       }
       @media(max-width:720px) and (orientation:portrait){
         .home-menu{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:auto!important}
@@ -57,7 +53,6 @@
     document.head.appendChild(style);
   }
 
-  // Whole reader surface advances text. Interactive top/menu overlays are outside #storyReader.
   if(!reader.dataset.fullscreenAdvance){
     reader.dataset.fullscreenAdvance='1';
     reader.addEventListener('click',(event)=>{
@@ -67,8 +62,36 @@
     });
   }
 
-  // Use a dedicated image asset just like the other home menu buttons.
-  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story4" alt="ストーリー">`;
+  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story5" alt="ストーリー">`;
   storyBtn.title='ストーリー';
   storyBtn.setAttribute('aria-label','ストーリー');
+
+  const settingsGrid=document.querySelector('#settingsScreen .settings-grid');
+  if(settingsGrid&&!document.getElementById('forceRefreshBtn')){
+    const card=document.createElement('div');
+    card.className='setting-card update-refresh-card';
+    card.innerHTML=`<div class="update-refresh-title">アプリ更新</div><div class="update-refresh-note">GitHub Pagesの最新版を確認し、PWA内のキャッシュを整理してそのまま再読み込みします。ライブ設定・部室設定・ストーリーのセーブなどの端末データは消しません。</div><button id="forceRefreshBtn" class="update-refresh-btn" type="button">最新版に更新</button>`;
+    settingsGrid.appendChild(card);
+    const btn=card.querySelector('#forceRefreshBtn');
+    btn.addEventListener('click',async()=>{
+      btn.disabled=true;
+      btn.textContent='最新版を確認中…';
+      let remoteVersion=VERSION;
+      try{
+        const response=await fetch(`version.json?refresh=${Date.now()}`,{cache:'no-store'});
+        if(response.ok){const data=await response.json();if(data?.version)remoteVersion=String(data.version);}
+      }catch(_){ }
+      try{
+        if('caches' in window){const names=await caches.keys();await Promise.all(names.map(name=>caches.delete(name)));}
+      }catch(_){ }
+      try{
+        if('serviceWorker' in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(reg=>reg.unregister()));}
+      }catch(_){ }
+      btn.textContent='再読み込みします…';
+      const url=new URL(window.location.href);
+      url.searchParams.set('v',remoteVersion);
+      url.searchParams.set('refresh',String(Date.now()));
+      window.location.replace(url.toString());
+    });
+  }
 })();
