@@ -1,13 +1,13 @@
-// Ver.0.8.52 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.53 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.52';
+  const VERSION='0.8.53';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='「ふれあい」に高精細GLBモデル用の本番パイプラインを導入。制作中は既存3Dへ自動フォールバックします。';
+    if(text) text.textContent='ホームの3Dキャラ機能を「ラウンジ」へ刷新。専用アイコンを追加し、ラウンジUIを更新しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
@@ -48,7 +48,7 @@
   if(!document.querySelector('script[data-hpt-density-v0838]')) loadScript('hpt-density-v0838.js?v=0.8.38-density1','hpt-density-v0838');
   loadScript('chart-audio-boundary-v0840.js?v=0.8.43-boundary4','chart-boundary-v0840',()=>{loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');});
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
-  loadScript('interaction-room-v0844.js?v=0.8.52-room10','interaction-room-v0844',()=>{loadScript('shioriko-model-loader-v0852.js?v=0.8.52-pipeline2','shioriko-model-loader-v0852');});
+  loadScript('interaction-room-v0844.js?v=0.8.53-lounge1','interaction-room-v0844',()=>{loadScript('shioriko-model-loader-v0852.js?v=0.8.53-pipeline3','shioriko-model-loader-v0852');});
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');const page=document.getElementById('hasunosoraSongScreen');
