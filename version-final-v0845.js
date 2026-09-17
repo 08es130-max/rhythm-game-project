@@ -1,14 +1,14 @@
-// Final version guard for Ver.0.8.45. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.46. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.45';
+  const VERSION='0.8.46';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     const text=document.querySelector('#updateBanner .update-text');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
-    if(text) text.textContent='「ふれあい」に操作できる3D栞子プロトタイプを追加。ドラッグ回転、タップ反応、視線、手振り、簡易ダンスに対応しました。';
+    if(text) text.textContent='「ふれあい」の3D栞子を左右・上下とも360°回転できるようにし、真上・真下視点にも対応しました。';
   }
   sync();
   requestAnimationFrame(sync);
