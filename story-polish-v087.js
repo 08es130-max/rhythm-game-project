@@ -1,8 +1,22 @@
-// Ver.0.8.22: story UI polish + in-app refresh control.
+// Ver.0.8.23: story UI polish + in-app refresh control + default note speed 2.4.
 (function(){
   'use strict';
-  const VERSION='0.8.22';
+  const VERSION='0.8.23';
   window.APP_VERSION=VERSION;
+
+  // Default note speed is 2.4 only when the player has never saved a preference.
+  // Existing custom values are preserved across updates.
+  const NOTE_SPEED_KEY='rhythmGame.noteSpeed';
+  if(localStorage.getItem(NOTE_SPEED_KEY)===null){
+    localStorage.setItem(NOTE_SPEED_KEY,'2.4');
+    const speedInput=document.getElementById('speed');
+    const speedValueEl=document.getElementById('speedValue');
+    const speedSummaryEl=document.getElementById('speedSummary');
+    if(speedInput) speedInput.value='2.4';
+    if(speedValueEl) speedValueEl.textContent='2.4x';
+    if(speedSummaryEl) speedSummaryEl.textContent='2.4x';
+  }
+
   const overlay=document.getElementById('storyOverlay');
   const reader=document.getElementById('storyReader');
   const message=document.getElementById('storyMessage');
@@ -13,7 +27,7 @@
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ストーリー機能とホーム表示を調整し、設定に「最新版に更新」を追加しました。';
+  if(updateText) updateText.textContent='ストーリー機能と更新操作を調整し、ノーツ速度の初期値を2.4にしました。';
 
   if(!document.getElementById('storyPolishV087Style')){
     const style=document.createElement('style');
