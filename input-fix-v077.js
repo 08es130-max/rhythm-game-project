@@ -1,11 +1,13 @@
-// Ver.0.7.8: make gameplay input resilient to brief main-thread stalls and repeated taps.
+// Ver.0.8.36: use Pointer Events exclusively for live input on modern iPhone/PWA.
+// This avoids iOS legacy Touch Events getting stuck after sustained rapid tapping.
 (function(){
-  const VERSION='0.7.8';
+  'use strict';
+  const VERSION='0.8.36';
   let ref=null;
   let lanes=Array.from({length:9},()=>[]);
   let cursors=Array(9).fill(0);
   const flashTimers=Array(9).fill(0);
-  const useTouchEvents='ontouchstart' in window;
+  const activePointers=new Set();
 
   function rebuild(){
     ref=activeNotes;
@@ -36,9 +38,10 @@
     flashTimers[lane]=setTimeout(()=>{flashTimers[lane]=0;el.classList.remove('active');},55);
   }
   try{flashTarget=lightFlash;}catch(_){window.flashTarget=lightFlash;}
+
   function fastHitLaneAt(lane,whenMs){
     lightFlash(lane);
-    if(!playing)return;
+    if(!playing||gamePaused)return;
     ensure();
     const list=lanes[lane];
     if(!list)return;
@@ -74,40 +77,55 @@
   }
   function fastHitLane(lane){fastHitLaneAt(lane,currentMs());}
   try{hitLane=fastHitLane;}catch(_){window.hitLane=fastHitLane;}
+
   function laneFromTarget(target){
     const el=target?.closest?.('.target');
     if(!el)return -1;
     const lane=Number(el.dataset.lane);
     return Number.isInteger(lane)&&lane>=0&&lane<9?lane:-1;
   }
-  function handleLivePress(target,e){
+
+  function handlePointerDown(e){
     if(!playing||gamePaused)return;
+    const target=e.target;
     if(target?.closest?.('#pauseBtn')){
-      if(e.cancelable)e.preventDefault();
       openPauseMenu();
       return;
     }
     if(!game.contains(target))return;
     const lane=laneFromTarget(target);
     if(lane<0)return;
-    if(e.cancelable)e.preventDefault();
+
+    // Each physical contact is handled once. Pointer Events provide explicit
+    // pointerup/pointercancel so iOS can never leave our input state latched.
+    if(activePointers.has(e.pointerId))return;
+    activePointers.add(e.pointerId);
     fastHitLaneAt(lane,songTimeForEvent(e.timeStamp));
   }
-  document.addEventListener('pointerdown',(e)=>{
-    if(useTouchEvents&&e.pointerType==='touch')return;
-    handleLivePress(e.target,e);
-  },{capture:true,passive:false});
-  if(useTouchEvents)document.addEventListener('touchstart',(e)=>{
-    for(const touch of e.changedTouches)handleLivePress(touch.target,e);
-  },{capture:true,passive:false});
-  document.getElementById('startBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);});
-  document.getElementById('retryBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);});
-  function syncVersion(){
-    document.querySelectorAll('.home-version,.version-badge').forEach(el=>el.textContent=`Ver. ${VERSION}`);
-    const head=document.querySelector('#updateBanner .update-head span:last-child');
-    if(head)head.textContent=`Ver.${VERSION} アップデート`;
-    const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='ライブ中のタップ入力を強化し、処理落ち時や同じレーンの連打でも入力を取りこぼしにくくしました。';
+
+  function releasePointer(e){
+    activePointers.delete(e.pointerId);
   }
-  syncVersion();
+  function resetPointers(){
+    activePointers.clear();
+  }
+
+  // Modern iOS Safari/PWA supports Pointer Events. Do not also install legacy
+  // touchstart handlers: running both paths (or relying on repeated preventDefault)
+  // can leave WebKit's gesture recognizer in a suppressed state during rapid play.
+  document.addEventListener('pointerdown',handlePointerDown,{capture:true,passive:true});
+  document.addEventListener('pointerup',releasePointer,{capture:true,passive:true});
+  document.addEventListener('pointercancel',releasePointer,{capture:true,passive:true});
+  window.addEventListener('blur',resetPointers,{passive:true});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)resetPointers();},{passive:true});
+
+  document.getElementById('startBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);resetPointers();});
+  document.getElementById('retryBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);resetPointers();});
+  document.getElementById('stopBtn')?.addEventListener('click',resetPointers);
+
+  window.LOVEFES_INPUT_DEBUG={
+    version:VERSION,
+    activePointerCount:()=>activePointers.size,
+    reset:resetPointers
+  };
 })();
