@@ -1,14 +1,14 @@
-// Final version guard for Ver.0.8.54. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.55. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.54';
+  const VERSION='0.8.55';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     const text=document.querySelector('#updateBanner .update-text');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
-    if(text) text.textContent='ホームメニュー6項目のサイズと表示品質をストーリーボタン基準へ統一。ラウンジを専用画像ボタン化し、配置と見え方を最適化しました。';
+    if(text) text.textContent='ホームの6アイコンを1024×1024の統一版へ更新。ストーリー基準で見かけサイズ・余白・シャープさを揃え、ラウンジも同じ品質へ統一しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,150);
 })();
