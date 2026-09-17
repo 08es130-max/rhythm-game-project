@@ -10,6 +10,50 @@
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
+  // Match the story screen's iPhone safe-area handling on Live / Settings / Room.
+  if(!document.getElementById('coreScreenSafeAreaV0840')){
+    const style=document.createElement('style');
+    style.id='coreScreenSafeAreaV0840';
+    style.textContent=`
+      #liveScreen,#settingsScreen,#characterScreen{
+        --core-safe-left:max(16px,env(safe-area-inset-left));
+        --core-safe-right:max(16px,env(safe-area-inset-right));
+        --core-safe-top:max(10px,env(safe-area-inset-top));
+        --core-safe-bottom:max(10px,env(safe-area-inset-bottom));
+        box-sizing:border-box!important;
+        padding-left:var(--core-safe-left)!important;
+        padding-right:var(--core-safe-right)!important;
+        padding-bottom:var(--core-safe-bottom)!important;
+      }
+      #liveScreen>.screen-header,#settingsScreen>.screen-header,#characterScreen>.screen-header{
+        box-sizing:border-box!important;
+        padding-top:var(--core-safe-top)!important;
+      }
+      #liveScreen .panel,#liveScreen .game-wrap,#settingsScreen .screen-panel,#characterScreen .screen-panel{
+        max-width:100%!important;
+        box-sizing:border-box!important;
+      }
+      @media (orientation:landscape) and (pointer:coarse){
+        #liveScreen,#settingsScreen,#characterScreen{
+          --core-safe-left:max(30px,env(safe-area-inset-left));
+          --core-safe-right:max(30px,env(safe-area-inset-right));
+          --core-safe-top:max(8px,env(safe-area-inset-top));
+          --core-safe-bottom:max(8px,env(safe-area-inset-bottom));
+        }
+      }
+      @media (max-width:720px) and (orientation:portrait){
+        #liveScreen,#settingsScreen,#characterScreen{
+          --core-safe-left:max(14px,env(safe-area-inset-left));
+          --core-safe-right:max(14px,env(safe-area-inset-right));
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    requestAnimationFrame(()=>{
+      try{ if(typeof layoutPlayfield==='function') layoutPlayfield(); }catch(_){}
+    });
+  }
+
   function loadScript(src,dataKey,onload){
     if(document.querySelector(`script[data-${dataKey}]`)){onload?.();return;}
     const s=document.createElement('script');s.src=src;s.dataset[dataKey.replace(/-([a-z])/g,(_,c)=>c.toUpperCase())]='1';
