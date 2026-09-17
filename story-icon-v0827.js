@@ -1,39 +1,82 @@
-// Ver.0.8.30: reliable user-approved home story icon with fallback.
+// Ver.0.8.31: reliable story icon + automatic next-chapter transition.
 (function(){
   'use strict';
-  const VERSION='0.8.30';
+  const VERSION='0.8.31';
   window.APP_VERSION=VERSION;
 
   document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ストーリーアイコンの画像読み込み失敗を修正し、iPhone/PWAでも確実に表示されるフォールバックを追加しました。';
+  if(updateText) updateText.textContent='ストーリーを読み終えると、章一覧へ戻らず次の章をそのまま自動で開始するようにしました。';
 
   const btn=document.getElementById('homeStoryBtn');
-  if(!btn)return;
+  if(btn){
+    const primary=`assets/home-ui/story-user-v0829.webp?v=${VERSION}-story-icon-user3`;
+    const fallback=`assets/home-ui/story-user-v0830.svg?v=${VERSION}-story-icon-fallback2`;
 
-  const primary=`assets/home-ui/story-user-v0829.webp?v=${VERSION}-story-icon-user2`;
-  const fallback=`assets/home-ui/story-user-v0830.svg?v=${VERSION}-story-icon-fallback1`;
+    let img=btn.querySelector('.home-menu-art');
+    if(!img){
+      img=document.createElement('img');
+      img.className='home-menu-art';
+      btn.replaceChildren(img);
+    }
 
-  let img=btn.querySelector('.home-menu-art');
-  if(!img){
-    img=document.createElement('img');
-    img.className='home-menu-art';
-    btn.replaceChildren(img);
+    let fallbackUsed=false;
+    img.onerror=()=>{
+      if(fallbackUsed)return;
+      fallbackUsed=true;
+      img.src=fallback;
+    };
+    img.onload=()=>{ img.classList.add('is-loaded'); };
+    img.src=primary;
+    img.alt='ストーリー';
+    img.decoding='async';
+    img.draggable=false;
+    btn.title='ストーリー';
+    btn.setAttribute('aria-label','ストーリー');
   }
 
-  let fallbackUsed=false;
-  img.onerror=()=>{
-    if(fallbackUsed)return;
-    fallbackUsed=true;
-    img.src=fallback;
+  // The core story reader intentionally returns to the chapter list after each
+  // chapter. Detect that completion toast and immediately open the next card.
+  // This keeps the story core untouched and works for both tapping and AUTO mode.
+  const installAutoNext=()=>{
+    const toast=document.getElementById('storyToast');
+    const progress=document.getElementById('storyProgress');
+    const grid=document.getElementById('storyChapterGrid');
+    const story=window.LOVEFES_STORY?.data;
+    if(!toast||!progress||!grid||!Array.isArray(story)||toast.dataset.autoNextInstalled)return false;
+
+    toast.dataset.autoNextInstalled='1';
+    let lastChapter=0;
+    let pending=null;
+
+    const handleCompletion=()=>{
+      if(toast.textContent.trim()!=='章を読み終えました'||!toast.classList.contains('show'))return;
+      const m=progress.textContent.match(/^(\d+)\/(\d+)/);
+      if(!m)return;
+      const current=Number(m[1]);
+      const total=Number(m[2]);
+      if(!current||current>=total||current===lastChapter)return;
+      lastChapter=current;
+      clearTimeout(pending);
+      pending=setTimeout(()=>{
+        const cards=grid.querySelectorAll('.story-chapter-card');
+        const next=cards[current]; // current is 1-based, therefore this is the next 0-based card.
+        if(next)next.click();
+      },760);
+    };
+
+    const observer=new MutationObserver(handleCompletion);
+    observer.observe(toast,{childList:true,characterData:true,subtree:true,attributes:true,attributeFilter:['class']});
+    return true;
   };
-  img.onload=()=>{ img.classList.add('is-loaded'); };
-  img.src=primary;
-  img.alt='ストーリー';
-  img.decoding='async';
-  img.draggable=false;
-  btn.title='ストーリー';
-  btn.setAttribute('aria-label','ストーリー');
+
+  if(!installAutoNext()){
+    let tries=0;
+    const t=setInterval(()=>{
+      tries++;
+      if(installAutoNext()||tries>30)clearInterval(t);
+    },100);
+  }
 })();
