@@ -1,13 +1,13 @@
-// Ver.0.8.46 patch loader: version sync, safe areas, interaction room, full 3D orbit, and late-loaded chart fixes.
+// Ver.0.8.47 patch loader: version sync, safe areas, interaction room, camera orbit 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.46';
+  const VERSION='0.8.47';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='「ふれあい」の3D栞子を左右・上下とも360°回転できるようにし、真上・真下視点にも対応しました。';
+    if(text) text.textContent='「ふれあい」の真上・真下視点を修正。キャラ本体ではなくカメラが周囲を回る方式に変更しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
@@ -17,29 +17,12 @@
     style.id='coreScreenSafeAreaV0843';
     style.textContent=`
       #settingsScreen,#characterScreen{
-        --core-safe-left:max(16px,env(safe-area-inset-left));
-        --core-safe-right:max(16px,env(safe-area-inset-right));
-        --core-safe-top:max(10px,env(safe-area-inset-top));
-        --core-safe-bottom:max(10px,env(safe-area-inset-bottom));
-        box-sizing:border-box!important;
-        padding-left:var(--core-safe-left)!important;
-        padding-right:var(--core-safe-right)!important;
-        padding-bottom:var(--core-safe-bottom)!important;
+        --core-safe-left:max(16px,env(safe-area-inset-left));--core-safe-right:max(16px,env(safe-area-inset-right));--core-safe-top:max(10px,env(safe-area-inset-top));--core-safe-bottom:max(10px,env(safe-area-inset-bottom));
+        box-sizing:border-box!important;padding-left:var(--core-safe-left)!important;padding-right:var(--core-safe-right)!important;padding-bottom:var(--core-safe-bottom)!important;
       }
-      #settingsScreen>.screen-header,#characterScreen>.screen-header{
-        box-sizing:border-box!important;
-        padding-top:var(--core-safe-top)!important;
-      }
-      #settingsScreen .screen-panel,#characterScreen .screen-panel{
-        max-width:100%!important;
-        box-sizing:border-box!important;
-      }
-      #liveScreen{
-        --live-select-safe-left:max(16px,env(safe-area-inset-left));
-        --live-select-safe-right:max(16px,env(safe-area-inset-right));
-        --live-select-safe-top:max(10px,env(safe-area-inset-top));
-        padding-left:0!important;padding-right:0!important;padding-bottom:0!important;
-      }
+      #settingsScreen>.screen-header,#characterScreen>.screen-header{box-sizing:border-box!important;padding-top:var(--core-safe-top)!important;}
+      #settingsScreen .screen-panel,#characterScreen .screen-panel{max-width:100%!important;box-sizing:border-box!important;}
+      #liveScreen{--live-select-safe-left:max(16px,env(safe-area-inset-left));--live-select-safe-right:max(16px,env(safe-area-inset-right));--live-select-safe-top:max(10px,env(safe-area-inset-top));padding-left:0!important;padding-right:0!important;padding-bottom:0!important;}
       #liveScreen>.screen-header{box-sizing:border-box!important;padding-top:var(--live-select-safe-top)!important;padding-left:var(--live-select-safe-left)!important;padding-right:var(--live-select-safe-right)!important;}
       #liveScreen>#controlsPanel{box-sizing:border-box!important;margin-left:var(--live-select-safe-left)!important;margin-right:var(--live-select-safe-right)!important;max-width:calc(100% - var(--live-select-safe-left) - var(--live-select-safe-right))!important;}
       #liveScreen .game-wrap{margin-left:0!important;margin-right:0!important;max-width:none!important;width:100%!important;box-sizing:border-box!important;}
@@ -65,7 +48,7 @@
   if(!document.querySelector('script[data-hpt-density-v0838]')) loadScript('hpt-density-v0838.js?v=0.8.38-density1','hpt-density-v0838');
   loadScript('chart-audio-boundary-v0840.js?v=0.8.43-boundary4','chart-boundary-v0840',()=>{loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');});
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
-  loadScript('interaction-room-v0844.js?v=0.8.46-room3','interaction-room-v0844',()=>{loadScript('shioriko-3d-v0845.js?v=0.8.46-orbit2','shioriko-3d-v0845');});
+  loadScript('interaction-room-v0844.js?v=0.8.47-room4','interaction-room-v0844',()=>{loadScript('shioriko-3d-v0845.js?v=0.8.47-camera1','shioriko-3d-v0845');});
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');const page=document.getElementById('hasunosoraSongScreen');
