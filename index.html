@@ -11,7 +11,7 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>ラブフェス！</title>
-<link rel="manifest" href="manifest-v0812.json?v=0.8.26" />
+<link rel="manifest" href="manifest-v0812.json?v=0.8.27" />
 <link rel="apple-touch-icon" href="apple-touch-icon-v0812.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="stylesheet" href="styles.css?v=0.5.7" />
@@ -35,7 +35,7 @@
 <!-- Keep the gacha sheet after the home sheets, matching its former injected position. -->
 <link rel="stylesheet" href="gacha-v045.css?v=0.4.6" data-gacha-patch="046" />
 <script>
-window.APP_VERSION = '0.8.26';
+window.APP_VERSION = '0.8.27';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -58,11 +58,11 @@ window.location.replace(url.toString());
 <section id="homeScreen" class="app-screen home-screen">
 <div class="home-topbar">
 <div><h1 class="home-title">ラブフェス！</h1><p class="home-subtitle">LIVE HOME</p></div>
-<div class="home-version">Ver. 0.8.26</div>
+<div class="home-version">Ver. 0.8.27</div>
 </div>
 <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.8.26 アップデート</span></div>
-<p class="update-text">ストーリーアイコンを新しい専用デザインへ差し替え、PWAで確実に更新されるよう参照先とキャッシュキーを更新しました。</p>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.8.27 アップデート</span></div>
+<p class="update-text">ホームのストーリーアイコンを、白い開いた本からピンク〜パープルの装飾されたストーリーアルバムへ大きく刷新しました。</p>
 </div>
 <div class="home-main">
 <div class="home-character-card" data-character-id="default"><img class="home-character-img" src="icon-512-v030.png?v=0.5.7" alt="ホームキャラクター" /></div>
@@ -77,7 +77,7 @@ window.location.replace(url.toString());
 <section id="liveScreen" class="app-screen live-screen" hidden>
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
-<div class="version-badge" aria-label="app version">Ver. 0.8.26</div>
+<div class="version-badge" aria-label="app version">Ver. 0.8.27</div>
 <h2>ライブ選択</h2><p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 <div class="button-row"><button id="spicaPresetBtn" type="button">スピカテリブル</button><button id="demoBtn">テスト譜面を使う</button></div>
 <div class="file-row">
@@ -159,7 +159,8 @@ window.location.replace(url.toString());
 <script src="home-transparent-v083.js?v=0.8.20-version1"></script>
 <script src="home-cutout-v084.js?v=0.8.20-homeart10"></script>
 <script src="home-branding-v085.js?v=0.8.5"></script>
-<script src="story-v086.js?v=0.8.26-story1"></script>
-<script src="story-polish-v087.js?v=0.8.26-story8"></script>
+<script src="story-v086.js?v=0.8.27-story1"></script>
+<script src="story-polish-v087.js?v=0.8.27-story8"></script>
+<script src="story-icon-v0827.js?v=0.8.27-story-icon1"></script>
 </body>
 </html>
