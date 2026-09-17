@@ -4,14 +4,14 @@
 
   const isPlayScreen = () => document.body.classList.contains('playing-mode');
 
-  // Keep browser gestures disabled during play, but do not suppress touchend.
-  // Repeated touchend preventDefault on iOS can interfere with rapid same-position taps.
+  // Pointer Events handle live input. Prevent browser pan/zoom declaratively
+  // instead of cancelling every legacy touch event on iOS.
   game.style.touchAction = 'none';
+  game.style.webkitUserSelect = 'none';
+  game.style.userSelect = 'none';
+  game.style.webkitTouchCallout = 'none';
 
-  game.addEventListener('touchmove', (e) => {
-    if (isPlayScreen()) e.preventDefault();
-  }, { passive: false });
-
+  // Keep only the Safari gesture guards that are still useful for pinch/zoom.
   game.addEventListener('gesturestart', (e) => {
     if (isPlayScreen()) e.preventDefault();
   }, { passive: false });
