@@ -48,7 +48,7 @@
   if(!document.querySelector('script[data-hpt-density-v0838]')) loadScript('hpt-density-v0838.js?v=0.8.38-density1','hpt-density-v0838');
   loadScript('chart-audio-boundary-v0840.js?v=0.8.43-boundary4','chart-boundary-v0840',()=>{loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');});
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
-  loadScript('interaction-room-v0844.js?v=0.8.52-room9','interaction-room-v0844',()=>{loadScript('shioriko-model-loader-v0852.js?v=0.8.52-prod1','shioriko-model-loader-v0852');});
+  loadScript('interaction-room-v0844.js?v=0.8.52-room10','interaction-room-v0844',()=>{loadScript('shioriko-model-loader-v0852.js?v=0.8.52-pipeline2','shioriko-model-loader-v0852');});
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');const page=document.getElementById('hasunosoraSongScreen');

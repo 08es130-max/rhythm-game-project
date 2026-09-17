@@ -10,7 +10,43 @@
   "upAxis": "+Y",
   "targetFps": 30,
   "maxDevicePixelRatio": 1.5,
-  "expressions": ["Neutral","Smile","Happy","Blink","Serious","Surprised","Blush","Mouth_A","Mouth_I","Mouth_U","Mouth_E","Mouth_O"],
-  "animations": ["Idle","Wave","Look","Dance_01"],
-  "touchTargets": ["Head","LeftHand","RightHand","Body"]
+  "expressions": [
+    "Neutral",
+    "Smile",
+    "Happy",
+    "Blink",
+    "Serious",
+    "Surprised",
+    "Blush",
+    "Mouth_A",
+    "Mouth_I",
+    "Mouth_U",
+    "Mouth_E",
+    "Mouth_O"
+  ],
+  "animations": [
+    "Idle",
+    "Wave",
+    "Look",
+    "Dance_01"
+  ],
+  "touchTargets": [
+    "Head",
+    "Face",
+    "LeftHand",
+    "RightHand",
+    "Eye_L",
+    "Eye_R",
+    "Body"
+  ],
+  "schemaVersion": 1,
+  "assetRevision": "live-v1-authoring-1",
+  "maxTriangles": 180000,
+  "maxTextureSize": 2048,
+  "maxFileBytes": 67108864,
+  "authoring": {
+    "source": "assets/models/shioriko/source/shioriko-live-v1.blend",
+    "exportCollection": "06_EXPORT",
+    "approvalRequired": true
+  }
 }

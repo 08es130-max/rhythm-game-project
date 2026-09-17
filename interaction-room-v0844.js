@@ -121,6 +121,7 @@
     const message=room.querySelector('#interactionMessage');
     let angle=0;
     room.querySelector('#interactionModelSlot')?.addEventListener('pointerdown',()=>{
+      if(room.querySelector('#interaction3dCanvas')) return;
       angle=(angle+12)%360;
       if(placeholder) placeholder.style.transform=`rotateY(${angle}deg) scale(1.015)`;
       if(message) message.textContent='タッチ反応の受け口は動作しています。3Dモデル導入後は、顔・頭・手などタップ位置別にリアクションを分けます。';
@@ -132,6 +133,7 @@
       if(message) message.textContent=tab==='touch'?'タッチ・回転・表情リアクションをここで操作します。':tab==='costume'?'制服・ライブ衣装・私服などをここから切り替えられるようにします。':'待機・手振り・ポーズ・ダンスなどのモーションをここから選べるようにします。';
     }));
     room.querySelectorAll('[data-action]:not([disabled])').forEach(btn=>btn.addEventListener('click',()=>{
+      if(room.querySelector('#interaction3dCanvas')) return;
       if(message) message.textContent=btn.dataset.action==='look'?'栞子がこちらを見るモーション用のボタンです。モデル導入後に視線追従へ接続します。':'手を振るモーション用のボタンです。モデル導入後にアニメーションへ接続します。';
     }));
     return room;
