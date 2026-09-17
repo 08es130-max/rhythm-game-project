@@ -1,13 +1,13 @@
-// Ver.0.8.43 patch loader: version sync, safe areas, and late-loaded chart fixes.
+// Ver.0.8.44 patch loader: version sync, safe areas, interaction room, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.43';
+  const VERSION='0.8.44';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ライブ選択画面のみiPhoneの内カメラ領域を避け、プレイ画面は従来どおり全幅表示に戻しました。';
+    if(text) text.textContent='ホーム右下に「ふれあい」を追加。3Dキャラ表示・タッチ・衣装・モーション・ダンス拡張用の専用ルームを新設しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
@@ -104,6 +104,7 @@
     loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');
   });
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
+  loadScript('interaction-room-v0844.js?v=0.8.44-room1','interaction-room-v0844');
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');
