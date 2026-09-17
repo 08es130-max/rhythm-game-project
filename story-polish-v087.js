@@ -1,7 +1,7 @@
-// Ver.0.8.23: story UI polish + in-app refresh control + default note speed 2.4.
+// Ver.0.8.24: story UI polish + in-app refresh control + default note speed 2.4 + iPhone safe areas.
 (function(){
   'use strict';
-  const VERSION='0.8.23';
+  const VERSION='0.8.24';
   window.APP_VERSION=VERSION;
 
   // Default note speed is 2.4 only when the player has never saved a preference.
@@ -27,7 +27,7 @@
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ストーリー機能と更新操作を調整し、ノーツ速度の初期値を2.4にしました。';
+  if(updateText) updateText.textContent='ストーリー画面をiPhone横向きのセーフエリアに対応し、左端の文字や章ボタンがカメラ領域に重ならないよう調整しました。';
 
   if(!document.getElementById('storyPolishV087Style')){
     const style=document.createElement('style');
@@ -37,30 +37,44 @@
       .home-menu-story{grid-column:2!important;grid-row:2!important;width:106%!important;height:106%!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;aspect-ratio:1/1!important;padding:0!important;border:0!important;border-radius:14px!important;overflow:hidden!important;line-height:0!important;background:transparent!important;box-shadow:0 14px 30px rgba(0,0,0,.26)!important;display:block!important;letter-spacing:normal!important;font-size:inherit!important;z-index:2!important}
       .home-menu-story::before{display:none!important;content:none!important}
       .home-menu-story .home-menu-art{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;border:0!important;margin:0!important;padding:0!important;pointer-events:none!important}
+
+      /* Story safe-area support: keep all tappable/readable content clear of iPhone camera/notch areas. */
+      .story-overlay{--story-safe-left:max(16px,env(safe-area-inset-left));--story-safe-right:max(16px,env(safe-area-inset-right));--story-safe-top:max(10px,env(safe-area-inset-top));--story-safe-bottom:max(10px,env(safe-area-inset-bottom))}
+      .story-top{left:0!important;right:0!important;padding-top:var(--story-safe-top)!important;padding-left:calc(var(--story-safe-left) + 8px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important}
+      .story-chapters{padding-top:66px!important;padding-left:calc(var(--story-safe-left) + 8px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important;padding-bottom:calc(var(--story-safe-bottom) + 14px)!important;box-sizing:border-box!important}
+      .story-chapter-head,.story-chapter-grid{box-sizing:border-box!important}
+      .story-reader{left:0!important;right:0!important}
+      .story-message-wrap{left:calc(var(--story-safe-left) + 8px)!important;right:calc(var(--story-safe-right) + 8px)!important;bottom:max(4%,var(--story-safe-bottom))!important}
+      .story-backdrop-title{max-width:calc(100vw - var(--story-safe-left) - var(--story-safe-right) - 40px)!important}
+      .story-menu-overlay,.story-backlog{padding-top:calc(var(--story-safe-top) + 8px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important;padding-bottom:calc(var(--story-safe-bottom) + 8px)!important;padding-left:calc(var(--story-safe-left) + 8px)!important;box-sizing:border-box!important}
+      .story-menu-panel,.story-backlog-panel{max-width:calc(100vw - var(--story-safe-left) - var(--story-safe-right) - 24px)!important}
+
       .story-message{font-size:clamp(17px,2.55vw,25px)!important;line-height:1.65!important;padding:34px 30px 25px!important}
       .story-nameplate{left:18px!important;right:auto!important;top:-22px!important;min-width:116px!important;max-width:48%!important;text-align:left!important;padding:7px 16px!important;font-size:14px!important}
       .story-progress{font-size:9px!important}
-      .story-top{padding-left:clamp(18px,4vw,42px)!important;padding-right:clamp(24px,7vw,74px)!important}
       .story-menu-btn{min-width:82px!important;min-height:40px!important;padding:10px 18px!important;font-size:13px!important;border-radius:999px!important}
       .update-refresh-card{grid-column:1/-1!important;border-color:rgba(56,189,248,.38)!important;background:linear-gradient(135deg,rgba(14,116,144,.18),rgba(30,41,59,.9))!important}
       .update-refresh-title{font-weight:900;margin-bottom:5px}.update-refresh-note{font-size:11px;line-height:1.5;color:#cbd5e1;margin-bottom:10px}.update-refresh-btn{width:100%;border:0;border-radius:12px;padding:11px 14px;background:linear-gradient(100deg,#0891b2,#2563eb);color:#fff;font-weight:900;cursor:pointer}.update-refresh-btn:disabled{opacity:.65;cursor:default}
+
       @media (orientation:landscape) and (pointer:coarse){
+        .story-overlay{--story-safe-left:max(30px,env(safe-area-inset-left));--story-safe-right:max(30px,env(safe-area-inset-right))}
         .home-menu{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         .home-menu-story{grid-column:2!important;grid-row:2!important;width:108%!important;height:108%!important;border-radius:14px!important}
-        .story-message-wrap{min-height:35%!important}
+        .story-chapters{padding-top:62px!important;padding-left:calc(var(--story-safe-left) + 10px)!important;padding-right:calc(var(--story-safe-right) + 10px)!important}
+        .story-message-wrap{left:calc(var(--story-safe-left) + 10px)!important;right:calc(var(--story-safe-right) + 10px)!important;min-height:35%!important}
         .story-message{font-size:16px!important;line-height:1.6!important;padding:27px 22px 18px!important}
         .story-nameplate{left:12px!important;right:auto!important;top:-17px!important;min-width:92px!important;padding:5px 11px!important;font-size:11px!important}
         .story-progress{font-size:7px!important}
-        .story-top{padding-left:22px!important;padding-right:56px!important}
         .story-menu-btn{min-width:88px!important;min-height:42px!important;padding:10px 18px!important;font-size:11px!important}
         .update-refresh-note{font-size:9px}.update-refresh-btn{padding:9px 12px;font-size:11px}
       }
+
       @media(max-width:720px) and (orientation:portrait){
+        .story-overlay{--story-safe-left:max(14px,env(safe-area-inset-left));--story-safe-right:max(14px,env(safe-area-inset-right))}
         .home-menu{grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:auto!important}
         .home-menu-story{grid-column:1/-1!important;grid-row:auto!important;width:min(54vw,210px)!important;height:auto!important;aspect-ratio:1/1!important;justify-self:center!important}
         .story-message{font-size:18px!important;line-height:1.65!important;padding:31px 19px 23px!important}
         .story-nameplate{left:12px!important;right:auto!important;top:-19px!important;font-size:12px!important}
-        .story-top{padding-left:18px!important;padding-right:26px!important}
         .story-menu-btn{min-width:84px!important;min-height:42px!important;padding:10px 16px!important;font-size:12px!important}
       }
     `;
@@ -76,7 +90,7 @@
     });
   }
 
-  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story5" alt="ストーリー">`;
+  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story6" alt="ストーリー">`;
   storyBtn.title='ストーリー';
   storyBtn.setAttribute('aria-label','ストーリー');
 
