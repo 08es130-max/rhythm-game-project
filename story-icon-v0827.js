@@ -1,19 +1,18 @@
-// Ver.0.8.31: reliable story icon + automatic next-chapter transition.
+// Ver.0.8.33: single-source story icon + automatic next-chapter transition.
 (function(){
   'use strict';
-  const VERSION='0.8.31';
+  const VERSION='0.8.33';
   window.APP_VERSION=VERSION;
 
   document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ストーリーを読み終えると、章一覧へ戻らず次の章をそのまま自動で開始するようにしました。';
+  if(updateText) updateText.textContent='ホームのストーリーアイコンの画像参照を修正しました。';
 
   const btn=document.getElementById('homeStoryBtn');
   if(btn){
-    const primary=`assets/home-ui/story-user-v0829.webp?v=${VERSION}-story-icon-user3`;
-    const fallback=`assets/home-ui/story-user-v0830.svg?v=${VERSION}-story-icon-fallback2`;
+    const primary=`assets/ui/story-icon-v0833.png?v=${VERSION}`;
 
     let img=btn.querySelector('.home-menu-art');
     if(!img){

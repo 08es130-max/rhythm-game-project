@@ -1,7 +1,7 @@
 // Ver.0.8.28: story UI polish + in-app refresh control + default note speed 2.4 + iPhone safe areas + approved story icon handoff.
 (function(){
   'use strict';
-  const VERSION='0.8.28';
+  const VERSION='0.8.33';
   window.APP_VERSION=VERSION;
 
   const NOTE_SPEED_KEY='rhythmGame.noteSpeed';
@@ -25,7 +25,7 @@
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ホームのストーリーアイコンを指定画像へ変更しました。';
+  if(updateText) updateText.textContent='ホームのストーリーアイコンの画像参照を修正しました。';
 
   if(!document.getElementById('storyPolishV087Style')){
     const style=document.createElement('style');
