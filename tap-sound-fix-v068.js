@@ -1,79 +1,116 @@
-// Ver.0.6.8: restore the live tap "shaan" sound on iOS/PWA.
+// Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
-  const VERSION='0.6.8';
-  let pool=[];
-  let poolIndex=0;
-  let fallbackCtx=null;
+  'use strict';
+  const VERSION='0.8.37';
+  const MAX_VOICES=12;
+  let ctx=null;
+  let buffer=null;
+  let loading=null;
+  let master=null;
+  const voices=[];
 
-  function buildPool(){
-    if(pool.length)return;
-    try{
-      if(typeof BOOSTED_TAP_DATA!=='undefined' && BOOSTED_TAP_DATA){
-        pool=Array.from({length:6},()=>{
-          const a=new Audio(BOOSTED_TAP_DATA);
-          a.preload='auto';
-          a.volume=0.9;
-          return a;
-        });
-      }
-    }catch(_){pool=[];}
-  }
-
-  function fallbackShan(grade){
-    try{
-      fallbackCtx ||= new (window.AudioContext||window.webkitAudioContext)();
-      const ctx=fallbackCtx;
-      const play=()=>{
-        const now=ctx.currentTime;
-        const gain=ctx.createGain();
-        const high=ctx.createBiquadFilter();
-        high.type='highpass';
-        high.frequency.value=700;
-        gain.gain.setValueAtTime(0.20,now);
-        gain.gain.exponentialRampToValueAtTime(0.001,now+0.11);
-        high.connect(gain).connect(ctx.destination);
-        const base=grade==='perfect'?1900:grade==='great'?1700:1500;
-        [1,1.42].forEach((mul,i)=>{
-          const osc=ctx.createOscillator();
-          osc.type=i===0?'sine':'triangle';
-          osc.frequency.setValueAtTime(base*mul,now);
-          osc.frequency.exponentialRampToValueAtTime(base*mul*0.58,now+0.09);
-          osc.connect(high);
-          osc.start(now);
-          osc.stop(now+0.1);
-        });
-      };
-      if(ctx.state==='suspended')ctx.resume().then(play).catch(()=>{}); else play();
-    }catch(_){}
-  }
-
-  window.playTapSound=function(grade){
-    buildPool();
-    if(pool.length){
-      const a=pool[poolIndex++%pool.length];
-      try{
-        a.pause();
-        a.currentTime=0;
-        const p=a.play();
-        if(p&&typeof p.catch==='function')p.catch(()=>fallbackShan(grade));
-        return;
-      }catch(_){}
+  function ensureContext(){
+    if(!ctx){
+      const Ctx=window.AudioContext||window.webkitAudioContext;
+      if(!Ctx)return null;
+      ctx=new Ctx({latencyHint:'interactive'});
+      master=ctx.createGain();
+      master.gain.value=0.9;
+      master.connect(ctx.destination);
     }
-    fallbackShan(grade);
+    if(ctx.state==='suspended')ctx.resume().catch(()=>{});
+    return ctx;
+  }
+
+  function dataUriToArrayBuffer(uri){
+    const comma=uri.indexOf(',');
+    if(comma<0)throw new Error('invalid tap sound data');
+    const meta=uri.slice(0,comma);
+    const body=uri.slice(comma+1);
+    if(/;base64/i.test(meta)){
+      const bin=atob(body);
+      const bytes=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+      return bytes.buffer;
+    }
+    return new TextEncoder().encode(decodeURIComponent(body)).buffer;
+  }
+
+  function preload(){
+    if(buffer)return Promise.resolve(buffer);
+    if(loading)return loading;
+    const c=ensureContext();
+    if(!c||typeof BOOSTED_TAP_DATA==='undefined'||!BOOSTED_TAP_DATA){
+      return Promise.resolve(null);
+    }
+    try{
+      const raw=dataUriToArrayBuffer(BOOSTED_TAP_DATA);
+      loading=c.decodeAudioData(raw.slice(0)).then(decoded=>{
+        buffer=decoded;
+        return buffer;
+      }).catch(()=>null).finally(()=>{loading=null;});
+      return loading;
+    }catch(_){
+      return Promise.resolve(null);
+    }
+  }
+
+  function dropVoice(source){
+    const i=voices.indexOf(source);
+    if(i>=0)voices.splice(i,1);
+  }
+
+  function playBuffered(){
+    const c=ensureContext();
+    if(!c||!buffer||!master)return false;
+
+    // Hard cap simultaneous sounds so rapid tapping never creates an unbounded
+    // audio workload on iPhone. Stop the oldest voice before starting a new one.
+    while(voices.length>=MAX_VOICES){
+      const old=voices.shift();
+      try{old.stop();}catch(_){}
+    }
+
+    try{
+      const source=c.createBufferSource();
+      source.buffer=buffer;
+      source.connect(master);
+      source.onended=()=>dropVoice(source);
+      voices.push(source);
+      source.start(0);
+      return true;
+    }catch(_){
+      return false;
+    }
+  }
+
+  window.playTapSound=function(){
+    if(playBuffered())return;
+    // Do not fall back to HTMLAudio or oscillator creation during live play.
+    // If preloading is still in progress, simply skip this one tap sound.
+    preload();
   };
 
-  // iOS/PWA can leave WebAudio suspended after changing screens or starting media.
-  // Resume it from the next user gesture so the fallback is always ready.
+  // Prime/decode before the first live note. The START gesture also unlocks
+  // WebAudio on iOS, so gameplay itself performs no expensive decode work.
+  const prime=()=>{ensureContext();preload();};
+  document.getElementById('startBtn')?.addEventListener('pointerdown',prime,{passive:true});
+  document.getElementById('retryBtn')?.addEventListener('pointerdown',prime,{passive:true});
   document.addEventListener('pointerdown',()=>{
-    try{if(fallbackCtx?.state==='suspended')fallbackCtx.resume().catch(()=>{});}catch(_){}
+    if(ctx?.state==='suspended')ctx.resume().catch(()=>{});
   },{passive:true});
 
-  function syncVersion(){
-    document.querySelectorAll('.home-version,.version-badge').forEach(el=>el.textContent=`Ver. ${VERSION}`);
-    const head=document.querySelector('#updateBanner .update-head span:last-child');
-    if(head)head.textContent=`Ver.${VERSION} アップデート`;
-    const text=document.querySelector('#updateBanner .update-text');
-    if(text)text.textContent='ライブ中のタップ効果音が鳴らない問題を修正しました。';
+  // Decode opportunistically after initial page work. This does not play audio.
+  if('requestIdleCallback' in window){
+    requestIdleCallback(()=>preload(),{timeout:1500});
+  }else{
+    setTimeout(()=>preload(),500);
   }
-  syncVersion();
+
+  window.LOVEFES_TAP_SFX_DEBUG={
+    version:VERSION,
+    ready:()=>!!buffer,
+    voices:()=>voices.length,
+    maxVoices:MAX_VOICES
+  };
 })();
