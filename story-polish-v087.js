@@ -1,7 +1,7 @@
-// Ver.0.8.26: story UI polish + in-app refresh control + default note speed 2.4 + iPhone safe areas + refreshed story icon.
+// Ver.0.8.28: story UI polish + in-app refresh control + default note speed 2.4 + iPhone safe areas + approved story icon handoff.
 (function(){
   'use strict';
-  const VERSION='0.8.26';
+  const VERSION='0.8.28';
   window.APP_VERSION=VERSION;
 
   const NOTE_SPEED_KEY='rhythmGame.noteSpeed';
@@ -25,14 +25,14 @@
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ホームのストーリーアイコンを専用の新デザインへ更新し、画像キャッシュを避けるため参照ファイルも切り替えました。';
+  if(updateText) updateText.textContent='ホームのストーリーアイコンを指定画像へ変更しました。';
 
   if(!document.getElementById('storyPolishV087Style')){
     const style=document.createElement('style');
     style.id='storyPolishV087Style';
     style.textContent=`
       .home-menu{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;justify-items:center!important;align-items:center!important}
-      .home-menu-story{grid-column:2!important;grid-row:2!important;width:106%!important;height:106%!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;aspect-ratio:1/1!important;padding:0!important;border:0!important;border-radius:14px!important;overflow:hidden!important;line-height:0!important;background:transparent!important;box-shadow:none!important;display:block!important;letter-spacing:normal!important;font-size:inherit!important;z-index:2!important}
+      .home-menu-story{grid-column:2!important;grid-row:2!important;width:106%!important;height:106%!important;max-width:none!important;max-height:none!important;min-width:0!important;min-height:0!important;aspect-ratio:1/1!important;padding:0!important;border:0!important;border-radius:14px!important;overflow:hidden!important;line-height:0!important;background:transparent!important;box-shadow:0 14px 30px rgba(0,0,0,.26)!important;display:block!important;letter-spacing:normal!important;font-size:inherit!important;z-index:2!important}
       .home-menu-story::before{display:none!important;content:none!important}
       .home-menu-story .home-menu-art{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;border:0!important;margin:0!important;padding:0!important;pointer-events:none!important}
       .story-overlay{--story-safe-left:max(16px,env(safe-area-inset-left));--story-safe-right:max(16px,env(safe-area-inset-right));--story-safe-top:max(10px,env(safe-area-inset-top));--story-safe-bottom:max(10px,env(safe-area-inset-bottom))}
@@ -82,10 +82,6 @@
       message.click();
     });
   }
-
-  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story-v0826.svg?v=${VERSION}" alt="ストーリー">`;
-  storyBtn.title='ストーリー';
-  storyBtn.setAttribute('aria-label','ストーリー');
 
   const settingsGrid=document.querySelector('#settingsScreen .settings-grid');
   if(settingsGrid&&!document.getElementById('forceRefreshBtn')){
