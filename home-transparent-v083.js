@@ -15,4 +15,17 @@
   if((VERSION==='0.8.38'||VERSION==='0.8.39')&&!document.querySelector('script[data-hpt-density-v0838]')){
     const s=document.createElement('script');s.src='hpt-density-v0838.js?v=0.8.38-density1';s.dataset.hptDensityV0838='1';document.head.appendChild(s);
   }
+
+  function keepHasunosoraTab(){
+    if(VERSION!=='0.8.39')return;
+    const tabs=document.getElementById('songCategoryTabs');
+    const page=document.getElementById('hasunosoraSongScreen');
+    if(!tabs||!page||document.getElementById('hasunosoraPageBtn'))return;
+    const btn=document.createElement('button');btn.id='hasunosoraPageBtn';btn.type='button';btn.textContent='蓮ノ空';btn.className='hasunosora-page-tab';
+    btn.addEventListener('click',()=>{document.querySelectorAll('.app-screen').forEach(el=>el.hidden=true);page.hidden=false;});
+    tabs.appendChild(btn);
+  }
+  const tabWatch=new MutationObserver(()=>requestAnimationFrame(keepHasunosoraTab));
+  const beginTabWatch=()=>{const tabs=document.getElementById('songCategoryTabs');if(tabs){tabWatch.observe(tabs,{childList:true});keepHasunosoraTab();}else setTimeout(beginTabWatch,80);};
+  beginTabWatch();setTimeout(keepHasunosoraTab,250);
 })();
