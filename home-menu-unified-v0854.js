@@ -1,15 +1,16 @@
-// Ver.0.8.54: unified six-button home menu, Story-sized presentation, Lounge full-art button.
+// Ver.0.8.55: unified high-resolution six-button home menu.
 (function(){
   'use strict';
 
   const IDS=[
-    ['homeLiveBtn','ライブ'],
-    ['homeSettingsBtn','設定'],
-    ['homeCharactersBtn','部室'],
-    ['homeGachaBtn','勧誘'],
-    ['homeStoryBtn','ストーリー'],
-    ['homeInteractionBtn','ラウンジ']
+    ['homeLiveBtn','ライブ','live'],
+    ['homeSettingsBtn','設定','settings'],
+    ['homeCharactersBtn','部室','room'],
+    ['homeGachaBtn','勧誘','gacha'],
+    ['homeStoryBtn','ストーリー','story'],
+    ['homeInteractionBtn','ラウンジ','lounge']
   ];
+  const ASSET_BASE='assets/ui/home-v0855/';
 
   function ensureStyle(){
     if(document.getElementById('homeMenuUnifiedV0854Style')) return;
@@ -116,7 +117,7 @@
     convertLoungeToFullArt();
 
     const buttons=[];
-    for(const [id,label] of IDS){
+    for(const [id,label,key] of IDS){
       const btn=document.getElementById(id);
       if(!btn) return false;
       btn.title=label;
@@ -126,6 +127,19 @@
         img.alt=label;
         img.decoding='async';
         img.draggable=false;
+        const oldSrc=img.currentSrc||img.src;
+        if(!img.dataset.v0855Source){
+          img.dataset.v0855Source='1';
+          img.onerror=()=>{
+            if(img.dataset.v0855Fallback==='1') return;
+            img.dataset.v0855Fallback='1';
+            if(oldSrc) img.src=oldSrc;
+          };
+        }
+        const primary=`${ASSET_BASE}${key}.png?v=0.8.55-icons1`;
+        if(img.dataset.v0855Fallback!=='1' && !img.src.includes(`/home-v0855/${key}.png`)){
+          img.src=primary;
+        }
       }
       buttons.push(btn);
     }
