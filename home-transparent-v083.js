@@ -1,13 +1,13 @@
-// Ver.0.8.48 patch loader: version sync, safe areas, interaction room, camera orbit 3D, and late-loaded chart fixes.
+// Ver.0.8.49 patch loader: version sync, safe areas, interaction room, camera orbit 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.48';
+  const VERSION='0.8.49';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='「ふれあい」の正面カメラ構図を調整し、頭から足先まで全身が収まりやすい表示に修正しました。';
+    if(text) text.textContent='「ふれあい」の正面カメラを再調整し、頭上と足元に余白を持たせた全身構図へ修正しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
@@ -48,7 +48,7 @@
   if(!document.querySelector('script[data-hpt-density-v0838]')) loadScript('hpt-density-v0838.js?v=0.8.38-density1','hpt-density-v0838');
   loadScript('chart-audio-boundary-v0840.js?v=0.8.43-boundary4','chart-boundary-v0840',()=>{loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');});
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
-  loadScript('interaction-room-v0844.js?v=0.8.48-room5','interaction-room-v0844',()=>{loadScript('shioriko-3d-v0845.js?v=0.8.48-framing3','shioriko-3d-v0845');});
+  loadScript('interaction-room-v0844.js?v=0.8.49-room6','interaction-room-v0844',()=>{loadScript('shioriko-3d-v0849.js?v=0.8.49-framing1','shioriko-3d-v0849');});
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');const page=document.getElementById('hasunosoraSongScreen');
