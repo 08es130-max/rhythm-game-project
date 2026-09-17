@@ -1,13 +1,13 @@
-// Ver.0.8.44 patch loader: version sync, safe areas, interaction room, and late-loaded chart fixes.
+// Ver.0.8.45 patch loader: version sync, safe areas, interaction room, 3D prototype, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.44';
+  const VERSION='0.8.45';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ホーム右下に「ふれあい」を追加。3Dキャラ表示・タッチ・衣装・モーション・ダンス拡張用の専用ルームを新設しました。';
+    if(text) text.textContent='「ふれあい」に操作できる3D栞子プロトタイプを追加。ドラッグ回転、頭・手のタップ反応、視線、手振り、簡易ダンスに対応しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
@@ -104,7 +104,9 @@
     loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');
   });
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
-  loadScript('interaction-room-v0844.js?v=0.8.44-room1','interaction-room-v0844');
+  loadScript('interaction-room-v0844.js?v=0.8.45-room2','interaction-room-v0844',()=>{
+    loadScript('shioriko-3d-v0845.js?v=0.8.45-model1','shioriko-3d-v0845');
+  });
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');
