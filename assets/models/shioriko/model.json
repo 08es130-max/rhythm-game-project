@@ -1,0 +1,16 @@
+{
+  "id": "shioriko-live-v1",
+  "status": "awaiting-authored-model",
+  "format": "glb",
+  "path": "assets/models/shioriko/shioriko-live-v1.glb",
+  "fallback": "shioriko-3d-v0851.js",
+  "scale": 1.0,
+  "targetHeightMeters": 1.6,
+  "forwardAxis": "+Z",
+  "upAxis": "+Y",
+  "targetFps": 30,
+  "maxDevicePixelRatio": 1.5,
+  "expressions": ["Neutral","Smile","Happy","Blink","Serious","Surprised","Blush","Mouth_A","Mouth_I","Mouth_U","Mouth_E","Mouth_O"],
+  "animations": ["Idle","Wave","Look","Dance_01"],
+  "touchTargets": ["Head","LeftHand","RightHand","Body"]
+}
