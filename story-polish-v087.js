@@ -60,7 +60,7 @@
   }
 
   // Use a dedicated image asset just like the other home menu buttons.
-  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story2" alt="ストーリー">`;
+  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story3" alt="ストーリー">`;
   storyBtn.title='ストーリー';
   storyBtn.setAttribute('aria-label','ストーリー');
 })();
