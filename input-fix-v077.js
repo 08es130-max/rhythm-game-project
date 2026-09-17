@@ -1,8 +1,9 @@
-// Ver.0.8.36: use Pointer Events exclusively for live input on modern iPhone/PWA.
-// This avoids iOS legacy Touch Events getting stuck after sustained rapid tapping.
+// Ver.0.8.36: Pointer Events input + iOS tap-SFX isolation for stability testing.
 (function(){
   'use strict';
   const VERSION='0.8.36';
+  const IS_IOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||
+    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   let ref=null;
   let lanes=Array.from({length:9},()=>[]);
   let cursors=Array(9).fill(0);
@@ -67,7 +68,11 @@
     if(best<=getPerfectWindow())grade='perfect';
     else if(best<=HIT_WINDOWS.great)grade='great';
     registerHit(candidate,grade);
-    playTapSound(grade);
+
+    // iOS/PWA stability isolation: avoid per-tap HTMLAudio/WebAudio work during live play.
+    // If stalls disappear in this build, tap SFX is the bottleneck and can be rebuilt safely later.
+    if(!IS_IOS) playTapSound(grade);
+
     if(bestIndex===cursors[lane]){
       while(cursors[lane]<list.length){
         const n=list[cursors[lane]];
@@ -95,24 +100,14 @@
     if(!game.contains(target))return;
     const lane=laneFromTarget(target);
     if(lane<0)return;
-
-    // Each physical contact is handled once. Pointer Events provide explicit
-    // pointerup/pointercancel so iOS can never leave our input state latched.
     if(activePointers.has(e.pointerId))return;
     activePointers.add(e.pointerId);
     fastHitLaneAt(lane,songTimeForEvent(e.timeStamp));
   }
 
-  function releasePointer(e){
-    activePointers.delete(e.pointerId);
-  }
-  function resetPointers(){
-    activePointers.clear();
-  }
+  function releasePointer(e){activePointers.delete(e.pointerId);}
+  function resetPointers(){activePointers.clear();}
 
-  // Modern iOS Safari/PWA supports Pointer Events. Do not also install legacy
-  // touchstart handlers: running both paths (or relying on repeated preventDefault)
-  // can leave WebKit's gesture recognizer in a suppressed state during rapid play.
   document.addEventListener('pointerdown',handlePointerDown,{capture:true,passive:true});
   document.addEventListener('pointerup',releasePointer,{capture:true,passive:true});
   document.addEventListener('pointercancel',releasePointer,{capture:true,passive:true});
@@ -125,6 +120,8 @@
 
   window.LOVEFES_INPUT_DEBUG={
     version:VERSION,
+    iOS:IS_IOS,
+    tapSfxDuringLive:!IS_IOS,
     activePointerCount:()=>activePointers.size,
     reset:resetPointers
   };
