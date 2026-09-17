@@ -1,7 +1,7 @@
-// Ver.0.8.24: story UI polish + in-app refresh control + default note speed 2.4 + iPhone safe areas.
+// Ver.0.8.25: story UI polish + in-app refresh control + default note speed 2.4 + iPhone safe areas + version sync fix.
 (function(){
   'use strict';
-  const VERSION='0.8.24';
+  const VERSION='0.8.25';
   window.APP_VERSION=VERSION;
 
   // Default note speed is 2.4 only when the player has never saved a preference.
@@ -27,7 +27,7 @@
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ストーリー画面をiPhone横向きのセーフエリアに対応し、左端の文字や章ボタンがカメラ領域に重ならないよう調整しました。';
+  if(updateText) updateText.textContent='PWAの更新経路を修正し、ホーム画面・バージョン表示・ストーリーUIが同じ最新版へ揃って更新されるようにしました。';
 
   if(!document.getElementById('storyPolishV087Style')){
     const style=document.createElement('style');
@@ -90,7 +90,7 @@
     });
   }
 
-  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story6" alt="ストーリー">`;
+  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story7" alt="ストーリー">`;
   storyBtn.title='ストーリー';
   storyBtn.setAttribute('aria-label','ストーリー');
 
