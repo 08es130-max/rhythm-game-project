@@ -11,7 +11,7 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>ラブフェス！</title>
-<link rel="manifest" href="manifest-v0812.json?v=0.8.36" />
+<link rel="manifest" href="manifest-v0812.json?v=0.8.37" />
 <link rel="apple-touch-icon" href="apple-touch-icon-v0812.png" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="stylesheet" href="styles.css?v=0.5.7" />
@@ -34,7 +34,7 @@
 <link rel="stylesheet" href="home-layering-v0814.css?v=0.8.20" />
 <link rel="stylesheet" href="gacha-v045.css?v=0.4.6" data-gacha-patch="046" />
 <script>
-window.APP_VERSION = '0.8.36';
+window.APP_VERSION = '0.8.37';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -57,11 +57,11 @@ window.location.replace(url.toString());
 <section id="homeScreen" class="app-screen home-screen">
 <div class="home-topbar">
 <div><h1 class="home-title">ラブフェス！</h1><p class="home-subtitle">LIVE HOME</p></div>
-<div class="home-version">Ver. 0.8.36</div>
+<div class="home-version">Ver. 0.8.37</div>
 </div>
 <div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.8.36 アップデート</span></div>
-<p class="update-text">iPhone/PWAの連続タップ停止を切り分けるため、ライブ中のタップ効果音を一時停止した安定性テスト版です。</p>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.8.37 アップデート</span></div>
+<p class="update-text">タップ効果音を軽量なAudioBuffer再生へ変更し、シャーン音を残したままiPhone/PWAの連続タップ安定性を改善しました。</p>
 </div>
 <div class="home-main">
 <div class="home-character-card" data-character-id="default"><img class="home-character-img" src="icon-512-v030.png?v=0.5.7" alt="ホームキャラクター" /></div>
@@ -76,7 +76,7 @@ window.location.replace(url.toString());
 <section id="liveScreen" class="app-screen live-screen" hidden>
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
-<div class="version-badge" aria-label="app version">Ver. 0.8.36</div>
+<div class="version-badge" aria-label="app version">Ver. 0.8.37</div>
 <h2>ライブ選択</h2><p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
 <div class="button-row"><button id="spicaPresetBtn" type="button">スピカテリブル</button><button id="demoBtn">テスト譜面を使う</button></div>
 <div class="file-row">
@@ -140,27 +140,27 @@ window.location.replace(url.toString());
 <script src="voice-yohane-v040.js?v=0.5.7"></script>
 <script src="voice-independent-v040.js?v=0.5.7"></script>
 <script src="home-result-v049.js?v=0.5.7"></script>
-<script src="home-layout-v042.js?v=0.8.36-notice1"></script>
+<script src="home-layout-v042.js?v=0.8.37-notice1"></script>
 <script src="hidden-admin-v048.js?v=0.8.20"></script>
 <script src="shioriko-secret-modes-v050.js?v=0.5.7"></script>
 <script src="shioriko-visual-v052.js?v=0.5.8"></script>
 <script src="gacha-v045.js?v=0.5.7"></script>
 <script src="fixes-v051.js?v=0.8.20-audit1"></script>
-<script src="tap-sound-fix-v068.js?v=0.8.2"></script>
+<script src="tap-sound-fix-v068.js?v=0.8.37-buffer1"></script>
 <script src="stability-fix-v071.js?v=0.8.2-audit1"></script>
 <script src="smooth-clock-v072.js?v=0.8.32-clock1"></script>
 <script src="canvas-notes-v073.js?v=0.8.20-ios1"></script>
 <script src="runtime-tuning-v074.js?v=0.8.2"></script>
 <script src="songs-v075.js?v=0.8.2"></script>
 <script src="songs-v077.js?v=0.8.2"></script>
-<script src="input-fix-v077.js?v=0.8.36-pointer2"></script>
+<script src="input-fix-v077.js?v=0.8.37-pointer3"></script>
 <script src="song-select-v082.js?v=0.8.2"></script>
-<script src="home-transparent-v083.js?v=0.8.36-version2"></script>
+<script src="home-transparent-v083.js?v=0.8.37-version3"></script>
 <script src="home-cutout-v084.js?v=0.8.20-homeart10"></script>
 <script src="home-branding-v085.js?v=0.8.5"></script>
 <script src="story-v086.js?v=0.8.34-story3"></script>
 <script src="story-expanded-v088.js?v=0.8.35-expanded2"></script>
 <script src="story-polish-v087.js?v=0.8.34-story10"></script>
-<script src="story-icon-v0827.js?v=0.8.36-story-icon5"></script>
+<script src="story-icon-v0827.js?v=0.8.37-story-icon6"></script>
 </body>
 </html>
