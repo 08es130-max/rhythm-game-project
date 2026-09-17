@@ -13,14 +13,12 @@
     clumsy:`assets/home-characters/shioriko/clumsy.png?v=${VERSION}-pngset1`,
     casual:`assets/home-characters/shioriko/casual.png?v=${VERSION}-pngset1`
   };
-  // Persisted IDs keep their original generation: latest is now the official
-  // set; current (and the historical new alias) remains the previous set.
+  // Classic keeps the historical normal and its existing expression fallback.
   const ART_SETS={
-    current:PREVIOUS_ART,
-    latest:Object.fromEntries(VALID.map(mode=>[
-      mode,`assets/home-characters/shioriko/new/${mode}.png?v=${VERSION}-homeart9`
+    stage:Object.fromEntries(VALID.map(mode=>[
+      mode,`assets/home-characters/shioriko/new/${mode}.png?v=${VERSION}-${mode==='normal'?'homeart9':'homeart10'}`
     ])),
-    legacy:{normal:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`}
+    classic:{...PREVIOUS_ART,normal:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`}
   };
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
@@ -59,14 +57,16 @@
     return VALID.includes(m)?m:'normal';
   };
   const normalizeHomeArt=(value)=>{
-    if(value===null) return 'latest';
-    if(value==='latest'||value==='current'||value==='legacy') return value;
-    if(value==='old') return 'legacy';
-    if(value==='new') return 'current';
-    return 'current';
+    const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic'};
+    return Object.prototype.hasOwnProperty.call(aliases,value)?aliases[value]:'stage';
   };
-  const getHomeArt=()=>normalizeHomeArt(localStorage.getItem(HOME_ART_KEY));
-  const getArtSrc=(mode)=>ART_SETS[getHomeArt()][mode] || ART_SETS.current[mode];
+  const getHomeArt=()=>{
+    const saved=localStorage.getItem(HOME_ART_KEY);
+    const style=normalizeHomeArt(saved);
+    if(saved!==null&&saved!==style)localStorage.setItem(HOME_ART_KEY,style);
+    return style;
+  };
+  const getArtSrc=(mode)=>ART_SETS[getHomeArt()][mode];
 
   const applyMode=(mode)=>{
     const m=VALID.includes(mode)?mode:'normal';
@@ -90,15 +90,15 @@
     style.id='homeArtSelectorStyle';
     style.textContent=`
       /* Use the approved normal framing for the entire official set. */
-      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="latest"]{bottom:-101px!important}}
-      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="latest"]{bottom:-105px!important}}
+      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="stage"]{bottom:-101px!important}}
+      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="stage"]{bottom:-105px!important}}
       /* The final yandere source has more empty space above the head. */
-      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="yandere"]{bottom:-71px!important}}
-      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="yandere"]{bottom:-75px!important}}
+      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="stage"][data-mode="yandere"]{bottom:-71px!important}}
+      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="stage"][data-mode="yandere"]{bottom:-75px!important}}
       .home-art-selector{margin:0 0 16px;padding:14px;border:1px solid #374151;border-radius:14px;background:#111827}
       .home-art-selector h2{margin:0 0 5px;font-size:17px}
       .home-art-selector p{margin:0 0 12px;color:#94a3b8;font-size:12px;line-height:1.5}
-      .home-art-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:760px}
+      .home-art-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:760px}
       .home-art-option{appearance:none;border:2px solid #374151;border-radius:14px;background:#0b1220;padding:8px;color:#f8fafc;cursor:pointer;text-align:left;transition:border-color .12s,box-shadow .12s,transform .12s}
       .home-art-option:active{transform:scale(.985)}
       .home-art-option.is-selected{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.18)}
@@ -112,22 +112,21 @@
     const wrap=document.createElement('section');
     wrap.id='homeArtSelector';
     wrap.className='home-art-selector';
-    wrap.innerHTML=`<h2>ホーム立ち絵</h2><p>現在の立ち絵・以前の立ち絵・Ver.0.8.14から選べます。選択はこの端末に保存されます。</p><div class="home-art-options"></div><div class="home-art-current"></div>`;
+    wrap.innerHTML=`<h2>ホームスタイル</h2><p>ホームでの衣装スタイルを選べます。</p><div class="home-art-options"></div><div class="home-art-current"></div>`;
     const options=wrap.querySelector('.home-art-options');
     const status=wrap.querySelector('.home-art-current');
     const defs=[
-      {id:'latest',label:'現在の立ち絵',src:ART_SETS.latest.normal},
-      {id:'current',label:'以前の立ち絵',src:ART_SETS.current.normal},
-      {id:'legacy',label:'Ver.0.8.14',src:ART_SETS.legacy.normal}
+      {id:'stage',label:'ステージスタイル',src:ART_SETS.stage.normal},
+      {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal}
     ];
-    const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'以前の立ち絵';
+    const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'ステージスタイル';
     const refresh=()=>{
       const selected=getHomeArt();
       wrap.querySelectorAll('.home-art-option').forEach(btn=>{
         btn.classList.toggle('is-selected',btn.dataset.art===selected);
         btn.setAttribute('aria-pressed',String(btn.dataset.art===selected));
       });
-      status.textContent=`現在：${labelFor(selected)}`;
+      status.textContent=`選択中：${labelFor(selected)}`;
     };
     defs.forEach(def=>{
       const btn=document.createElement('button');
@@ -174,6 +173,7 @@
 
   Object.entries(MENU).forEach(([id,src])=>{
     const el=document.getElementById(id);
-    if(el && el.tagName==='IMG') el.src=src;
+    const img=el?.tagName==='IMG'?el:el?.querySelector('.home-menu-art');
+    if(img) img.src=src;
   });
 })();
