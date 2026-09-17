@@ -1,6 +1,7 @@
-// Ver.0.8.41 patch loader: version sync, safe areas, and late-loaded chart fixes.
+// Ver.0.8.42 patch loader: version sync, safe areas, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.41';
+  const VERSION='0.8.42';
+  window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
@@ -60,10 +61,10 @@
   if(!document.querySelector('script[data-hpt-density-v0838]')){
     loadScript('hpt-density-v0838.js?v=0.8.38-density1','hpt-density-v0838');
   }
-  loadScript('chart-audio-boundary-v0840.js?v=0.8.40-boundary2','chart-boundary-v0840',()=>{
-    loadScript('genyo-yako-chart-v0840.js?v=0.8.40-genyo2','genyo-chart-v0840');
-    loadScript('dazzling-game-v0841.js?v=0.8.41-dazzling1','dazzling-game-v0841');
+  loadScript('chart-audio-boundary-v0840.js?v=0.8.42-boundary3','chart-boundary-v0840',()=>{
+    loadScript('genyo-yako-chart-v0840.js?v=0.8.42-genyo3','genyo-chart-v0840');
   });
+  loadScript('dazzling-game-v0841.js?v=0.8.42-dazzling3','dazzling-game-v0841');
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');
