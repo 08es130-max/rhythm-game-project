@@ -4,18 +4,22 @@
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const HOME_ART_KEY='rhythmGame.shiorikoHomeArt.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
-  const NORMAL_ART={
-    latest:`assets/home-characters/shioriko/casual.png?v=${VERSION}-homeart5`,
-    current:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
-    legacy:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`
-  };
-  const ART={
+  const CURRENT_ART={
+    normal:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
     dere:`assets/home-characters/shioriko/dere.png?v=${VERSION}-pngset1`,
     yandere:`assets/home-characters/shioriko/yandere.png?v=${VERSION}-pngset1`,
     scold:`assets/home-characters/shioriko/scold.png?v=${VERSION}-pngset1`,
     drunk:`assets/home-characters/shioriko/drunk.png?v=${VERSION}-pngset1`,
     clumsy:`assets/home-characters/shioriko/clumsy.png?v=${VERSION}-pngset1`,
     casual:`assets/home-characters/shioriko/casual.png?v=${VERSION}-pngset1`
+  };
+  // Keep stored IDs, including the historical new -> current alias below.
+  // Add verified new expressions to latest after the normal-art review.
+  // Missing expressions explicitly fall back to the current generation.
+  const ART_SETS={
+    current:CURRENT_ART,
+    latest:{normal:`assets/home-characters/shioriko/new/normal.png?v=${VERSION}-homeart8`},
+    legacy:{normal:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`}
   };
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
@@ -60,11 +64,13 @@
     return 'current';
   };
   const getHomeArt=()=>normalizeHomeArt(localStorage.getItem(HOME_ART_KEY));
-  const getArtSrc=(mode)=>mode==='normal'?NORMAL_ART[getHomeArt()]:ART[mode];
+  const getArtSrc=(mode)=>ART_SETS[getHomeArt()][mode] || ART_SETS.current[mode];
 
   const applyMode=(mode)=>{
     const m=VALID.includes(mode)?mode:'normal';
     document.documentElement.dataset.shioMode=m;
+    cutout.dataset.artSet=getHomeArt();
+    cutout.dataset.mode=m;
     const src=getArtSrc(m);
     if(!src){fallbackToOriginal();return;}
     if(cutout.src!==new URL(src,location.href).href){
@@ -81,6 +87,9 @@
     const style=document.createElement('style');
     style.id='homeArtSelectorStyle';
     style.textContent=`
+      /* Lower only the new full-height normal art below the existing logo. */
+      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="normal"]{bottom:-101px!important}}
+      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="normal"]{bottom:-105px!important}}
       .home-art-selector{margin:0 0 16px;padding:14px;border:1px solid #374151;border-radius:14px;background:#111827}
       .home-art-selector h2{margin:0 0 5px;font-size:17px}
       .home-art-selector p{margin:0 0 12px;color:#94a3b8;font-size:12px;line-height:1.5}
@@ -102,14 +111,17 @@
     const options=wrap.querySelector('.home-art-options');
     const status=wrap.querySelector('.home-art-current');
     const defs=[
-      {id:'latest',label:'新立ち絵（確認用）',src:NORMAL_ART.latest},
-      {id:'current',label:'現在の立ち絵',src:NORMAL_ART.current},
-      {id:'legacy',label:'以前の立ち絵（Ver.0.8.14）',src:NORMAL_ART.legacy}
+      {id:'latest',label:'新立ち絵（確認用）',src:ART_SETS.latest.normal},
+      {id:'current',label:'現在の立ち絵セット',src:ART_SETS.current.normal},
+      {id:'legacy',label:'以前の立ち絵（Ver.0.8.14）',src:ART_SETS.legacy.normal}
     ];
     const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'現在の立ち絵';
     const refresh=()=>{
       const selected=getHomeArt();
-      wrap.querySelectorAll('.home-art-option').forEach(btn=>btn.classList.toggle('is-selected',btn.dataset.art===selected));
+      wrap.querySelectorAll('.home-art-option').forEach(btn=>{
+        btn.classList.toggle('is-selected',btn.dataset.art===selected);
+        btn.setAttribute('aria-pressed',String(btn.dataset.art===selected));
+      });
       status.textContent=`現在：${labelFor(selected)}`;
     };
     defs.forEach(def=>{
@@ -134,6 +146,8 @@
     });
     panel.prepend(wrap);
     refresh();
+    window.addEventListener('rhythmGameShiorikoHomeArtChanged',refresh);
+    window.addEventListener('storage',(e)=>{if(e.key===HOME_ART_KEY||e.key===null)refresh();});
   }
 
   applyMode(getMode());
@@ -141,11 +155,17 @@
 
   window.addEventListener('rhythmGameShiorikoModeChanged',(e)=>applyMode(e.detail?.mode||getMode()));
   window.addEventListener('rhythmGameShiorikoDialogueExpression',(e)=>applyMode(e.detail?.mode||getMode()));
-  window.addEventListener('rhythmGameShiorikoHomeArtChanged',()=>{if(getMode()==='normal')applyMode('normal');});
+  window.addEventListener('rhythmGameShiorikoHomeArtChanged',()=>applyMode(getMode()));
   window.addEventListener('storage',(e)=>{
     if(e.key===MODE_KEY) applyMode(e.newValue||'normal');
-    if(e.key===HOME_ART_KEY && getMode()==='normal') applyMode('normal');
+    if(e.key===HOME_ART_KEY) applyMode(getMode());
+    if(e.key===null) applyMode('normal');
   });
+  const restoreHomeArt=()=>applyMode(localStorage.getItem(MODE_KEY)||'normal');
+  const home=document.getElementById('homeScreen');
+  if(home) new MutationObserver(()=>{if(!home.hidden)restoreHomeArt();})
+    .observe(home,{attributes:true,attributeFilter:['hidden']});
+  window.addEventListener('pageshow',restoreHomeArt);
 
   Object.entries(MENU).forEach(([id,src])=>{
     const el=document.getElementById(id);
