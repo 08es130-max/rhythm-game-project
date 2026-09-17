@@ -30,8 +30,8 @@
     const scene=new THREE.Scene();
     scene.background=null;
     const camera=new THREE.PerspectiveCamera(30,1,.1,100);
-    const orbitTarget=new THREE.Vector3(0,.35,0);
-    const orbitRadius=5.7;
+    const orbitTarget=new THREE.Vector3(0,-.10,0);
+    const orbitRadius=6.8;
 
     const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'low-power'});
     renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.6));
@@ -156,7 +156,7 @@
     if(waveBtn){waveBtn.disabled=false;waveBtn.addEventListener('click',()=>{waveUntil=performance.now()+2200;message.textContent='「ごきげんよう。」　栞子が控えめに手を振っています。';});}
     if(danceBtn){danceBtn.disabled=false;danceBtn.textContent='ミニダンス';danceBtn.addEventListener('click',()=>{window.__shiorikoDanceUntil=performance.now()+5200;message.textContent='簡易ダンスモーションを再生します。';});}
 
-    message.textContent='3D栞子を読み込みました。キャラは固定したまま、カメラが周囲を360°移動します。';
+    message.textContent='3D栞子を読み込みました。全身が収まる正面構図に調整済みです。ドラッグでカメラを360°周回できます。';
     document.querySelector('.interaction-touch-hint')?.replaceChildren(document.createTextNode('ドラッグでカメラを360°周回／真上・真下にも対応'));
 
     let last=performance.now();
