@@ -1,19 +1,12 @@
-// Ver.0.8.34: single-source story icon + automatic next-chapter transition.
+// Ver.0.8.36: story icon + automatic next-chapter transition without overriding app version.
 (function(){
   'use strict';
-  const VERSION='0.8.34';
-  window.APP_VERSION=VERSION;
-
-  document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
-  const updateHead=document.querySelector('#updateBanner .update-head');
-  const updateText=document.querySelector('#updateBanner .update-text');
-  if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='メインストーリーを30章構成へ大幅加筆し、出来事や会話の流れを分かりやすくしました。';
+  const VERSION=window.APP_VERSION||'0.8.36';
 
   const btn=document.getElementById('homeStoryBtn');
   if(btn){
     const primary=`assets/ui/story-icon-v0833.png?v=${VERSION}`;
-    const fallback=`assets/home-ui/story-user-v0830.svg?v=${VERSION}-story-icon-fallback4`;
+    const fallback=`assets/home-ui/story-user-v0830.svg?v=${VERSION}-story-icon-fallback5`;
     let img=btn.querySelector('.home-menu-art');
     if(!img){
       img=document.createElement('img');
