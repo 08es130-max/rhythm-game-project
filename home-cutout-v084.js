@@ -5,7 +5,7 @@
   const HOME_ART_KEY='rhythmGame.shiorikoHomeArt.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const NORMAL_ART={
-    latest:`assets/home-characters/shioriko/normal-newset.png?v=${VERSION}-homeart4`,
+    latest:`assets/home-characters/shioriko/casual.png?v=${VERSION}-homeart5`,
     current:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
     legacy:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`
   };
