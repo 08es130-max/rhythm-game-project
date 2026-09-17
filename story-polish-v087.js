@@ -1,12 +1,20 @@
-// Ver.0.8.20: story UI polish only. Keeps story data/gameplay logic untouched.
+// Ver.0.8.21: story UI polish only. Keeps story data/gameplay logic untouched.
 (function(){
   'use strict';
-  const VERSION=window.APP_VERSION||'0.8.20';
+  const VERSION='0.8.21';
+  window.APP_VERSION=VERSION;
   const overlay=document.getElementById('storyOverlay');
   const reader=document.getElementById('storyReader');
   const message=document.getElementById('storyMessage');
   const storyBtn=document.getElementById('homeStoryBtn');
   if(!overlay||!reader||!message||!storyBtn)return;
+
+  // Keep the visible version and update notice in sync with the deployed build.
+  document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
+  const updateHead=document.querySelector('#updateBanner .update-head');
+  const updateText=document.querySelector('#updateBanner .update-text');
+  if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
+  if(updateText) updateText.textContent='ストーリー機能を追加し、メッセージ表示・操作性・ホームのストーリーボタンを調整しました。';
 
   if(!document.getElementById('storyPolishV087Style')){
     const style=document.createElement('style');
@@ -60,7 +68,7 @@
   }
 
   // Use a dedicated image asset just like the other home menu buttons.
-  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story3" alt="ストーリー">`;
+  storyBtn.innerHTML=`<img class="home-menu-art" src="assets/home-ui/story.svg?v=${VERSION}-story4" alt="ストーリー">`;
   storyBtn.title='ストーリー';
   storyBtn.setAttribute('aria-label','ストーリー');
 })();
