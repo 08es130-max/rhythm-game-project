@@ -36,11 +36,11 @@ async function getManagedLocalVoices() {
 function getEnabledManagedVoiceIds() {
   try {
     const raw = localStorage.getItem(VOICE_ENABLED_KEY);
-    if (!raw) return new Set(INTERNAL_VOICE_IDS);
+    if (!raw) return new Set();
     const parsed = JSON.parse(raw);
-    return new Set(Array.isArray(parsed) ? parsed : INTERNAL_VOICE_IDS);
+    return new Set(Array.isArray(parsed) ? parsed : []);
   } catch (_) {
-    return new Set(INTERNAL_VOICE_IDS);
+    return new Set();
   }
 }
 
@@ -58,9 +58,6 @@ async function addManagedLocalVoice(file) {
     tx.onerror = () => reject(tx.error);
   });
   db.close();
-  const enabled = getEnabledManagedVoiceIds();
-  enabled.add(id);
-  saveEnabledManagedVoiceIds(enabled);
 }
 
 async function deleteManagedLocalVoice(id) {
