@@ -4,7 +4,7 @@
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const HOME_ART_KEY='rhythmGame.shiorikoHomeArt.v1';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
-  const CURRENT_ART={
+  const PREVIOUS_ART={
     normal:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
     dere:`assets/home-characters/shioriko/dere.png?v=${VERSION}-pngset1`,
     yandere:`assets/home-characters/shioriko/yandere.png?v=${VERSION}-pngset1`,
@@ -13,12 +13,13 @@
     clumsy:`assets/home-characters/shioriko/clumsy.png?v=${VERSION}-pngset1`,
     casual:`assets/home-characters/shioriko/casual.png?v=${VERSION}-pngset1`
   };
-  // Keep stored IDs, including the historical new -> current alias below.
-  // Add verified new expressions to latest after the normal-art review.
-  // Missing expressions explicitly fall back to the current generation.
+  // Persisted IDs keep their original generation: latest is now the official
+  // set; current (and the historical new alias) remains the previous set.
   const ART_SETS={
-    current:CURRENT_ART,
-    latest:{normal:`assets/home-characters/shioriko/new/normal.png?v=${VERSION}-homeart8`},
+    current:PREVIOUS_ART,
+    latest:Object.fromEntries(VALID.map(mode=>[
+      mode,`assets/home-characters/shioriko/new/${mode}.png?v=${VERSION}-homeart9`
+    ])),
     legacy:{normal:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`}
   };
   const MENU={
@@ -58,6 +59,7 @@
     return VALID.includes(m)?m:'normal';
   };
   const normalizeHomeArt=(value)=>{
+    if(value===null) return 'latest';
     if(value==='latest'||value==='current'||value==='legacy') return value;
     if(value==='old') return 'legacy';
     if(value==='new') return 'current';
@@ -87,9 +89,12 @@
     const style=document.createElement('style');
     style.id='homeArtSelectorStyle';
     style.textContent=`
-      /* Lower only the new full-height normal art below the existing logo. */
-      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="normal"]{bottom:-101px!important}}
-      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="normal"]{bottom:-105px!important}}
+      /* Use the approved normal framing for the entire official set. */
+      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="latest"]{bottom:-101px!important}}
+      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="latest"]{bottom:-105px!important}}
+      /* The final yandere source has more empty space above the head. */
+      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="yandere"]{bottom:-71px!important}}
+      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="latest"][data-mode="yandere"]{bottom:-75px!important}}
       .home-art-selector{margin:0 0 16px;padding:14px;border:1px solid #374151;border-radius:14px;background:#111827}
       .home-art-selector h2{margin:0 0 5px;font-size:17px}
       .home-art-selector p{margin:0 0 12px;color:#94a3b8;font-size:12px;line-height:1.5}
@@ -107,15 +112,15 @@
     const wrap=document.createElement('section');
     wrap.id='homeArtSelector';
     wrap.className='home-art-selector';
-    wrap.innerHTML=`<h2>ホーム立ち絵</h2><p>新セット・現在のセット・Ver.0.8.14の立ち絵を残して選べます。今回は新セットの通常立ち絵のみ先行実装しています。</p><div class="home-art-options"></div><div class="home-art-current"></div>`;
+    wrap.innerHTML=`<h2>ホーム立ち絵</h2><p>現在の立ち絵・以前の立ち絵・Ver.0.8.14から選べます。選択はこの端末に保存されます。</p><div class="home-art-options"></div><div class="home-art-current"></div>`;
     const options=wrap.querySelector('.home-art-options');
     const status=wrap.querySelector('.home-art-current');
     const defs=[
-      {id:'latest',label:'新立ち絵（確認用）',src:ART_SETS.latest.normal},
-      {id:'current',label:'現在の立ち絵セット',src:ART_SETS.current.normal},
-      {id:'legacy',label:'以前の立ち絵（Ver.0.8.14）',src:ART_SETS.legacy.normal}
+      {id:'latest',label:'現在の立ち絵',src:ART_SETS.latest.normal},
+      {id:'current',label:'以前の立ち絵',src:ART_SETS.current.normal},
+      {id:'legacy',label:'Ver.0.8.14',src:ART_SETS.legacy.normal}
     ];
-    const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'現在の立ち絵';
+    const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'以前の立ち絵';
     const refresh=()=>{
       const selected=getHomeArt();
       wrap.querySelectorAll('.home-art-option').forEach(btn=>{
