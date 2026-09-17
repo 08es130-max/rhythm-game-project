@@ -1,9 +1,7 @@
-// Ver.0.8.36: Pointer Events input + iOS tap-SFX isolation for stability testing.
+// Ver.0.8.37: Pointer Events input + buffered tap SFX.
 (function(){
   'use strict';
-  const VERSION='0.8.36';
-  const IS_IOS=/iPhone|iPad|iPod/i.test(navigator.userAgent)||
-    (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const VERSION='0.8.37';
   let ref=null;
   let lanes=Array.from({length:9},()=>[]);
   let cursors=Array(9).fill(0);
@@ -68,11 +66,7 @@
     if(best<=getPerfectWindow())grade='perfect';
     else if(best<=HIT_WINDOWS.great)grade='great';
     registerHit(candidate,grade);
-
-    // iOS/PWA stability isolation: avoid per-tap HTMLAudio/WebAudio work during live play.
-    // If stalls disappear in this build, tap SFX is the bottleneck and can be rebuilt safely later.
-    if(!IS_IOS) playTapSound(grade);
-
+    playTapSound(grade);
     if(bestIndex===cursors[lane]){
       while(cursors[lane]<list.length){
         const n=list[cursors[lane]];
@@ -120,8 +114,7 @@
 
   window.LOVEFES_INPUT_DEBUG={
     version:VERSION,
-    iOS:IS_IOS,
-    tapSfxDuringLive:!IS_IOS,
+    tapSfxDuringLive:true,
     activePointerCount:()=>activePointers.size,
     reset:resetPointers
   };
