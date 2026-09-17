@@ -1,4 +1,4 @@
-// Ver.0.8.33: single-source story icon + automatic next-chapter transition.
+// Ver.0.8.33: single-source story icon + automatic next-chapter transition + expanded story loader.
 (function(){
   'use strict';
   const VERSION='0.8.33';
@@ -8,11 +8,12 @@
   const updateHead=document.querySelector('#updateBanner .update-head');
   const updateText=document.querySelector('#updateBanner .update-text');
   if(updateHead) updateHead.innerHTML=`<span id="updateNew" class="update-new">NEW</span><span>Ver.${VERSION} アップデート</span>`;
-  if(updateText) updateText.textContent='ホームのストーリーアイコンの画像参照を修正しました。';
+  if(updateText) updateText.textContent='メインストーリーを30章構成へ大幅加筆し、各章の会話と出来事を増やしました。';
 
   const btn=document.getElementById('homeStoryBtn');
   if(btn){
     const primary=`assets/ui/story-icon-v0833.png?v=${VERSION}`;
+    const fallback=`assets/home-ui/story-user-v0830.svg?v=${VERSION}-story-icon-fallback3`;
 
     let img=btn.querySelector('.home-menu-art');
     if(!img){
@@ -27,7 +28,7 @@
       fallbackUsed=true;
       img.src=fallback;
     };
-    img.onload=()=>{ img.classList.add('is-loaded'); };
+    img.onload=()=>{img.classList.add('is-loaded');};
     img.src=primary;
     img.alt='ストーリー';
     img.decoding='async';
@@ -36,9 +37,17 @@
     btn.setAttribute('aria-label','ストーリー');
   }
 
-  // The core story reader intentionally returns to the chapter list after each
-  // chapter. Detect that completion toast and immediately open the next card.
-  // This keeps the story core untouched and works for both tapping and AUTO mode.
+  // Load the expanded story data after the core reader has created its data array.
+  if(!document.getElementById('storyExpandedV088')){
+    const s=document.createElement('script');
+    s.id='storyExpandedV088';
+    s.src=`story-expanded-v088.js?v=${VERSION}-expanded1`;
+    s.async=false;
+    document.head.appendChild(s);
+  }
+
+  // The core story reader returns to the chapter list after each chapter.
+  // Detect completion and start the next chapter automatically.
   const installAutoNext=()=>{
     const toast=document.getElementById('storyToast');
     const progress=document.getElementById('storyProgress');
@@ -61,7 +70,7 @@
       clearTimeout(pending);
       pending=setTimeout(()=>{
         const cards=grid.querySelectorAll('.story-chapter-card');
-        const next=cards[current]; // current is 1-based, therefore this is the next 0-based card.
+        const next=cards[current];
         if(next)next.click();
       },760);
     };
