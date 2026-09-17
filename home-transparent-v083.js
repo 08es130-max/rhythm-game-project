@@ -1,13 +1,13 @@
-// Ver.0.8.51 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.52 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.51';
+  const VERSION='0.8.52';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='「ふれあい」の3D栞子の顔と髪を再造形。切れ長の目元、細めの輪郭、分けた前髪、長い毛束でより栞子らしい印象に調整しました。';
+    if(text) text.textContent='「ふれあい」に高精細GLBモデル用の本番パイプラインを導入。制作中は既存3Dへ自動フォールバックします。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
@@ -48,7 +48,7 @@
   if(!document.querySelector('script[data-hpt-density-v0838]')) loadScript('hpt-density-v0838.js?v=0.8.38-density1','hpt-density-v0838');
   loadScript('chart-audio-boundary-v0840.js?v=0.8.43-boundary4','chart-boundary-v0840',()=>{loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');});
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
-  loadScript('interaction-room-v0844.js?v=0.8.51-room8','interaction-room-v0844',()=>{loadScript('shioriko-3d-v0851.js?v=0.8.51-facehair1','shioriko-3d-v0851');});
+  loadScript('interaction-room-v0844.js?v=0.8.52-room9','interaction-room-v0844',()=>{loadScript('shioriko-model-loader-v0852.js?v=0.8.52-prod1','shioriko-model-loader-v0852');});
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');const page=document.getElementById('hasunosoraSongScreen');
