@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ストーリー">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f472b6"/><stop offset=".48" stop-color="#8b5cf6"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient>
+  <linearGradient id="book" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e0f2fe"/></linearGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#0f172a" flood-opacity=".42"/></filter>
+</defs>
+<rect x="10" y="10" width="492" height="492" rx="74" fill="url(#bg)"/>
+<circle cx="407" cy="105" r="64" fill="#fff" opacity=".16"/>
+<circle cx="100" cy="404" r="92" fill="#fff" opacity=".10"/>
+<g opacity=".75" fill="#fff"><path d="M92 99l7 18 18 7-18 7-7 18-7-18-18-7 18-7z"/><path d="M422 321l5 13 13 5-13 5-5 13-5-13-13-5 13-5z"/><circle cx="394" cy="166" r="5"/><circle cx="137" cy="170" r="4"/></g>
+<g filter="url(#shadow)">
+  <path d="M115 154c47-23 90-19 141 15v199c-48-32-93-36-141-14z" fill="url(#book)" stroke="#fff" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M397 154c-47-23-90-19-141 15v199c48-32 93-36 141-14z" fill="url(#book)" stroke="#fff" stroke-width="12" stroke-linejoin="round"/>
+  <path d="M256 169v199" stroke="#c4b5fd" stroke-width="10" stroke-linecap="round"/>
+  <path d="M158 207h62M158 239h62M158 271h48M292 207h62M292 239h62M292 271h48" stroke="#7c3aed" stroke-opacity=".48" stroke-width="10" stroke-linecap="round"/>
+</g>
+<path d="M256 89l10 25 25 10-25 10-10 25-10-25-25-10 25-10z" fill="#fff"/>
+<text x="256" y="438" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="48" letter-spacing="7" fill="#fff" stroke="#3730a3" stroke-width="2" paint-order="stroke">STORY</text>
+</svg>
