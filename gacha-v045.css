@@ -167,3 +167,85 @@
   .gacha-lobby-main{grid-template-rows:360px auto auto}
   .gacha-lobby-bottom{grid-template-columns:1fr}.gacha-main-actions{flex-direction:column}.gacha-pull-btn{width:100%}
 }
+
+
+/* Ver.0.8.59: 12-member single-image banner + uncropped featured UR art */
+.gacha-hero-visuals{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  padding:0!important;
+  overflow:hidden;
+  z-index:1;
+}
+.gacha-hero-banner-image{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  filter:saturate(1.05) contrast(1.03) brightness(.92);
+}
+.gacha-hero-loading{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  letter-spacing:.35em;
+  color:rgba(255,240,190,.62);
+  background:linear-gradient(135deg,#102143,#271f55,#0b1734);
+}
+.gacha-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  background:
+    linear-gradient(180deg,rgba(4,9,24,.05) 0%,rgba(5,10,26,.04) 48%,rgba(4,8,22,.54) 100%),
+    radial-gradient(ellipse at 50% 100%,rgba(100,86,255,.18),transparent 52%);
+}
+.gacha-hero-copy{z-index:4!important}
+
+.gacha-feature-card{
+  background:
+    radial-gradient(circle at 50% 14%,rgba(105,180,255,.14),transparent 42%),
+    linear-gradient(145deg,rgba(27,39,74,.98),rgba(23,21,57,.98));
+}
+.gacha-feature-image-wrap{
+  position:absolute!important;
+  inset:0!important;
+  z-index:1!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:7px 9px 32px;
+  box-sizing:border-box;
+  overflow:hidden;
+}
+.gacha-feature-card .gacha-feature-image-wrap img{
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain!important;
+  object-position:top center!important;
+  border-radius:8px;
+  filter:saturate(1.04) contrast(1.02) drop-shadow(0 7px 10px rgba(0,0,0,.28));
+}
+.gacha-feature-card::after{
+  z-index:1;
+  background:linear-gradient(180deg,rgba(6,10,25,.04) 0%,rgba(6,10,25,.06) 48%,rgba(6,10,25,.92) 100%)!important;
+}
+.gacha-feature-card>.gacha-feature-rarity,
+.gacha-feature-card>.gacha-feature-series,
+.gacha-feature-card>strong,
+.gacha-feature-card>small{
+  z-index:3!important;
+}
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-feature-image-wrap{padding:4px 5px 22px}
+  .gacha-hero-banner-image{object-fit:cover}
+}
