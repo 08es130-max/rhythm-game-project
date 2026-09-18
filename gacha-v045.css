@@ -488,3 +488,56 @@
   .gacha-ur-spotlight-card{opacity:1!important;transform:translate(-50%,-50%) scale(1)!important}
   .gacha-ur-spotlight-label{animation:none!important;background-position:50% 0}
 }
+
+
+/* Ver.0.8.62: keep UR card centered and remove image/card zoom */
+.gacha-ur-spotlight-card{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  transform:none!important;
+  opacity:1!important;
+  filter:none!important;
+  transition:opacity .22s ease!important;
+  animation:none!important;
+}
+.gacha-ur-spotlight.is-active .gacha-ur-spotlight-card{
+  transform:none!important;
+  opacity:1!important;
+  filter:none!important;
+  animation:none!important;
+}
+.gacha-ur-spotlight.is-leaving .gacha-ur-spotlight-card{
+  transform:none!important;
+  opacity:0!important;
+  filter:none!important;
+}
+.gacha-ur-spotlight-image-wrap{
+  transform:none!important;
+  animation:gachaUrFrameGlow .8s ease-in-out infinite alternate!important;
+}
+.gacha-ur-spotlight.is-active .gacha-ur-spotlight-image-wrap{
+  transform:none!important;
+  animation:gachaUrFrameGlow .8s ease-in-out infinite alternate!important;
+}
+.gacha-ur-spotlight-image{
+  transform:none!important;
+  animation:none!important;
+  image-rendering:auto!important;
+}
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-ur-spotlight-card{
+    width:min(58vw,520px)!important;
+    max-height:96dvh!important;
+    padding:6px 18px 10px!important;
+  }
+  .gacha-ur-spotlight-image-wrap{
+    width:min(36vw,44dvh,330px)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .gacha-ur-spotlight-card{
+    transform:none!important;
+    opacity:1!important;
+  }
+}
