@@ -152,7 +152,9 @@
     const tabs=document.getElementById('songCategoryTabs');
     if(tabs&&!document.getElementById('hasunosoraPageBtn')){
       const btn=document.createElement('button');btn.id='hasunosoraPageBtn';btn.type='button';btn.textContent='蓮ノ空';btn.className='hasunosora-page-tab';
-      btn.addEventListener('click',()=>{document.querySelectorAll('.app-screen').forEach(el=>el.hidden=true);page.hidden=false;});tabs.appendChild(btn);
+      btn.addEventListener('click',()=>{document.querySelectorAll('.app-screen').forEach(el=>el.hidden=true);page.hidden=false;});
+      const custom=tabs.querySelector('button[data-category="custom"]');
+      if(custom) tabs.insertBefore(btn,custom); else tabs.appendChild(btn);
     }
     return page;
   }
