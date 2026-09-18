@@ -512,3 +512,9 @@
     min-height:220px;
   }
 }
+
+
+/* Ver.0.8.70: keep current banner size and reveal more of the upper characters */
+.gacha-banner img{
+  object-position:center 24%!important;
+}
