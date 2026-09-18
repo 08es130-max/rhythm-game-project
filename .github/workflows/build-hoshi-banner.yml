@@ -1,0 +1,40 @@
+name: Build Hoshi no Yakusoku banner
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/gacha/hoshi-no-yakusoku-banner-v0863.part*'
+      - '.github/workflows/build-hoshi-banner.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore fixed banner WebP
+        shell: bash
+        run: |
+          if [ ! -f assets/gacha/hoshi-no-yakusoku-banner-v0863.part00 ]; then
+            echo "Source chunks already removed; nothing to build."
+            exit 0
+          fi
+          cat assets/gacha/hoshi-no-yakusoku-banner-v0863.part{00..08} | base64 -d > assets/gacha/hoshi-no-yakusoku-banner-v0863.webp
+          test -s assets/gacha/hoshi-no-yakusoku-banner-v0863.webp
+          file assets/gacha/hoshi-no-yakusoku-banner-v0863.webp
+          rm assets/gacha/hoshi-no-yakusoku-banner-v0863.part{00..08}
+      - name: Commit restored banner
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- assets/gacha)" ]; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/gacha
+          git commit -m "Add fixed Hoshi no Yakusoku banner artwork"
+          git push
