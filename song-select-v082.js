@@ -44,7 +44,8 @@
       const badge=card.querySelector('.song-library-badge')?.textContent?.trim()||'';
       const button=card.querySelector('button');
       const known=KNOWN[title]||{};
-      return {id:card.dataset.song075||card.dataset.songId||`${title}:${i}`,title,artist,bpm:meta.bpm,difficulty:meta.difficulty,badge,button,category:categoryFor(title,artist,badge),notes:known.notes||'--',level:known.level||'★--',palette:paletteFor(title)};
+      const jacket=card.dataset.jacket||known.jacket||'';
+      return {id:card.dataset.song075||card.dataset.songId||`${title}:${i}`,title,artist,bpm:meta.bpm,difficulty:meta.difficulty,badge,button,category:categoryFor(title,artist,badge),notes:known.notes||'--',level:known.level||'★--',palette:paletteFor(title),jacket};
     }).filter(s=>s.button);
   }
 
@@ -130,7 +131,8 @@
       const btn=document.createElement('button');btn.type='button';btn.className=`song-jacket pos-${pos<0?'m'+Math.abs(pos):'p'+pos}${i===state.index?' selected':''}`;
       btn.style.setProperty('--j1',song.palette[0]);btn.style.setProperty('--j2',song.palette[1]);btn.style.setProperty('--j3',song.palette[2]);
       btn.setAttribute('aria-label',`${song.title}を選択`);
-      btn.innerHTML=`<span class="jacket-orbit"></span><span class="jacket-series">${escapeHtml(song.artist)}</span><strong>${escapeHtml(song.title)}</strong><small>${song.category==='custom'?'LOCAL SONG':'LOVE FEST!'}</small>`;
+      btn.innerHTML=`${song.jacket?`<img class="song-jacket-art" src="${escapeHtml(song.jacket)}" alt="">`:''}<span class="jacket-orbit"></span><span class="jacket-series">${escapeHtml(song.artist)}</span><strong>${escapeHtml(song.title)}</strong><small>${song.category==='custom'?'LOCAL SONG':'LOVE FEST!'}</small>`;
+      if(song.jacket)btn.classList.add('has-jacket-art');
       btn.addEventListener('click',()=>{state.index=i;render();});
       carousel.appendChild(btn);
     });
