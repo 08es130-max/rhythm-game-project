@@ -36,9 +36,29 @@
     screen.classList.toggle('is-admin-test',cfg.testMode);
   }
 
+  function featuredUnits(){
+    const pool=Array.isArray(window.GACHA_UR_POOL)?window.GACHA_UR_POOL:[];
+    const preferred=['monthly-shioriko','monthly-setsuna','monthly-ayumu'];
+    const picked=preferred.map(id=>pool.find(u=>u.id===id)).filter(Boolean);
+    pool.forEach(u=>{if(picked.length<3&&!picked.some(x=>x.id===u.id))picked.push(u);});
+    return picked.slice(0,3);
+  }
+  function cleanName(unit){return String(unit?.name||'').replace(/【[^】]+】$/u,'');}
+  function renderScoutLobby(screen){
+    const featured=featuredUnits();
+    const banner=screen.querySelector('.gacha-hero-visuals');
+    const cards=screen.querySelector('.gacha-featured-cards');
+    if(banner){
+      banner.innerHTML=featured.map((u,i)=>`<div class="gacha-hero-idol idol-${i+1}"><img src="${u.icon}" alt="${cleanName(u)}"><span>${cleanName(u)}</span></div>`).join('');
+    }
+    if(cards){
+      cards.innerHTML=featured.map((u,i)=>`<article class="gacha-feature-card"><div class="gacha-feature-rarity">UR</div><img src="${u.icon}" alt="${cleanName(u)}"><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong><small>${i===0?'PICK UP':'FEATURED'}</small></article>`).join('');
+    }
+  }
+
   function ensureScreen(){
     let screen=document.getElementById('gachaScreen');
-    if(screen){updateRateDisplay(screen);return screen;}
+    if(screen){updateRateDisplay(screen);renderScoutLobby(screen);return screen;}
     const shell=document.querySelector('.app-shell')||document.body;
     screen=document.createElement('section');
     screen.id='gachaScreen';
@@ -46,34 +66,74 @@
     screen.hidden=true;
     screen.innerHTML=`
       <div class="gacha-topbar">
-        <button id="gachaHomeBtn" class="gacha-home-btn" type="button">ホーム</button>
-        <div class="gacha-heading">
-          <div class="gacha-heading-kicker">SCOUTING</div>
-          <h1>勧誘</h1>
-        </div>
-        <div class="gacha-rate-mini"><b>UR</b> 1%</div>
+        <button id="gachaHomeBtn" class="gacha-home-btn" type="button">‹ 戻る</button>
+        <div class="gacha-heading"><div class="gacha-heading-kicker">SCOUT</div><h1>SCOUT / 勧誘</h1><small>あなたと、もう一度ステージへ</small></div>
+        <div class="gacha-wallet"><span class="gacha-gem">◆</span><div><small>SCOUT PASS</small><strong>FREE</strong></div></div>
       </div>
-      <div class="gacha-stage">
-        <div class="gacha-copy">
-          <strong>10連勧誘</strong>
-          <span>N【音符ロリータ】99% ／ UR【マンスリーソング】1%</span>
-        </div>
+      <div id="gachaLobby" class="gacha-lobby">
+        <aside class="gacha-nav">
+          <button class="active" type="button"><span>開催中</span><strong>星の約束</strong><small>ピックアップスカウト</small></button>
+          <button type="button" disabled><strong>メモリーズ</strong><small>COMING SOON</small></button>
+          <button type="button" disabled><strong>恒常スカウト</strong><small>COMING SOON</small></button>
+          <button type="button" disabled><strong>チケット</strong><small>COMING SOON</small></button>
+        </aside>
+        <main class="gacha-lobby-main">
+          <section class="gacha-hero">
+            <div class="gacha-hero-glow"></div>
+            <div class="gacha-hero-visuals"></div>
+            <div class="gacha-hero-copy">
+              <span>PICK UP SCOUT</span>
+              <h2>星の約束</h2>
+              <p>あの輝きを、もう一度——</p>
+              <small>マンスリーソング UR ピックアップ</small>
+            </div>
+          </section>
+          <section class="gacha-featured-cards" aria-label="ピックアップメンバー"></section>
+          <div class="gacha-lobby-bottom">
+            <div class="gacha-links">
+              <button id="gachaRateBtn" type="button">提供割合</button>
+              <button id="gachaDetailBtn" type="button">詳細</button>
+            </div>
+            <div class="gacha-main-actions">
+              <button id="gachaPullOneBtn" class="gacha-pull-btn gacha-pull-one" type="button"><span>1回勧誘</span><small>FREE</small></button>
+              <button id="gachaPullTenBtn" class="gacha-pull-btn gacha-pull-ten" type="button"><b>UR期待の10連</b><span>10回勧誘</span><small>FREE</small></button>
+            </div>
+          </div>
+        </main>
+      </div>
+      <div id="gachaRevealStage" class="gacha-stage" hidden>
+        <div class="gacha-copy"><strong>勧誘結果</strong><span>N【音符ロリータ】99% ／ UR【マンスリーソング】1%</span></div>
         <div id="gachaOmen" class="gacha-omen" aria-live="polite"></div>
         <div id="gachaEnvelopeGrid" class="gacha-envelope-grid" aria-live="polite"></div>
         <div class="gacha-actions">
-          <button id="gachaPullBtn" class="gacha-pull-btn" type="button">10連する</button>
+          <button id="gachaBackLobbyBtn" class="gacha-secondary-btn" type="button">スカウト画面へ戻る</button>
           <span class="gacha-note">同じメンバーが重複して出ることがあります。URは初獲得時に部室へ追加されます。</span>
         </div>
       </div>`;
     shell.appendChild(screen);
 
-    screen.querySelector('#gachaHomeBtn')?.addEventListener('click',()=>{
-      if(screen.classList.contains('is-pulling')) return;
+    const backHome=()=>{
+      if(screen.classList.contains('is-pulling'))return;
       screen.hidden=true;
-      if(typeof window.showAppScreen==='function') window.showAppScreen('home');
+      if(typeof window.showAppScreen==='function')window.showAppScreen('home');
       else document.getElementById('homeScreen')?.removeAttribute('hidden');
+    };
+    screen.querySelector('#gachaHomeBtn')?.addEventListener('click',backHome);
+    screen.querySelector('#gachaPullOneBtn')?.addEventListener('click',()=>runPull(1));
+    screen.querySelector('#gachaPullTenBtn')?.addEventListener('click',()=>runPull(10));
+    screen.querySelector('#gachaBackLobbyBtn')?.addEventListener('click',()=>{
+      if(screen.classList.contains('is-pulling'))return;
+      screen.querySelector('#gachaRevealStage').hidden=true;
+      screen.querySelector('#gachaLobby').hidden=false;
+      renderScoutLobby(screen);
     });
-    screen.querySelector('#gachaPullBtn')?.addEventListener('click',runTenPull);
+    screen.querySelector('#gachaRateBtn')?.addEventListener('click',()=>{
+      const cfg=getGachaSettings();alert(`提供割合\nUR【マンスリーソング】 ${Math.round(cfg.urRate*100)}%\nN【音符ロリータ】 ${Math.max(0,100-Math.round(cfg.urRate*100))}%`);
+    });
+    screen.querySelector('#gachaDetailBtn')?.addEventListener('click',()=>{
+      alert('ピックアップスカウト「星の約束」\nマンスリーソングURが登場します。\nUR初獲得時は部室へ追加されます。');
+    });
+    renderScoutLobby(screen);
     updateRateDisplay(screen);
     return screen;
   }
@@ -165,7 +225,7 @@
     if(result.rarity==='UR') await showUrSpotlight(result);
   }
 
-  async function runTenPull(){
+  async function runPull(count=PULL_COUNT){
     const screen=ensureScreen();
     if(screen.classList.contains('is-pulling')) return;
     const nPool=window.GACHA_N_POOL||[];
@@ -176,20 +236,22 @@
     }
 
     const cfg=getGachaSettings();
-    const button=screen.querySelector('#gachaPullBtn');
+    const button=screen.querySelector(count===1?'#gachaPullOneBtn':'#gachaPullTenBtn');
+    const pullButtons=[screen.querySelector('#gachaPullOneBtn'),screen.querySelector('#gachaPullTenBtn')].filter(Boolean);
+    screen.querySelector('#gachaLobby').hidden=true;
+    screen.querySelector('#gachaRevealStage').hidden=false;
     const grid=screen.querySelector('#gachaEnvelopeGrid');
     const omen=screen.querySelector('#gachaOmen');
     updateRateDisplay(screen);
     screen.classList.add('is-pulling');
-    button.disabled=true;
-    button.textContent='勧誘中…';
+    pullButtons.forEach(b=>b.disabled=true);
     grid.innerHTML='';
     omen.textContent='';
     screen.classList.remove('has-ur-omen');
 
     const owned=typeof window.loadGachaOwned==='function'?window.loadGachaOwned():new Set();
     const results=[];
-    for(let i=0;i<PULL_COUNT;i++){
+    for(let i=0;i<count;i++){
       const result=pullOne();
       result.isNew=result.rarity==='UR'&&!owned.has(result.unit.id);
       if(result.rarity==='UR') owned.add(result.unit.id);
@@ -214,7 +276,7 @@
     }
 
     for(let i=0;i<slots.length;i++){
-      omen.textContent=`${i+1} / ${PULL_COUNT}`;
+      omen.textContent=`${i+1} / ${count}`;
       await revealSlot(slots[i],results[i]);
     }
 
@@ -222,17 +284,18 @@
     const urCount=results.filter(r=>r.rarity==='UR').length;
     const tempNote=cfg.testMode&&!cfg.saveOwned?' ／ 部室未登録':'';
     omen.textContent=urCount?`UR ${urCount}枚${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'勧誘結果';
-    button.disabled=false;
-    button.textContent='もう一度10連する';
+    pullButtons.forEach(b=>b.disabled=false);
     screen.classList.remove('is-pulling');
   }
+
+  async function runTenPull(){return runPull(10);}
 
   window.openGachaScreen=function(){
     const screen=ensureScreen();
     hideOtherScreens();
     updateRateDisplay(screen);
     screen.hidden=false;
-    screen.querySelector('#gachaPullBtn')?.focus({preventScroll:true});
+    screen.querySelector('#gachaPullTenBtn')?.focus({preventScroll:true});
     window.scrollTo({top:0,behavior:'auto'});
   };
 
