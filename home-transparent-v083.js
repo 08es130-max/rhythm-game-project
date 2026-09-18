@@ -1,13 +1,13 @@
-// Ver.0.8.59 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.60 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.59';
+  const VERSION='0.8.60';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ガチャのピックアップバナーをマンスリーUR12人全員の集合ビジュアルへ更新。注目URは排出画像を見切れず表示するよう改善しました。';
+    if(text) text.textContent='UR排出演出を豪華に刷新。虹色UR GET!、白フラッシュ、虹色光柱、放射レイ、衝撃波、粒子バースト、キャラ登場ズームを追加しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
