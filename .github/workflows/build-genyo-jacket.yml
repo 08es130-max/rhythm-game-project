@@ -1,0 +1,40 @@
+name: Build Genyo Yako jacket
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/jackets/genyo-yako-v0857.part*'
+      - '.github/workflows/build-genyo-jacket.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore jacket WebP
+        shell: bash
+        run: |
+          if [ ! -f assets/jackets/genyo-yako-v0857.part0 ]; then
+            echo "Source chunks already removed; nothing to build."
+            exit 0
+          fi
+          cat assets/jackets/genyo-yako-v0857.part{0..6} | base64 -d > assets/jackets/genyo-yako-v0857.webp
+          test -s assets/jackets/genyo-yako-v0857.webp
+          file assets/jackets/genyo-yako-v0857.webp
+          rm assets/jackets/genyo-yako-v0857.part{0..6}
+      - name: Commit restored jacket
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- assets/jackets)" ]; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/jackets
+          git commit -m "Add polished Genyo Yako jacket artwork"
+          git push
