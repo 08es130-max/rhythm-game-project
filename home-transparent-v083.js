@@ -1,13 +1,13 @@
-// Ver.0.8.57 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.58 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.57';
+  const VERSION='0.8.58';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='眩耀夜行のジャケットを月夜と水面の新ビジュアルへ更新。iPhone横向きでは詳細ページをスクロールなしの1画面構成に最適化しました。';
+    if(text) text.textContent='ガチャ画面をステージ型のSCOUTロビーへ刷新。ピックアップバナー、注目UR3枚、1回/10回勧誘、提供割合・詳細を追加しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
