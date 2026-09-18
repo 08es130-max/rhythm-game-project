@@ -4,11 +4,11 @@
 
   const IDS=[
     ['homeLiveBtn','ライブ','live'],
+    ['homeStoryBtn','ストーリー','story'],
     ['homeSettingsBtn','設定','settings'],
     ['homeCharactersBtn','部室','room'],
-    ['homeGachaBtn','勧誘','gacha'],
-    ['homeStoryBtn','ストーリー','story'],
-    ['homeInteractionBtn','ラウンジ','lounge']
+    ['homeInteractionBtn','ラウンジ','lounge'],
+    ['homeGachaBtn','勧誘','gacha']
   ];
   const ASSET_BASE='assets/ui/home-v0855/';
 
@@ -144,7 +144,7 @@
       buttons.push(btn);
     }
 
-    // DOM order defines the 3x2 grid: Live / Settings / Club Room / Scout / Story / Lounge.
+    // DOM order defines the 3x2 grid: Live / Story / Settings / Club Room / Lounge / Scout.
     buttons.forEach(btn=>menu.appendChild(btn));
     menu.dataset.unifiedV0854='1';
     return true;
