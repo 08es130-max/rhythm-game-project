@@ -1,13 +1,13 @@
-// Ver.0.8.61 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.62 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.61';
+  const VERSION='0.8.62';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ホーム画面の6ボタンを「ライブ・ストーリー・設定／部室・ラウンジ・勧誘」の2段配置へ変更しました。';
+    if(text) text.textContent='UR演出のキャラ表示位置を中央固定へ修正し、画質低下の原因になっていたズーム演出を削除しました。虹色の光・衝撃波・粒子演出は維持しています。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
