@@ -1,0 +1,37 @@
+name: Convert Gacha Banner to JPEG
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/convert-gacha-banner-jpeg.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  convert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Convert WebP to baseline JPEG
+        run: |
+          python3 - <<'PY'
+          from PIL import Image
+          src='assets/gacha/hoshi-no-yakusoku-banner-v0863.webp'
+          dst='assets/gacha/hoshi-no-yakusoku-banner-v0865.jpg'
+          im=Image.open(src).convert('RGB')
+          im.save(dst,'JPEG',quality=90,optimize=True,progressive=False,subsampling=0)
+          print(im.size,dst)
+          PY
+      - name: Commit JPEG
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/gacha/hoshi-no-yakusoku-banner-v0865.jpg
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Add Safari-safe JPEG gacha banner"
+          git push
