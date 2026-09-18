@@ -1,0 +1,50 @@
+name: Build iPhone-safe Gacha Banner Tiles
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-gacha-banner-tiles.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Build cropped banner tiles
+        run: |
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+          src=Path('assets/gacha/hoshi-no-yakusoku-banner-v0865.jpg')
+          out=Path('assets/gacha/banner-v0867')
+          out.mkdir(parents=True,exist_ok=True)
+          im=Image.open(src).convert('RGB')
+          w,h=im.size
+          target_ratio=10/3
+          crop_h=int(round(w/target_ratio))
+          crop_h=min(crop_h,h)
+          top=max(0,(h-crop_h)//2)
+          crop=im.crop((0,top,w,top+crop_h))
+          # exact 1600x480 banner surface for predictable iPhone rendering
+          crop=crop.resize((1600,480),Image.Resampling.LANCZOS)
+          crop.save(out/'full.jpg','JPEG',quality=90,optimize=True,progressive=False,subsampling=0)
+          for i in range(4):
+              tile=crop.crop((i*400,0,(i+1)*400,480))
+              tile.save(out/f'tile-{i+1}.jpg','JPEG',quality=90,optimize=True,progressive=False,subsampling=0)
+              print(i+1,tile.size)
+          PY
+      - name: Commit tiles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/gacha/banner-v0867
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Add iPhone-safe tiled gacha banner"
+          git push
