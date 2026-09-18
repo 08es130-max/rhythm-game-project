@@ -54,7 +54,7 @@ def interp(z,pts):
    m0=(d-prev[1])/(c-prev[0]);m1=(nxt[1]-b)/(nxt[0]-a)
    return (2*t**3-3*t*t+1)*b+(t**3-2*t*t+t)*h*m0+(-2*t**3+3*t*t)*d+(t**3-t*t)*h*m1
  return pts[-1][1]
-widths=[(.061,.008),(.074,.030),(.101,.054),(.14,.076),(.18,.084),(.215,.082),(.26,.084),(.30,.079),(.335,.060),(.358,.03),(.368,.001)]
+widths=[(.061,.008),(.074,.030),(.101,.060),(.14,.080),(.18,.084),(.215,.082),(.26,.084),(.30,.079),(.335,.060),(.358,.03),(.368,.001)]
 depths=[(.061,.033),(.08,.050),(.13,.065),(.18,.073),(.23,.073),(.28,.068),(.33,.05),(.368,.001)]
 
 def face_y(x,z):
@@ -87,7 +87,7 @@ for v,c in zip(face.data.vertices,color.data):
  x,y,z=v.co;blush=exp(-((abs(x)-.052)/.021)**2-((z-.167)/.020)**2)*max(0,-y/.075)*.38
  c.color=(.88+blush*.12,.59-blush*.12,.49-blush*.08,1)
 vnode=skin.node_tree.nodes.new('ShaderNodeVertexColor');vnode.layer_name='SkinTint';skin.node_tree.links.new(vnode.outputs['Color'],skin.node_tree.nodes.get('Principled BSDF').inputs['Base Color'])
-face['design_notes']='Soft cheeks; narrow chin; modest nose bridge. Edit/sculpt this mesh. Visual approval pending.'
+face['design_notes']='Fuller cheeks; shorter rounded jaw; modest nose bridge. Edit/sculpt this mesh. Visual approval pending.'
 
 # Neck surface loft, separate for later body integration.
 v=[];f=[]
@@ -270,12 +270,12 @@ for dz in [0,.006]:
  pts=[(-.085,-.053,.280+dz),(-.069,-.068,.285+dz),(-.060,-.074,.281+dz)]
  tube('Acc_Hairpin_'+str(dz),pts,.00105,gold,segments=16,sides=8)
 
-# Review iteration 02: shorter lower face, softer skull proportion; all editable mesh coordinates.
+# Round-face review: widen cheeks and shorten eye-to-chin distance per supplied casual portrait.
 for obj in objects:
  for vertex in obj.data.vertices:
   if obj.name.startswith('Ear'):vertex.co.x*=.91;vertex.co.y+=.012
-  vertex.co.x*=1.03
-  vertex.co.z=.215+(vertex.co.z-.215)*(.78 if vertex.co.z<.215 else .90)
+  vertex.co.x*=1.10
+  vertex.co.z=.215+(vertex.co.z-.215)*(.60 if vertex.co.z<.215 else .90)
 # Native editable naming and minimal head rig; no fake body bones or expression claims.
 arm=bpy.data.armatures.new('Shioriko_HeadRig');rig=bpy.data.objects.new('Shioriko_HeadRig',arm);collections['05_RIG'].objects.link(rig)
 bpy.context.view_layer.objects.active=rig;rig.select_set(True);bpy.ops.object.mode_set(mode='EDIT')

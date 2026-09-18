@@ -4,7 +4,7 @@
   "format": "glb",
   "path": "assets/models/shioriko/prototypes/shioriko-head-v1.glb",
   "fallback": "shioriko-3d-v0851.js",
-  "scale": 1.0,
+  "scale": 1,
   "targetHeightMeters": 1.6,
   "forwardAxis": "+Z",
   "upAxis": "+Y",
@@ -19,7 +19,7 @@
     "Eye_R"
   ],
   "schemaVersion": 1,
-  "assetRevision": "head-review-v1-20260918",
+  "assetRevision": "head-round-review-v2-20260918",
   "maxTriangles": 180000,
   "maxTextureSize": 2048,
   "maxFileBytes": 67108864,
