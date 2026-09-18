@@ -3,6 +3,45 @@
   const DEFAULT_UR_RATE=.01;
   const PULL_COUNT=10;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  const GACHA_BGM_SRC='assets/audio/gacha-starry-loop-v0864.wav?v=0.8.64-bgm1';
+  let gachaBgm=null;
+  let gachaBgmFade=0;
+  function ensureGachaBgm(){
+    if(gachaBgm)return gachaBgm;
+    const audio=new Audio(GACHA_BGM_SRC);
+    audio.loop=true;
+    audio.preload='auto';
+    audio.volume=0;
+    gachaBgm=audio;
+    return audio;
+  }
+  function startGachaBgm(){
+    const audio=ensureGachaBgm();
+    clearInterval(gachaBgmFade);
+    const playPromise=audio.play();
+    if(playPromise?.catch)playPromise.catch(()=>{});
+    let v=audio.volume||0;
+    gachaBgmFade=setInterval(()=>{
+      v=Math.min(.28,v+.035);
+      audio.volume=v;
+      if(v>=.28){clearInterval(gachaBgmFade);gachaBgmFade=0;}
+    },45);
+  }
+  function stopGachaBgm(reset=true){
+    if(!gachaBgm)return;
+    clearInterval(gachaBgmFade);gachaBgmFade=0;
+    const audio=gachaBgm;
+    let v=audio.volume;
+    const fade=setInterval(()=>{
+      v=Math.max(0,v-.055);
+      audio.volume=v;
+      if(v<=0){
+        clearInterval(fade);
+        audio.pause();
+        if(reset){try{audio.currentTime=0;}catch(_){}}
+      }
+    },35);
+  }
 
   function rand(){
     if(window.crypto?.getRandomValues){
@@ -117,6 +156,7 @@
 
     const backHome=()=>{
       if(screen.classList.contains('is-pulling'))return;
+      stopGachaBgm(true);
       screen.hidden=true;
       if(typeof window.showAppScreen==='function')window.showAppScreen('home');
       else document.getElementById('homeScreen')?.removeAttribute('hidden');
@@ -307,11 +347,14 @@
     hideOtherScreens();
     updateRateDisplay(screen);
     screen.hidden=false;
+    startGachaBgm();
     screen.querySelector('#gachaPullTenBtn')?.focus({preventScroll:true});
     window.scrollTo({top:0,behavior:'auto'});
   };
 
   window.addEventListener('rhythmGameAdminSettingsChanged',()=>updateRateDisplay(document.getElementById('gachaScreen')));
+  window.startGachaBgm=startGachaBgm;
+  window.stopGachaBgm=stopGachaBgm;
 
   // 部室は初期N＋獲得済みURだけを表示する。
   function installOwnedRoomFilter(){
