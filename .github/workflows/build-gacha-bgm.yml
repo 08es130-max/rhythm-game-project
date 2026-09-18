@@ -1,0 +1,30 @@
+name: Build Gacha BGM
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/build_gacha_bgm.py'
+      - '.github/workflows/build-gacha-bgm.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate original gacha loop
+        run: python3 tools/build_gacha_bgm.py
+      - name: Commit generated WAV
+        run: |
+          if [ -z "$(git status --porcelain -- assets/audio/gacha-starry-loop-v0864.wav)" ]; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/audio/gacha-starry-loop-v0864.wav
+          git commit -m "Add original gacha starry loop BGM"
+          git push
