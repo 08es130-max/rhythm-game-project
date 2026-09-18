@@ -224,8 +224,15 @@
     overlay.id='gachaUrSpotlight';
     overlay.className='gacha-ur-spotlight';
     overlay.hidden=true;
+    const particles=Array.from({length:24},(_,i)=>`<i class="gacha-ur-particle p-${i+1}" style="--i:${i}"></i>`).join('');
     overlay.innerHTML=`
       <div class="gacha-ur-spotlight-backdrop"></div>
+      <div class="gacha-ur-beam"></div>
+      <div class="gacha-ur-rainbow-rays"></div>
+      <div class="gacha-ur-impact-ring ring-a"></div>
+      <div class="gacha-ur-impact-ring ring-b"></div>
+      <div class="gacha-ur-flash"></div>
+      <div class="gacha-ur-particles">${particles}</div>
       <div class="gacha-ur-spotlight-rays"></div>
       <div class="gacha-ur-spotlight-sparkles"></div>
       <div class="gacha-ur-spotlight-card">
@@ -254,10 +261,11 @@
     badge.hidden=!result.isNew;
     overlay.hidden=false;
     overlay.classList.remove('is-leaving');
+    void overlay.offsetWidth;
     requestAnimationFrame(()=>overlay.classList.add('is-active'));
-    await sleep(1550);
+    await sleep(2050);
     overlay.classList.add('is-leaving');
-    await sleep(380);
+    await sleep(420);
     overlay.classList.remove('is-active','is-leaving');
     overlay.hidden=true;
   }
