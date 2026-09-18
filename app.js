@@ -145,6 +145,18 @@ function canStart() {
   startBtn.disabled = !(sourceReady && chart);
 }
 
+window.setActiveRhythmChart = function(nextChart, label) {
+  validateChart(nextChart);
+  chart = nextChart;
+  chartName.textContent = label || nextChart.title || '譜面';
+  offsetInput.value = String(getSavedTimingOffset());
+  canStart();
+  return chart;
+};
+window.getActiveRhythmChartTitle = function() {
+  return chart?.title || '';
+};
+
 function updateComboDisplay() {
   comboEl.textContent = combo;
   if (combo > 0) {
@@ -174,6 +186,7 @@ audioFile.addEventListener('change', () => {
   if (!file) return;
   if (audio.src && audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
   audio.src = URL.createObjectURL(file);
+  try { audio.load(); } catch (_) {}
   audioMode.value = 'file';
   songName.textContent = file.name;
   canStart();
