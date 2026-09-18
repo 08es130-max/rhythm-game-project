@@ -1,13 +1,13 @@
-// Ver.0.8.66 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.67 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.66';
+  const VERSION='0.8.67';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ガチャバナーのiPhone表示乱れ対策として描画レイヤーを簡素化し、ガチャBGMはWeb Audioのambient再生へ変更してマナーモード時に鳴らないようにしました。';
+    if(text) text.textContent='ガチャの「星の約束」バナーをiPhone向けに4分割JPEGで継ぎ目なく表示する方式へ変更し、大きな1枚画像の描画崩れを回避しました。ガチャBGMのマナーモード対応は維持しています。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
