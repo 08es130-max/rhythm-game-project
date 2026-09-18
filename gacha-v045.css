@@ -486,3 +486,29 @@
   .gacha-lobby{height:calc(100dvh - 66px)}
   .gacha-banner{max-width:calc(35dvh * 16 / 9)}
 }
+
+
+/* Ver.0.8.69: restore full-width landscape banner while keeping intact source artwork */
+.gacha-banner{
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  align-self:stretch!important;
+  overflow:hidden!important;
+  border-radius:14px;
+}
+.gacha-banner img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+}
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-banner{
+    width:100%!important;
+    max-width:none!important;
+    height:min(35dvh,300px)!important;
+    min-height:220px;
+  }
+}
