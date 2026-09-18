@@ -129,15 +129,15 @@
     return picked.slice(0,3);
   }
   function cleanName(unit){return String(unit?.name||'').replace(/【[^】]+】$/u,'');}
-  const PICKUP_BANNER='assets/gacha/hoshi-no-yakusoku-banner-v0865.jpg?v=0.8.65-bannerjpeg1';
+  const PICKUP_BANNER_TILES=[1,2,3,4].map(i=>`assets/gacha/banner-v0867/tile-${i}.jpg?v=0.8.67-tiles1`);
 
   function renderScoutLobby(screen){
     const featured=featuredUnits();
     const banner=screen.querySelector('.gacha-hero-visuals');
     const cards=screen.querySelector('.gacha-featured-cards');
     if(banner){
-      banner.innerHTML=`<img class="gacha-hero-banner-image" src="${PICKUP_BANNER}" alt="星の約束 ピックアップバナー">`;
-      banner.closest('.gacha-hero')?.classList.add('has-fixed-banner');
+      banner.innerHTML=`<div class="gacha-hero-banner-tiles" aria-label="星の約束 ピックアップバナー">${PICKUP_BANNER_TILES.map((src,i)=>`<img class="gacha-hero-banner-tile" src="${src}" alt="" data-tile="${i+1}">`).join('')}</div>`;
+      banner.closest('.gacha-hero')?.classList.add('has-fixed-banner','has-tiled-banner');
     }
     if(cards){
       cards.innerHTML=featured.map((u,i)=>`<article class="gacha-feature-card"><div class="gacha-feature-rarity">UR</div><div class="gacha-feature-image-wrap"><img src="${u.icon}" alt="${cleanName(u)}"></div><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong><small>${i===0?'PICK UP':'FEATURED'}</small></article>`).join('');
