@@ -1,14 +1,14 @@
-// Final version guard for Ver.0.8.63. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.64. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.63';
+  const VERSION='0.8.64';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     const text=document.querySelector('#updateBanner .update-text');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
-    if(text) text.textContent='ガチャの「星の約束」ピックアップバナーを12人集合の完成ビジュアルへ差し替え、動的な12枚合成を廃止して固定バナー表示へ軽量化しました。';
+    if(text) text.textContent='ガチャ画面にオリジナルBGM「Starry Scout Loop」を追加しました。勧誘画面を開くとフェードイン再生し、ホームへ戻るとフェードアウトして停止します。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,150);
 })();
