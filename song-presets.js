@@ -54,8 +54,10 @@ function usePresetAudio(record, title) {
   presetAudioObjectUrl = URL.createObjectURL(record.blob);
   if (audio.src && audio.src.startsWith('blob:')) { try { URL.revokeObjectURL(audio.src); } catch (_) {} }
   audio.src = presetAudioObjectUrl;
+  try { audio.load(); } catch (_) {}
   audioMode.value = 'file';
   songName.textContent = `${title}（保存済み音源）`;
+  try { localStorage.setItem('rhythmPresetAudioSaved:' + record.key, '1'); } catch (_) {}
   canStart();
   return true;
 }
@@ -201,6 +203,7 @@ audioFile.addEventListener('change', async () => {
   awaitingPresetAudioKey = null;
   try {
     await savePresetAudio(key, file);
+    try { localStorage.setItem('rhythmPresetAudioSaved:' + key, '1'); } catch (_) {}
     if (key === SPICA_AUDIO_KEY) songName.textContent = 'スピカテリブル（音源をこの端末に保存しました）';
   } catch (e) {
     console.warn('音源を端末に保存できませんでした', e);
