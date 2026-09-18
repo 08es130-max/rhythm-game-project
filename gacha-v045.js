@@ -83,7 +83,7 @@
     return picked.slice(0,3);
   }
   function cleanName(unit){return String(unit?.name||'').replace(/【[^】]+】$/u,'');}
-  const PICKUP_BANNER='assets/gacha/hoshi-no-yakusoku-banner-v0863.webp?v=0.8.63-banner1';
+  const PICKUP_BANNER='assets/gacha/hoshi-no-yakusoku-banner-v0865.jpg?v=0.8.65-bannerjpeg1';
 
   function renderScoutLobby(screen){
     const featured=featuredUnits();
