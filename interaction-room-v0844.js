@@ -46,7 +46,9 @@
       .interaction-coming{font-size:10px;color:#94a3b8;margin-top:7px}
       @media (orientation:landscape) and (pointer:coarse){
         .interaction-room-screen{--ir-safe-left:max(30px,env(safe-area-inset-left));--ir-safe-right:max(30px,env(safe-area-inset-right));--ir-safe-top:max(8px,env(safe-area-inset-top));--ir-safe-bottom:max(8px,env(safe-area-inset-bottom))}
-        .interaction-stage{min-height:calc(100vh - 86px)}
+        .interaction-room-main{height:calc(100dvh - 86px);grid-template-rows:minmax(0,1fr)}
+        .interaction-stage{height:100%;min-height:0}
+        .interaction-side{min-height:0;overflow-y:auto}
       }
       @media (max-width:720px) and (orientation:portrait){
         .interaction-room-main{grid-template-columns:1fr}.interaction-stage{min-height:55vh}.interaction-side{display:grid;grid-template-columns:1fr 1fr}.interaction-side .interaction-card:first-child{grid-column:1/-1}
@@ -118,7 +120,7 @@
           </div>
           <div class="interaction-card">
             <h2>モデル</h2>
-            <p>予定形式：GLB。スマホ向けに軽量化し、表情・ボーン・衣装差し替えを後から増やせる設計にします。</p>
+            <p>顔と短い髪を確認する頭部プロトタイプです。全身衣装・表情・モーションは未制作です。</p>
           </div>
         </aside>
       </div>`;

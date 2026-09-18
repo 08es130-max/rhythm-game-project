@@ -1,8 +1,8 @@
 {
-  "id": "shioriko-live-v1",
-  "status": "awaiting-authored-model",
+  "id": "shioriko-head-review-v1",
+  "status": "head-prototype-awaiting-review",
   "format": "glb",
-  "path": "assets/models/shioriko/shioriko-live-v1.glb",
+  "path": "assets/models/shioriko/prototypes/shioriko-head-v1.glb",
   "fallback": "shioriko-3d-v0851.js",
   "scale": 1.0,
   "targetHeightMeters": 1.6,
@@ -10,43 +10,28 @@
   "upAxis": "+Y",
   "targetFps": 30,
   "maxDevicePixelRatio": 1.5,
-  "expressions": [
-    "Neutral",
-    "Smile",
-    "Happy",
-    "Blink",
-    "Serious",
-    "Surprised",
-    "Blush",
-    "Mouth_A",
-    "Mouth_I",
-    "Mouth_U",
-    "Mouth_E",
-    "Mouth_O"
-  ],
-  "animations": [
-    "Idle",
-    "Wave",
-    "Look",
-    "Dance_01"
-  ],
+  "expressions": [],
+  "animations": [],
   "touchTargets": [
     "Head",
     "Face",
-    "LeftHand",
-    "RightHand",
     "Eye_L",
-    "Eye_R",
-    "Body"
+    "Eye_R"
   ],
   "schemaVersion": 1,
-  "assetRevision": "live-v1-authoring-1",
+  "assetRevision": "head-review-v1-20260918",
   "maxTriangles": 180000,
   "maxTextureSize": 2048,
   "maxFileBytes": 67108864,
   "authoring": {
-    "source": "assets/models/shioriko/source/shioriko-live-v1.blend",
-    "exportCollection": "06_EXPORT",
+    "source": "assets/models/shioriko/source/shioriko-head-v1.blend",
+    "exportCollection": "01_FACE + 02_EYES + 03_HAIR + 04_DETAILS + 05_RIG",
     "approvalRequired": true
+  },
+  "productionPath": "assets/models/shioriko/shioriko-live-v1.glb",
+  "review": {
+    "scope": "face, head and short hair only",
+    "approved": false,
+    "fullBody": false
   }
 }
