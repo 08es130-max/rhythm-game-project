@@ -44,65 +44,15 @@
     return picked.slice(0,3);
   }
   function cleanName(unit){return String(unit?.name||'').replace(/【[^】]+】$/u,'');}
-  function bannerUnits(){
-    return (Array.isArray(window.GACHA_UR_POOL)?window.GACHA_UR_POOL:[]).slice(0,12);
-  }
-  function loadImage(src){
-    return new Promise(resolve=>{
-      const img=new Image();
-      img.onload=()=>resolve(img);
-      img.onerror=()=>resolve(null);
-      img.src=src;
-    });
-  }
-  async function buildMonthlyBanner(){
-    const units=bannerUnits();
-    if(!units.length)return '';
-    const width=1200,height=460,cols=6,rows=2;
-    const canvas=document.createElement('canvas');
-    canvas.width=width;canvas.height=height;
-    const ctx=canvas.getContext('2d');
-    if(!ctx)return '';
-    const bg=ctx.createLinearGradient(0,0,width,height);
-    bg.addColorStop(0,'#0a1833');bg.addColorStop(.48,'#211b4f');bg.addColorStop(1,'#08142b');
-    ctx.fillStyle=bg;ctx.fillRect(0,0,width,height);
-    const imgs=await Promise.all(units.map(u=>loadImage(u.icon)));
-    const cellW=width/cols,cellH=height/rows;
-    imgs.forEach((img,i)=>{
-      if(!img)return;
-      const col=i%cols,row=Math.floor(i/cols);
-      const x=col*cellW,y=row*cellH;
-      const padX=14,padY=10;
-      const maxW=cellW-padX*2,maxH=cellH-padY*2;
-      const scale=Math.min(maxW/img.width,maxH/img.height);
-      const dw=img.width*scale,dh=img.height*scale;
-      const dx=x+(cellW-dw)/2,dy=y+(cellH-dh)/2;
-      ctx.save();
-      ctx.shadowColor='rgba(0,0,0,.38)';ctx.shadowBlur=12;ctx.shadowOffsetY=7;
-      ctx.drawImage(img,dx,dy,dw,dh);
-      ctx.restore();
-      const shade=ctx.createLinearGradient(0,y,0,y+cellH);
-      shade.addColorStop(0,'rgba(255,255,255,.025)');
-      shade.addColorStop(.72,'rgba(7,12,28,0)');
-      shade.addColorStop(1,'rgba(7,12,28,.22)');
-      ctx.fillStyle=shade;ctx.fillRect(x,y,cellW,cellH);
-      ctx.strokeStyle='rgba(247,222,146,.16)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,cellW-1,cellH-1);
-    });
-    const glow=ctx.createRadialGradient(width*.5,height*.55,10,width*.5,height*.55,width*.5);
-    glow.addColorStop(0,'rgba(255,235,170,.12)');glow.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=glow;ctx.fillRect(0,0,width,height);
-    return canvas.toDataURL('image/webp',.92);
-  }
-  async function renderScoutLobby(screen){
+  const PICKUP_BANNER='assets/gacha/hoshi-no-yakusoku-banner-v0863.webp?v=0.8.63-banner1';
+
+  function renderScoutLobby(screen){
     const featured=featuredUnits();
     const banner=screen.querySelector('.gacha-hero-visuals');
     const cards=screen.querySelector('.gacha-featured-cards');
     if(banner){
-      const stamp=String(banner.dataset.renderToken=(Number(banner.dataset.renderToken||0)+1));
-      banner.innerHTML='<div class="gacha-hero-loading">12 MEMBERS</div>';
-      const src=await buildMonthlyBanner();
-      if(String(banner.dataset.renderToken)!==stamp)return;
-      banner.innerHTML=src?`<img class="gacha-hero-banner-image" src="${src}" alt="マンスリーソングUR 12人集合バナー">`:'';
+      banner.innerHTML=`<img class="gacha-hero-banner-image" src="${PICKUP_BANNER}" alt="星の約束 ピックアップバナー">`;
+      banner.closest('.gacha-hero')?.classList.add('has-fixed-banner');
     }
     if(cards){
       cards.innerHTML=featured.map((u,i)=>`<article class="gacha-feature-card"><div class="gacha-feature-rarity">UR</div><div class="gacha-feature-image-wrap"><img src="${u.icon}" alt="${cleanName(u)}"></div><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong><small>${i===0?'PICK UP':'FEATURED'}</small></article>`).join('');
