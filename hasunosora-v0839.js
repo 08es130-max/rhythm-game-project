@@ -132,13 +132,61 @@
     return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,notes};
   }
 
-  async function prepare(){
-    chart=makeChart();validateChart(chart);document.body.classList.add('hasunosora-live-active');
-    chartName.textContent=`${TITLE}（${chart.notes.length} notes）`;offsetInput.value=String(getSavedTimingOffset());audioMode.value='file';
+  function applyGenyoChart(){
+    const next=makeChart();
+    if(typeof window.setActiveRhythmChart==='function'){
+      window.setActiveRhythmChart(next,`${TITLE}（${next.notes.length} notes）`);
+    }else{
+      chart=next;validateChart(chart);
+      chartName.textContent=`${TITLE}（${chart.notes.length} notes）`;
+      offsetInput.value=String(getSavedTimingOffset());
+      canStart();
+    }
+    return next;
+  }
+
+  async function restoreGenyoAudio(){
+    try{
+      const cached=await getPresetAudio(AUDIO_KEY);
+      if(cached&&usePresetAudio(cached,TITLE)){canStart();return true;}
+    }catch(e){console.warn('眩耀夜行の保存済み音源を読み込めませんでした',e);}
+    return false;
+  }
+
+  function prepare(){
+    const next=applyGenyoChart();
+    document.body.classList.add('hasunosora-live-active');
+    audioMode.value='file';
     document.querySelectorAll('.app-screen').forEach(el=>{el.hidden=el.id!=='liveScreen';});
-    try{resultPanel.hidden=true;}catch(_){}window.scrollTo({top:0,behavior:'auto'});
-    try{const cached=await getPresetAudio(AUDIO_KEY);if(cached&&usePresetAudio(cached,TITLE)){canStart();return;}}catch(e){console.warn(e);}
-    awaitingPresetAudioKey=AUDIO_KEY;songName.textContent=`${TITLE}（初回のみ音源ファイルを選択してください）`;audioFile.click();canStart();
+    try{resultPanel.hidden=true;}catch(_){}
+    window.scrollTo({top:0,behavior:'auto'});
+
+    const isAndroid=/Android/i.test(navigator.userAgent||'');
+    let knownSaved=false;
+    try{knownSaved=localStorage.getItem('rhythmPresetAudioSaved:'+AUDIO_KEY)==='1';}catch(_){}
+
+    // Android Chrome may reject a programmatic file picker after an awaited IndexedDB read.
+    // On the first run, open the picker immediately while the LIVE START tap is still active.
+    if(isAndroid&&!knownSaved){
+      awaitingPresetAudioKey=AUDIO_KEY;
+      songName.textContent=`${TITLE}（音源ファイルを選択してください）`;
+      try{audioFile.value='';}catch(_){}
+      try{audioFile.click();}catch(_){}
+      canStart();
+      return;
+    }
+
+    restoreGenyoAudio().then(restored=>{
+      if(restored)return;
+      awaitingPresetAudioKey=AUDIO_KEY;
+      songName.textContent=isAndroid
+        ? `${TITLE}（音源ファイル欄をタップして選択してください）`
+        : `${TITLE}（初回のみ音源ファイルを選択してください）`;
+      if(!isAndroid){
+        try{audioFile.click();}catch(_){}
+      }
+      canStart();
+    });
   }
 
   function ensureHasuPage(){
@@ -167,7 +215,11 @@
     const btn=document.createElement('button');btn.type='button';btn.textContent='この曲をプレイ';btn.addEventListener('click',prepare);card.append(h,a,m,b,btn);return card;
   }
 
-  function install(){const grid=document.getElementById('songLibraryGrid');if(!grid)return;grid.querySelectorAll('[data-song075="genyo-yako"]').forEach(el=>el.remove());grid.appendChild(makeCard());ensureHasuPage();}
+  function install(){
+    const grid=document.getElementById('songLibraryGrid');if(!grid)return;
+    if(!grid.querySelector('[data-song075="genyo-yako"]'))grid.appendChild(makeCard());
+    ensureHasuPage();
+  }
   const library=document.getElementById('songLibraryScreen');
   if(library){new MutationObserver(()=>{if(!library.hidden)requestAnimationFrame(install);}).observe(library,{attributes:true,attributeFilter:['hidden']});if(!library.hidden)install();}
   document.querySelectorAll('[data-home],#backBtn,#resultHomeBtn').forEach(el=>el.addEventListener('click',()=>document.body.classList.remove('hasunosora-live-active')));
