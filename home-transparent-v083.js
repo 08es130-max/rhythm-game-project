@@ -1,13 +1,13 @@
-// Ver.0.8.56 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.57 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.56';
+  const VERSION='0.8.57';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ライブ選択画面のカテゴリ順を調整し、「蓮ノ空」の右に「追加曲」が来る並びへ変更しました。';
+    if(text) text.textContent='眩耀夜行のジャケットを月夜と水面の新ビジュアルへ更新。iPhone横向きでは詳細ページをスクロールなしの1画面構成に最適化しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
