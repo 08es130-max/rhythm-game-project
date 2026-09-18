@@ -1,13 +1,13 @@
-// Ver.0.8.55 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.56 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.55';
+  const VERSION='0.8.56';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ホームの6アイコンを1024×1024の統一版へ更新。ストーリー基準で見かけサイズ・余白・シャープさを揃え、ラウンジも同じ品質へ統一しました。';
+    if(text) text.textContent='ライブ選択画面のカテゴリ順を調整し、「蓮ノ空」の右に「追加曲」が来る並びへ変更しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
