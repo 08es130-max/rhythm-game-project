@@ -541,3 +541,23 @@
     opacity:1!important;
   }
 }
+
+
+/* Ver.0.8.63: fixed completed pickup banner */
+.gacha-hero.has-fixed-banner .gacha-hero-copy{
+  display:none!important;
+}
+.gacha-hero.has-fixed-banner .gacha-hero-glow{
+  display:none!important;
+}
+.gacha-hero.has-fixed-banner::after{
+  background:linear-gradient(180deg,rgba(4,9,24,.015),rgba(4,8,22,.06))!important;
+}
+.gacha-hero.has-fixed-banner .gacha-hero-banner-image{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center 50%!important;
+  filter:none!important;
+}
