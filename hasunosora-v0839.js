@@ -8,6 +8,7 @@
   const START=520;
   const END=244500;
   const TARGET=1500;
+  const JACKET='assets/jackets/genyo-yako-v0857.webp?v=0.8.57-jacket1';
 
   function makeChart(){
     const beat=60000/BPM, q=beat/4, notes=[], seen=new Set(), counts=new Map();
@@ -144,7 +145,7 @@
     let page=document.getElementById('hasunosoraSongScreen');
     if(!page){
       page=document.createElement('section');page.id='hasunosoraSongScreen';page.className='app-screen hasunosora-song-screen';page.hidden=true;
-      page.innerHTML=`<div class="hasu-page-stars" aria-hidden="true"></div><div class="screen-header hasu-page-header"><button id="hasuBackBtn" class="home-back-btn" type="button">楽曲選択</button><div><span class="hasu-kicker">HASUNOSORA</span><h1>蓮ノ空</h1></div><span class="hasu-page-mark">102期</span></div><div class="hasu-page-content"><div class="hasu-jacket" aria-hidden="true"><span class="hasu-ripple r1"></span><span class="hasu-ripple r2"></span><span class="hasu-ripple r3"></span><span class="hasu-moon"></span><strong>眩耀<br>夜行</strong><small>スリーズブーケ</small></div><div class="hasu-song-detail"><div class="hasu-series-label">蓮ノ空女学院スクールアイドルクラブ</div><h2>${TITLE}</h2><p>${ARTIST}</p><div class="hasu-stats"><span>MASTER</span><span>★11</span><span>BPM ${BPM}</span><span>1500 NOTES</span></div><p class="hasu-description">水面のきらめきと夜の疾走感を、細かな交互連打・左右の大移動・高密度サビで表現した上級譜面です。</p><button id="hasuLiveStartBtn" class="hasu-live-start" type="button">LIVE START</button></div></div>`;
+      page.innerHTML=`<div class="hasu-page-stars" aria-hidden="true"></div><div class="screen-header hasu-page-header"><button id="hasuBackBtn" class="home-back-btn" type="button">楽曲選択</button><div><span class="hasu-kicker">HASUNOSORA</span><h1>蓮ノ空</h1></div><span class="hasu-page-mark">102期</span></div><div class="hasu-page-content"><div class="hasu-jacket"><img class="hasu-jacket-img" src="${JACKET}" alt="眩耀夜行 ジャケット"></div><div class="hasu-song-detail"><div class="hasu-series-label">蓮ノ空女学院スクールアイドルクラブ</div><h2>${TITLE}</h2><p>${ARTIST}</p><div class="hasu-stats"><span>MASTER</span><span>★11</span><span>BPM ${BPM}</span><span>1500 NOTES</span></div><p class="hasu-description">水面のきらめきと夜の疾走感を、細かな交互連打・左右の大移動・高密度サビで表現した上級譜面です。</p><button id="hasuLiveStartBtn" class="hasu-live-start" type="button">LIVE START</button></div></div>`;
       document.querySelector('.app-shell')?.appendChild(page);
       page.querySelector('#hasuBackBtn')?.addEventListener('click',()=>{page.hidden=true;const library=document.getElementById('songLibraryScreen');if(library)library.hidden=false;});
       page.querySelector('#hasuLiveStartBtn')?.addEventListener('click',prepare);
@@ -160,7 +161,7 @@
   }
 
   function makeCard(){
-    const card=document.createElement('div');card.className='song-library-card hasunosora-song-card';card.dataset.song075='genyo-yako';card.dataset.series='hasunosora';
+    const card=document.createElement('div');card.className='song-library-card hasunosora-song-card';card.dataset.song075='genyo-yako';card.dataset.series='hasunosora';card.dataset.jacket=JACKET;
     const h=document.createElement('h3');h.textContent=TITLE;const a=document.createElement('p');a.textContent=ARTIST+' / 蓮ノ空女学院スクールアイドルクラブ';
     const m=document.createElement('p');m.textContent=`MASTER 二本指上級 / BPM ${BPM}`;const b=document.createElement('span');b.className='song-library-badge';b.textContent='蓮ノ空';
     const btn=document.createElement('button');btn.type='button';btn.textContent='この曲をプレイ';btn.addEventListener('click',prepare);card.append(h,a,m,b,btn);return card;
