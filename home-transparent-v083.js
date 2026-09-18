@@ -54,7 +54,9 @@
     const tabs=document.getElementById('songCategoryTabs');const page=document.getElementById('hasunosoraSongScreen');
     if(!tabs||!page||document.getElementById('hasunosoraPageBtn'))return;
     const btn=document.createElement('button');btn.id='hasunosoraPageBtn';btn.type='button';btn.textContent='蓮ノ空';btn.className='hasunosora-page-tab';
-    btn.addEventListener('click',()=>{document.querySelectorAll('.app-screen').forEach(el=>el.hidden=true);page.hidden=false;});tabs.appendChild(btn);
+    btn.addEventListener('click',()=>{document.querySelectorAll('.app-screen').forEach(el=>el.hidden=true);page.hidden=false;});
+    const custom=tabs.querySelector('button[data-category="custom"]');
+    if(custom) tabs.insertBefore(btn,custom); else tabs.appendChild(btn);
   }
   const tabWatch=new MutationObserver(()=>requestAnimationFrame(keepHasunosoraTab));
   const beginTabWatch=()=>{const tabs=document.getElementById('songCategoryTabs');if(tabs){tabWatch.observe(tabs,{childList:true});keepHasunosoraTab();}else setTimeout(beginTabWatch,80);};
