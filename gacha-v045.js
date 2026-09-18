@@ -3,44 +3,90 @@
   const DEFAULT_UR_RATE=.01;
   const PULL_COUNT=10;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-  const GACHA_BGM_SRC='assets/audio/gacha-starry-loop-v0864.wav?v=0.8.64-bgm1';
-  let gachaBgm=null;
-  let gachaBgmFade=0;
-  function ensureGachaBgm(){
-    if(gachaBgm)return gachaBgm;
-    const audio=new Audio(GACHA_BGM_SRC);
-    audio.loop=true;
-    audio.preload='auto';
-    audio.volume=0;
-    gachaBgm=audio;
-    return audio;
+  const GACHA_BGM_SRC='assets/audio/gacha-starry-loop-v0864.wav?v=0.8.66-bgm2';
+  let gachaAudioCtx=null;
+  let gachaBgmBuffer=null;
+  let gachaBgmSource=null;
+  let gachaBgmGain=null;
+  let previousAudioSessionType=null;
+  let gachaBgmLoadPromise=null;
+
+  function setGachaAmbientSession(){
+    try{
+      if(navigator.audioSession){
+        previousAudioSessionType=navigator.audioSession.type;
+        navigator.audioSession.type='ambient';
+      }
+    }catch(_){}
   }
-  function startGachaBgm(){
-    const audio=ensureGachaBgm();
-    clearInterval(gachaBgmFade);
-    const playPromise=audio.play();
-    if(playPromise?.catch)playPromise.catch(()=>{});
-    let v=audio.volume||0;
-    gachaBgmFade=setInterval(()=>{
-      v=Math.min(.28,v+.035);
-      audio.volume=v;
-      if(v>=.28){clearInterval(gachaBgmFade);gachaBgmFade=0;}
-    },45);
+  function restoreAudioSession(){
+    try{
+      if(navigator.audioSession&&previousAudioSessionType){
+        navigator.audioSession.type=previousAudioSessionType;
+      }
+    }catch(_){}
+    previousAudioSessionType=null;
+  }
+  function ensureGachaAudioContext(){
+    if(gachaAudioCtx)return gachaAudioCtx;
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return null;
+    gachaAudioCtx=new Ctx();
+    gachaBgmGain=gachaAudioCtx.createGain();
+    gachaBgmGain.gain.value=0;
+    gachaBgmGain.connect(gachaAudioCtx.destination);
+    return gachaAudioCtx;
+  }
+  async function loadGachaBgm(){
+    const ctx=ensureGachaAudioContext();
+    if(!ctx)return null;
+    if(gachaBgmBuffer)return gachaBgmBuffer;
+    if(gachaBgmLoadPromise)return gachaBgmLoadPromise;
+    gachaBgmLoadPromise=fetch(GACHA_BGM_SRC,{cache:'force-cache'})
+      .then(r=>{if(!r.ok)throw new Error('BGM load failed');return r.arrayBuffer();})
+      .then(buf=>ctx.decodeAudioData(buf))
+      .then(decoded=>(gachaBgmBuffer=decoded))
+      .catch(()=>null)
+      .finally(()=>{gachaBgmLoadPromise=null;});
+    return gachaBgmLoadPromise;
+  }
+  async function startGachaBgm(){
+    setGachaAmbientSession();
+    const ctx=ensureGachaAudioContext();
+    if(!ctx)return;
+    try{await ctx.resume();}catch(_){}
+    const buffer=await loadGachaBgm();
+    if(!buffer||document.getElementById('gachaScreen')?.hidden)return;
+    try{gachaBgmSource?.stop();}catch(_){}
+    const src=ctx.createBufferSource();
+    src.buffer=buffer;
+    src.loop=true;
+    src.connect(gachaBgmGain);
+    const now=ctx.currentTime;
+    gachaBgmGain.gain.cancelScheduledValues(now);
+    gachaBgmGain.gain.setValueAtTime(0,now);
+    gachaBgmGain.gain.linearRampToValueAtTime(.28,now+.32);
+    src.start();
+    gachaBgmSource=src;
   }
   function stopGachaBgm(reset=true){
-    if(!gachaBgm)return;
-    clearInterval(gachaBgmFade);gachaBgmFade=0;
-    const audio=gachaBgm;
-    let v=audio.volume;
-    const fade=setInterval(()=>{
-      v=Math.max(0,v-.055);
-      audio.volume=v;
-      if(v<=0){
-        clearInterval(fade);
-        audio.pause();
-        if(reset){try{audio.currentTime=0;}catch(_){}}
-      }
-    },35);
+    const ctx=gachaAudioCtx;
+    if(!ctx||!gachaBgmGain){
+      restoreAudioSession();
+      return;
+    }
+    const src=gachaBgmSource;
+    gachaBgmSource=null;
+    const now=ctx.currentTime;
+    try{
+      gachaBgmGain.gain.cancelScheduledValues(now);
+      gachaBgmGain.gain.setValueAtTime(gachaBgmGain.gain.value,now);
+      gachaBgmGain.gain.linearRampToValueAtTime(0,now+.18);
+    }catch(_){}
+    if(src){
+      setTimeout(()=>{try{src.stop();src.disconnect();}catch(_){}},220);
+    }
+    setTimeout(restoreAudioSession,240);
   }
 
   function rand(){
