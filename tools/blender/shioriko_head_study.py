@@ -61,7 +61,7 @@ def face_y(x,z):
  w=max(.001,interp(z,widths));u=min(.9999,abs(x/w));f=(1-u*u)**.23
  d=interp(z,depths)
  # Sculpted central bridge/tip, nasolabial transition, soft cheek pads, recessed orbital rims.
- n=.004*exp(-(x/.011)**2-((z-.191)/.029)**2)+.0035*exp(-(x/.011)**2-((z-.17)/.009)**2)
+ n=.0015*exp(-(x/.011)**2-((z-.191)/.029)**2)+.0012*exp(-(x/.011)**2-((z-.17)/.009)**2)
  cheek=.004*exp(-((abs(x)-.047)/.022)**2-((z-.164)/.027)**2)
  eye=-.003*exp(-((abs(x)-.042)/.027)**2-((z-.215)/.019)**2)
  muzzle=.003*exp(-(x/.027)**2-((z-.131)/.015)**2)
@@ -117,7 +117,7 @@ def tube(name,points,radius,material,collection='04_DETAILS',segments=48,sides=8
 # Eye whites: almond shaped domed surfaces, not spheres glued onto a head.
 eye_specs=[]
 for side,s in [('L',1),('R',-1)]:
- cx=s*.040;cz=.215;rx=.029;top=.0148;bottom=.0122
+ cx=s*.040;cz=.215;rx=.027;top=.020;bottom=.028
  def eye_border(u,upper=True):return cz+.0015*u+(top if upper else -bottom)*(max(0,1-u*u)**.68)
  def eye_depth(x,z,u=0,v=0):return face_y(x,z)-.0018-.0028*(1-u*u)*max(0,1-v*v)
  vs=[];fs=[];NX=48;NY=16
@@ -130,7 +130,7 @@ for side,s in [('L',1),('R',-1)]:
   for i in range(NX):a=j*(NX+1)+i;fs.append((a,a+1,a+NX+2,a+NX+1))
  eye=mesh('Eyes_'+side,vs,fs if s==1 else [tuple(reversed(f)) for f in fs],white,'02_EYES');eye['touchTarget']='Head'
  # Iris radial topology, layered pigment ring and fiber wedges.
- icx=cx-s*.001;icz=cz+.0005;irx=.0124;irz=.0132
+ icx=cx-s*.001;icz=cz+.0005;irx=.0138;irz=.0175
  palette=[]
  for j in range(8):
   c=[(.003,.001,.004),(.07,.005,.02),(.29,.028,.072),(.48,.060,.12),(.66,.13,.22),(.52,.07,.16),(.32,.015,.055),(.035,.004,.012)][j]
@@ -139,7 +139,7 @@ for side,s in [('L',1),('R',-1)]:
  for j in range(rings+1):
   r=j/rings
   for i in range(seg):
-   a=2*pi*i/seg;x=icx+irx*r*cos(a);z=icz+irz*r*sin(a)
+   a=2*pi*i/seg;x=icx+irx*r*cos(a);z=icz+irz*r*sin(a)*(1.5 if sin(a)<0 else 1)
    y=face_y(x,z)-.0048-.0008*(1-r*r)
    iv.append((x,y,z))
  for j in range(rings):
@@ -231,7 +231,7 @@ def lock(name,points,width,depth=.0024,index=0,segments=20):
  obj['control_points']=json.dumps(points);obj['edit_note']='Individual loft mesh: proportional edit / sculpt. Original guide stored in custom property.'
  hair_paths.append({'name':name,'points':points,'half_width':width})
  # Thin highlight follows hair flow without a flat painted stripe.
- if index%3!=2:
+ if False: # Smooth reference-style hair: omit raised strand highlight tubes.
   sheen=[]
   for k in range(12):
    t=.15+.5*k/11;c=cat(points,t);out=Vector((c.x,c.y-.01,0)).normalized();sheen.append(c+out*(depth*1.3+.0001))
@@ -239,13 +239,13 @@ def lock(name,points,width,depth=.0024,index=0,segments=20):
  return obj
 
 for k in range(21):
- a=math.radians(65+230*k/20);s,c=sin(a),cos(a);end=.085+.007*sin(k*1.7);r=.093
- pts=[(.006*s,.012-.006*c,.387),(.041*s,.012-.037*c,.375),(.068*s,.012-.061*c,.35),(.087*s,.012-.077*c,.31),(.096*s,.012-.083*c,.26),(.096*s,.012-.084*c,.205),((r+.010)*s,.012-.086*c,end+.028),((r+.017)*s,.012-.083*c,end)]
+ a=math.radians(65+230*k/20);s,c=sin(a),cos(a);end=.058+.007*sin(k*1.7);r=.093
+ pts=[(.006*s,.012-.006*c,.387),(.041*s,.012-.037*c,.375),(.068*s,.012-.061*c,.35),(.087*s,.012-.077*c,.31),(.096*s,.012-.083*c,.26),(.096*s,.012-.084*c,.205),((r+.003)*s,.012-.086*c,end+.028),((r+.002)*s,.012-.083*c,end)]
  lock('Hair_Back_%02d'%k,pts,.0145,.0028,k)
 # Layered temple locks with soft outward ends, never below the jaw/neck area.
 for s,label in [(1,'L'),(-1,'R')]:
  for k in range(4):
-  pts=[(s*(.045+.006*k),-.050,.344),(s*(.081+.003*k),-.047,.281),(s*(.083+.004*k),-.035,.213),(s*(.087+.004*k),-.035,.177),(s*(.095+.004*k),-.029,.14+k*.003),(s*(.105+.004*k),-.020,.132+k*.006),(s*(.114+.004*k),-.018,.142+k*.005)]
+  pts=[(s*(.045+.005*k),-.050,.344),(s*(.080+.002*k),-.052,.281),(s*(.083+.002*k),-.048,.218),(s*(.081+.002*k),-.047,.188),(s*(.077+.002*k),-.049,.164+k*.005),(s*(.071+.002*k),-.052,.153+k*.006),(s*(.066+.002*k),-.054,.153+k*.006)]
   lock('Hair_Side_'+label+'_'+str(k),pts,.0095,.0026,k+1)
 # Swept, asymmetric front fringe. Eye openings stay visible.
 bangs=[
