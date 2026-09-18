@@ -129,16 +129,11 @@
     return picked.slice(0,3);
   }
   function cleanName(unit){return String(unit?.name||'').replace(/【[^】]+】$/u,'');}
-  const PICKUP_BANNER_TILES=[1,2,3,4].map(i=>`assets/gacha/banner-v0867/tile-${i}.jpg?v=0.8.67-tiles1`);
 
   function renderScoutLobby(screen){
     const featured=featuredUnits();
-    const banner=screen.querySelector('.gacha-hero-visuals');
     const cards=screen.querySelector('.gacha-featured-cards');
-    if(banner){
-      banner.innerHTML=`<div class="gacha-hero-banner-tiles" aria-label="星の約束 ピックアップバナー">${PICKUP_BANNER_TILES.map((src,i)=>`<img class="gacha-hero-banner-tile" src="${src}" alt="" data-tile="${i+1}">`).join('')}</div>`;
-      banner.closest('.gacha-hero')?.classList.add('has-fixed-banner','has-tiled-banner');
-    }
+
     if(cards){
       cards.innerHTML=featured.map((u,i)=>`<article class="gacha-feature-card"><div class="gacha-feature-rarity">UR</div><div class="gacha-feature-image-wrap"><img src="${u.icon}" alt="${cleanName(u)}"></div><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong><small>${i===0?'PICK UP':'FEATURED'}</small></article>`).join('');
     }
@@ -166,16 +161,9 @@
           <button type="button" disabled><strong>チケット</strong><small>COMING SOON</small></button>
         </aside>
         <main class="gacha-lobby-main">
-          <section class="gacha-hero">
-            <div class="gacha-hero-glow"></div>
-            <div class="gacha-hero-visuals"></div>
-            <div class="gacha-hero-copy">
-              <span>PICK UP SCOUT</span>
-              <h2>星の約束</h2>
-              <p>あの輝きを、もう一度——</p>
-              <small>マンスリーソング UR ピックアップ</small>
-            </div>
-          </section>
+          <div class="gacha-banner">
+            <img src="assets/gacha/hoshi-no-yakusoku-banner-v0868.jpg" width="1536" height="864" alt="星の約束 マンスリーソングURピックアップ">
+          </div>
           <section class="gacha-featured-cards" aria-label="ピックアップメンバー"></section>
           <div class="gacha-lobby-bottom">
             <div class="gacha-links">

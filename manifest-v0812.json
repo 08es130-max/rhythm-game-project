@@ -1,7 +1,7 @@
 {
   "name": "ラブフェス！",
   "short_name": "ラブフェス！",
-  "start_url": "./?v=0.8.33",
+  "start_url": "./?v=0.8.68",
   "scope": "./",
   "display": "standalone",
   "orientation": "landscape",
