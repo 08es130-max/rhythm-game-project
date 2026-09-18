@@ -246,6 +246,7 @@
     screen.classList.add('is-pulling');
     pullButtons.forEach(b=>b.disabled=true);
     grid.innerHTML='';
+    grid.classList.toggle('is-single',count===1);
     omen.textContent='';
     screen.classList.remove('has-ur-omen');
 
