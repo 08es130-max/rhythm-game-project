@@ -124,7 +124,7 @@
   function updateRateDisplay(screen){
     if(!screen) return;
     const cfg=getGachaSettings();
-    const urPercent=(Number(cfg.urRate)*100).toFixed(Number(cfg.urRate)<.1?2:0).replace(/\\.00$/,'');
+    const urPercent=(Number(cfg.urRate)*100).toFixed(Number(cfg.urRate)<.1?2:0).replace(/\.00$/,'');
     const mini=screen.querySelector('.gacha-rate-mini');
     const copy=screen.querySelector('.gacha-copy span');
     if(mini){
