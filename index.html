@@ -78,14 +78,14 @@ window.location.replace(url.toString());
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
 <div class="version-badge" aria-label="app version">Ver. 0.8.68</div>
-<h2>ライブ選択</h2><p class="sub">内蔵譜面を選ぶか、音源と譜面JSONを指定してライブを開始します。</p>
-<div class="button-row live-dev-shortcuts" hidden><button id="demoBtn">テスト譜面を使う</button></div>
-<div class="file-row">
-<label>音源モード<select id="audioMode"><option value="silent" selected>テスト用（無音）</option><option value="file">ファイル音源</option></select></label>
-<label>音源ファイル<input id="audioFile" type="file" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" /></label>
-<label>譜面JSON<input id="chartFile" type="file" accept="application/json,.json" /></label>
+<h2>ライブ準備</h2><p class="sub">準備ができたらSTARTを押してください。</p>
+<div class="live-dev-controls" hidden aria-hidden="true">
+  <button id="demoBtn" type="button">テスト譜面を使う</button>
+  <select id="audioMode"><option value="silent" selected>テスト用（無音）</option><option value="file">ファイル音源</option></select>
+  <input id="audioFile" type="file" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" />
+  <input id="chartFile" type="file" accept="application/json,.json" />
 </div>
-<div class="button-row"><button id="startBtn" disabled>START</button><button id="stopBtn" disabled>STOP</button></div>
+<div class="button-row"><button id="startBtn" disabled>START</button><button id="changeSongAudioBtn" type="button">音源を変更</button><button id="stopBtn" disabled>STOP</button></div>
 <div class="meta-row"><div>曲: <strong id="songName">テスト用（無音）</strong></div><div>譜面: <strong id="chartName">未選択</strong></div></div>
 </section>
 <section class="game-wrap">
