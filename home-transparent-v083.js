@@ -1,13 +1,13 @@
-// Ver.0.8.74 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.75 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.74';
+  const VERSION='0.8.75';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='隠し部屋のメイド・水着・剣士立ち絵について、アップロード済み画像ファイル名に合わせて読み込み先を修正しました。';
+    if(text) text.textContent='楽曲選択のLIVE STARTが古いボタン参照を保持して別譜面を起動する問題を修正し、選択中の曲IDから現在の最新カードを引き直して起動するよう変更しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
