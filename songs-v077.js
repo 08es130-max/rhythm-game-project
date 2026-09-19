@@ -227,14 +227,27 @@
   }
 
   async function prepare(chartFactory,audioKey,title){
-    chart=chartFactory(); validateChart(chart);
-    chartName.textContent=`${title}（${chart.notes.length} notes）`;
-    offsetInput.value=String(getSavedTimingOffset()); audioMode.value='file';
+    const next=chartFactory();
+    next.audioKey=audioKey;
+    if(typeof window.setActiveRhythmChart==='function'){
+      window.setActiveRhythmChart(next,`${title}（${next.notes.length} notes）`,audioKey);
+    }else{
+      chart=next;validateChart(chart);
+      chartName.textContent=`${title}（${chart.notes.length} notes）`;
+      offsetInput.value=String(getSavedTimingOffset());
+    }
+    audioMode.value='file';
     document.querySelectorAll('.app-screen').forEach(el=>{el.hidden=el.id!=='liveScreen';});
     try{resultPanel.hidden=true;}catch(_){}
     window.scrollTo({top:0,behavior:'auto'});
-    try{const cached=await getPresetAudio(audioKey);if(cached&&usePresetAudio(cached,title)){canStart();return;}}catch(e){console.warn(e);}
-    awaitingPresetAudioKey=audioKey; songName.textContent=`${title}（初回のみ音源ファイルを選択してください）`; audioFile.click(); canStart();
+    if(typeof window.preparePresetAudio==='function') await window.preparePresetAudio(audioKey,title);
+    else{
+      try{const cached=await getPresetAudio(audioKey);if(cached&&usePresetAudio(cached,title)){canStart();return;}}catch(e){console.warn(e);}
+      awaitingPresetAudioKey=audioKey;
+      songName.textContent=`${title}（初回のみ音源ファイルを選択してください）`;
+      try{audioFile.click();}catch(_){}
+    }
+    canStart();
   }
 
   function patchCards(){
