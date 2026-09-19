@@ -246,8 +246,10 @@
 
   function makeEnvelope(result,index){
     const item=document.createElement('div');
-    item.className='gacha-envelope-slot';
+    item.className=`gacha-envelope-slot rarity-slot-${String(result.rarity||'N').toLowerCase()}`;
     item.dataset.index=String(index);
+    const rarityClass=result.rarity==='LR'?'rarity-lr':result.rarity==='UR'?'rarity-ur':'rarity-n';
+    const imageSrc=result.rarity==='LR'?(result.unit.card||result.unit.icon):result.unit.icon;
     item.innerHTML=`
       <div class="gacha-envelope-shell" aria-hidden="true">
         <div class="gacha-envelope-paper"></div>
@@ -255,9 +257,9 @@
         <div class="gacha-envelope-seal">☆</div>
         <div class="gacha-envelope-sparkles"></div>
       </div>
-      <article class="gacha-pull-card ${result.rarity==='UR'?'rarity-ur':'rarity-n'}">
+      <article class="gacha-pull-card ${rarityClass}">
         <div class="gacha-rarity">${result.rarity}</div>
-        <img src="${result.unit.icon}" alt="${result.unit.name}" loading="lazy" decoding="async">
+        <img src="${imageSrc}" alt="${result.unit.name}" loading="lazy" decoding="async">
         <div class="gacha-card-series">${result.unit.series}</div>
         <div class="gacha-card-name">${String(result.unit.name).replace(/【[^】]+】$/u,'')}</div>
         ${result.isNew?'<span class="gacha-new">NEW</span>':''}
@@ -308,7 +310,7 @@
   function revealAllSlots(slots){
     slots.forEach(slot=>{
       slot.classList.add('is-open');
-      slot.classList.remove('is-ur-pre','is-ur-burst','is-ready');
+      slot.classList.remove('is-ur-pre','is-ur-burst','is-lr-pre','is-lr-burst','is-ready');
     });
   }
 
@@ -319,21 +321,25 @@
     const series=overlay.querySelector('.gacha-ur-spotlight-series');
     const name=overlay.querySelector('.gacha-ur-spotlight-name');
     const badge=overlay.querySelector('.gacha-ur-spotlight-new');
-    image.src=result.unit.icon;
+    const label=overlay.querySelector('.gacha-ur-spotlight-label');
+    const isLR=result.rarity==='LR';
+    overlay.classList.toggle('is-lr',isLR);
+    image.src=isLR?(result.unit.card||result.unit.icon):result.unit.icon;
     image.alt=result.unit.name;
-    series.textContent=result.unit.series;
+    series.textContent=isLR?'LEGEND RARE':result.unit.series;
     name.textContent=String(result.unit.name).replace(/【[^】]+】$/u,'');
+    if(label) label.textContent=isLR?'LR GET!':'UR GET!';
     badge.hidden=!result.isNew;
     overlay.hidden=false;
     overlay.classList.remove('is-leaving');
     void overlay.offsetWidth;
     requestAnimationFrame(()=>overlay.classList.add('is-active'));
-    await pullSleep(1500,session);
+    await pullSleep(isLR?2200:1500,session);
     if(session?.skipMode!=='all'){
       overlay.classList.add('is-leaving');
-      await pullSleep(250,session);
+      await pullSleep(isLR?360:250,session);
     }
-    overlay.classList.remove('is-active','is-leaving');
+    overlay.classList.remove('is-active','is-leaving','is-lr');
     overlay.hidden=true;
   }
 
@@ -342,7 +348,17 @@
       slot.classList.add('is-open');
       return;
     }
-    if(result.rarity==='UR'){
+    if(result.rarity==='LR'){
+      slot.classList.add('is-lr-pre');
+      await pullSleep(900,session);
+      if(session?.skipMode==='all'){slot.classList.add('is-open');slot.classList.remove('is-lr-pre');return;}
+      slot.classList.add('is-lr-burst');
+      await pullSleep(520,session);
+      slot.classList.add('is-open');
+      await pullSleep(520,session);
+      slot.classList.remove('is-lr-pre','is-lr-burst','is-ready');
+      await showUrSpotlight(result,session);
+    }else if(result.rarity==='UR'){
       slot.classList.add('is-ur-pre');
       await pullSleep(480,session);
       if(session?.skipMode==='all'){slot.classList.add('is-open');slot.classList.remove('is-ur-pre');return;}
@@ -350,7 +366,7 @@
       await pullSleep(260,session);
       slot.classList.add('is-open');
       await pullSleep(360,session);
-      slot.classList.remove('is-ur-pre','is-ur-burst','is-ready');
+      slot.classList.remove('is-ur-pre','is-ur-burst','is-lr-pre','is-lr-burst','is-ready');
       await showUrSpotlight(result,session);
     }else{
       if(session?.skipMode==='normal'){
