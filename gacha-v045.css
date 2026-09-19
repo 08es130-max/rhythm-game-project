@@ -518,3 +518,92 @@
 .gacha-banner img{
   object-position:center 24%!important;
 }
+
+
+/* Ver.0.8.86: faster scouting, skip controls, and compact 100-pull results */
+.gacha-screen,.gacha-screen button,.gacha-envelope-grid{
+  touch-action:manipulation;
+  -webkit-user-select:none;
+  user-select:none;
+}
+.gacha-pull-hundred{
+  background:linear-gradient(135deg,#0f766e,#0891b2 52%,#4f46e5);
+}
+.gacha-skip-actions{
+  position:relative;
+  z-index:12;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin:7px auto 0;
+}
+.gacha-skip-actions[hidden]{display:none!important}
+.gacha-skip-actions button{
+  border:1px solid rgba(255,255,255,.34);
+  border-radius:999px;
+  padding:8px 15px;
+  background:rgba(8,15,35,.84);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  box-shadow:0 5px 16px rgba(0,0,0,.22);
+}
+#gachaSkipAllBtn{
+  border-color:rgba(251,191,36,.58);
+  color:#fff3be;
+}
+.gacha-envelope-grid.is-hundred{
+  width:min(980px,96vw);
+  grid-template-columns:repeat(10,minmax(0,1fr));
+  gap:5px;
+  max-height:calc(100dvh - 190px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:3px 7px 8px;
+  box-sizing:border-box;
+  scrollbar-gutter:stable;
+}
+.gacha-envelope-grid.is-hundred .gacha-envelope-slot{
+  aspect-ratio:1/1;
+  min-height:68px;
+}
+.gacha-envelope-grid.is-hundred .gacha-envelope-shell,
+.gacha-envelope-grid.is-hundred .gacha-pull-card{
+  border-radius:8px;
+  transition-duration:.16s;
+}
+.gacha-envelope-grid.is-hundred .gacha-pull-card{padding:2px}
+.gacha-envelope-grid.is-hundred .gacha-pull-card img{
+  width:min(42px,48%);
+  border-width:1px;
+}
+.gacha-envelope-grid.is-hundred .gacha-rarity{
+  left:2px;top:2px;padding:1px 3px;font-size:5px;
+}
+.gacha-envelope-grid.is-hundred .gacha-card-series{display:none}
+.gacha-envelope-grid.is-hundred .gacha-card-name{
+  margin-top:1px;font-size:6px;
+}
+.gacha-envelope-grid.is-hundred .gacha-new{
+  right:2px;top:2px;padding:1px 3px;font-size:5px;
+}
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-main-actions{flex-wrap:wrap}
+  .gacha-pull-btn{min-width:132px}
+  .gacha-skip-actions{margin-top:4px}
+  .gacha-skip-actions button{padding:6px 11px;font-size:8px}
+  .gacha-envelope-grid.is-hundred{
+    width:min(900px,92vw);
+    max-height:calc(100dvh - 142px);
+    grid-template-columns:repeat(10,minmax(0,1fr));
+    gap:4px;
+  }
+  .gacha-envelope-grid.is-hundred .gacha-envelope-slot{min-height:54px}
+}
+@media(max-width:800px) and (orientation:portrait){
+  .gacha-envelope-grid.is-hundred{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    width:min(520px,94vw);
+    max-height:68dvh;
+  }
+}
