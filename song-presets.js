@@ -1,5 +1,3 @@
-const spicaPresetBtn = document.getElementById('spicaPresetBtn');
-
 const PRESET_AUDIO_DB = 'rhythmGamePresetAudio';
 const PRESET_AUDIO_STORE = 'audio';
 const SPICA_AUDIO_KEY = 'spica-terrible';
@@ -229,19 +227,18 @@ async function loadBuiltInChart(path, fallbackTitle, transform = null) {
   }
 }
 
-async function prepareSpicaAudio() {
-  return preparePresetAudio(SPICA_AUDIO_KEY, 'スピカテリブル');
-}
-
-spicaPresetBtn?.addEventListener('click', async () => {
+async function prepareSpicaSong() {
   const parsed = await loadBuiltInChart('charts/spica-terrible.json', 'スピカテリブル', makeSpicaHighDensityChart);
   if (!parsed) return;
   parsed.audioKey = SPICA_AUDIO_KEY;
-  if (typeof window.setActiveRhythmChart === 'function') window.setActiveRhythmChart(parsed, `スピカテリブル（${parsed.notes.length} notes）`, SPICA_AUDIO_KEY);
+  if (typeof window.setActiveRhythmChart === 'function') {
+    window.setActiveRhythmChart(parsed, `スピカテリブル（${parsed.notes.length} notes）`, SPICA_AUDIO_KEY);
+  }
   audioMode.value = 'file';
-  await prepareSpicaAudio();
+  await preparePresetAudio(SPICA_AUDIO_KEY, 'スピカテリブル');
   canStart();
-});
+}
+window.prepareSpicaSong = prepareSpicaSong;
 
 audioFile.addEventListener('change', async () => {
   const file = audioFile.files?.[0];
