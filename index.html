@@ -86,10 +86,17 @@ window.location.replace(url.toString());
   <input id="chartFile" type="file" accept="application/json,.json" />
 </div>
 <div class="button-row"><button id="startBtn" disabled>START</button><button id="changeSongAudioBtn" type="button">音源を変更</button><button id="stopBtn" disabled>STOP</button></div>
-<div class="meta-row"><div>曲: <strong id="songName">テスト用（無音）</strong></div><div>譜面: <strong id="chartName">未選択</strong></div></div>
+<div class="selected-song-card"><span>選択中の楽曲</span><strong id="selectedSongTitle">未選択</strong></div>
+<div class="meta-row"><div>音源: <strong id="songName">未選択</strong></div><div>譜面: <strong id="chartName">未選択</strong></div></div>
 </section>
 <section class="game-wrap">
-<div class="hud"><div><span class="hud-label">SCORE</span><span id="score">0</span></div><div><span class="hud-label">COMBO</span><span id="combo">0</span></div><div id="judge" class="judge">READY</div></div>
+<div class="hud live-hud">
+  <button id="liveSongSelectBackBtn" class="live-song-select-back" type="button">‹ 楽曲選択へ</button>
+  <div class="live-current-song"><span class="hud-label">NOW PLAYING</span><strong id="liveCurrentSongTitle">未選択</strong></div>
+  <div><span class="hud-label">SCORE</span><span id="score">0</span></div>
+  <div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
+  <div id="judge" class="judge">READY</div>
+</div>
 <div id="game" class="game" aria-label="9 lane rhythm game"><div class="live-backdrop" aria-hidden="true"></div><div id="laneLayer" class="lane-layer"></div><div id="comboOverlay" class="combo-overlay" hidden><span id="comboCount" class="combo-count">0</span><span class="combo-text">combo</span></div><div id="notesLayer" class="notes-layer"></div><div class="judge-line"></div><div id="targets" class="targets"></div></div>
 <div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
 </section>
