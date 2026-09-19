@@ -3,21 +3,28 @@
   const RATE_KEY='rhythmGame.adminGachaUrRate.v1';
   const SAVE_KEY='rhythmGame.adminGachaSaveOwned.v1';
   const NORMAL_RATE=.01;
+  const NORMAL_LR_RATE=.0001;
 
   function readRate(){
-    const value=Number(localStorage.getItem(RATE_KEY));
-    return [0.01,0.1,1].includes(value)?value:NORMAL_RATE;
+    const raw=localStorage.getItem(RATE_KEY);
+    if(raw==='lr-first') return 'lr-first';
+    const value=Number(raw);
+    return [0.01,0.1].includes(value)?value:NORMAL_RATE;
   }
   function readSaveOwned(){
     const raw=localStorage.getItem(SAVE_KEY);
     return raw===null?false:raw==='true';
   }
   function settings(){
-    const urRate=readRate();
+    const mode=readRate();
+    const lrTest=mode==='lr-first';
+    const urRate=lrTest?1:Number(mode);
     return {
       urRate,
-      testMode:urRate!==NORMAL_RATE,
-      saveOwned:urRate===NORMAL_RATE?true:readSaveOwned()
+      lrRate:lrTest?0:NORMAL_LR_RATE,
+      testMode:lrTest||urRate!==NORMAL_RATE,
+      testLrFirst:lrTest,
+      saveOwned:(!lrTest&&urRate===NORMAL_RATE)?true:readSaveOwned()
     };
   }
   window.getAdminGachaSettings=settings;
@@ -45,17 +52,17 @@
         <div class="hidden-admin-body">
           <div class="hidden-admin-card">
             <div class="hidden-admin-row">
-              <div><strong>ガチャ UR排出率</strong><small>演出確認用。通常プレイは1%です。</small></div>
+              <div><strong>ガチャ テストモード</strong><small>通常はLR 0.01% / UR 1%。LR演出確認では先頭1枠をLR、残りをURに固定します。</small></div>
               <select id="hiddenAdminUrRate">
-                <option value="0.01">通常 1%</option>
-                <option value="0.1">テスト 10%</option>
-                <option value="1">テスト 100%</option>
+                <option value="0.01">通常</option>
+                <option value="0.1">テスト UR 10%</option>
+                <option value="lr-first">テスト 先頭LR＋残りUR100%</option>
               </select>
             </div>
           </div>
           <label class="hidden-admin-card hidden-admin-check">
             <input id="hiddenAdminSaveOwned" type="checkbox">
-            <span><strong>テスト獲得を部室へ登録する</strong><small>OFFなら100%で何度回しても普段のUR獲得状況を汚しません。</small></span>
+            <span><strong>テスト獲得を部室へ登録する</strong><small>OFFならテストで何度回しても普段のLR/UR獲得状況を汚しません。</small></span>
           </label>
           <div id="hiddenAdminStatus" class="hidden-admin-status"></div>
           <div class="hidden-admin-actions">
@@ -72,10 +79,10 @@
 
     function sync(){
       const current=settings();
-      rate.value=String(current.urRate);
+      rate.value=current.testLrFirst?'lr-first':String(current.urRate);
       save.checked=readSaveOwned();
       save.disabled=!current.testMode;
-      status.textContent=current.testMode?`テストモード：UR ${Math.round(current.urRate*100)}%`:'通常モード：UR 1%';
+      status.textContent=current.testLrFirst?'テストモード：1枠目LR固定・残りUR100%':current.testMode?`テストモード：UR ${Math.round(current.urRate*100)}%`:'通常モード：LR 0.01% / UR 1%';
       overlay.classList.toggle('is-test',current.testMode);
     }
     function persist(){
