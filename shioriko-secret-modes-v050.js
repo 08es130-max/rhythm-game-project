@@ -1,6 +1,8 @@
 // Ver.0.5.6: supervised Shioriko secret-mode dialogue + normal-mode surprise expressions.
 (function(){
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
+  const HOME_ART_KEY='rhythmGame.shiorikoHomeArt.v1';
+  const LR_ID='lr-shioriko-eternal-rose';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const homeCard=document.querySelector('.home-character-card');
   let last='';
@@ -126,6 +128,40 @@
       ['もう一回？　いいよ。最後まで付き合うから。'])
   };
 
+  const lrReward=set([
+    'この衣装を選んでくださったのですね。……ふふ、少し照れますが、とても嬉しいです。',
+    'あなたが見つけてくださった特別な一着です。今日は、いつもより少し近くにいてもよろしいでしょうか。',
+    'この薔薇の色、綺麗でしょう？　あなたと一緒に見ると、もっと輝いて見える気がします。',
+    'こうして特別な姿でお迎えできるのも、あなたが私を選んでくださったからですね。',
+    '手を伸ばしてくださいますか？　今日は私から、あなたをステージへお誘いしたい気分なんです。',
+    'LEGEND RARE……少々大げさな呼び方にも思えますが、あなたにとって特別でいられるなら悪くありませんね。',
+    'いつもの私とは少し違って見えますか？　それなら、この衣装を選んだ甲斐がありました。',
+    'あなたが引き当ててくださった瞬間、実は私も少し驚いていました。……運命、なんて言ったら笑いますか？',
+    '今日は何をしましょう。ライブでも、お話でも。せっかくの特別な時間ですから、あなたに合わせます。',
+    'この姿を見られるのは、私を迎えてくださった方だけです。……大切にしてくださいね。'
+  ],[
+    'ふふ、そんなに何度も触れなくても逃げませんよ。特別な私が珍しいのですか？',
+    'もう……。気に入ってくださったのは嬉しいですが、少しくすぐったいです。',
+    'そんなに見つめられると困ります。……でも、今日は許して差し上げます。'
+  ],[
+    'フルコンボ、お見事です。特別な衣装に負けないくらい、あなたも輝いていましたよ。'
+  ],[
+    '新記録ですね。おめでとうございます。この瞬間を一緒に見届けられて、とても嬉しいです。'
+  ],[
+    'Sランク。さすがですね。……私の自慢のパートナーです。'
+  ],[
+    'もう一度ですね。もちろんです。今日は最後まで、特別な私がお付き合いします。'
+  ]);
+
+  function isLrHomeActive(){
+    if(localStorage.getItem(HOME_ART_KEY)!=='lr') return false;
+    try{
+      if(typeof window.loadGachaOwned==='function') return window.loadGachaOwned().has(LR_ID);
+      const parsed=JSON.parse(localStorage.getItem('rhythmGame.unlockedCharacters.v1')||'[]');
+      return Array.isArray(parsed)&&parsed.includes(LR_ID);
+    }catch(_){return false;}
+  }
+
   function currentMode(){
     const m=localStorage.getItem(MODE_KEY)||'normal';
     return VALID.includes(m)?m:'normal';
@@ -155,14 +191,25 @@
     setExpression(mode);
     return true;
   }
+  function showLr(kind='normal'){
+    if(!isLrHomeActive()) return false;
+    const text=pick(poolFor(lrReward,kind));
+    const bubble=document.getElementById('homeDialogue');
+    if(!text||!bubble) return false;
+    bubble.querySelector('.home-dialogue-name')?.replaceChildren(document.createTextNode('三船栞子'));
+    bubble.querySelector('.home-dialogue-text')?.replaceChildren(document.createTextNode(text));
+    setExpression('normal');
+    return true;
+  }
   function show(kind='normal'){
+    if(showLr(kind)) return true;
     const mode=currentMode();
     if(mode==='normal') return false;
     return showFrom(mode,kind);
   }
-  function isSpecial(){return currentMode()!=='normal'&&!!sets[currentMode()];}
+  function isSpecial(){return isLrHomeActive()||(currentMode()!=='normal'&&!!sets[currentMode()]);}
   function tryNormalSurprise(kind='normal'){
-    if(currentMode()!=='normal') return false;
+    if(isLrHomeActive()||currentMode()!=='normal') return false;
     const roll=Math.random();
     if(roll<0.10) return showFrom('dere',kind);
     if(roll<0.20) return showFrom('clumsy',kind);
@@ -182,6 +229,7 @@
   const originalShow=window.showLoveFesHomeDialogue;
   window.showLoveFesHomeDialogue=function(kind){
     const k=kind||'normal';
+    if(isLrHomeActive()&&showLr(k)) return;
     if(isSpecial()&&show(k)) return;
     if(!isSpecial()&&tryNormalSurprise(k)) return;
     if(typeof originalShow==='function') originalShow(kind);
@@ -196,6 +244,7 @@
     },0);
   };
   window.getShiorikoSecretMode=currentMode;
+  window.addEventListener('rhythmGameShiorikoHomeArtChanged',()=>{if(isLrHomeActive())setTimeout(()=>showLr('normal'),0);});
 
   document.getElementById('resultHomeBtn')?.addEventListener('click',()=>setTimeout(()=>{
     if(isSpecial()) show('normal');
