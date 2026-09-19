@@ -248,9 +248,10 @@ audioFile.addEventListener('change', async () => {
   if (!file || !awaitingPresetAudioKey) return;
   const key = awaitingPresetAudioKey;
   awaitingPresetAudioKey = null;
+  audio.dataset.presetKey = String(key);
+  canStart();
   try {
     await savePresetAudio(key, file);
-    audio.dataset.presetKey = String(key);
     try { localStorage.setItem('rhythmPresetAudioSaved:' + key, '1'); } catch (_) {}
     if (key === SPICA_AUDIO_KEY) songName.textContent = 'スピカテリブル（音源をこの端末に保存しました）';
   } catch (e) {
