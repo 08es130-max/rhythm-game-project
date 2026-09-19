@@ -1,13 +1,13 @@
-// Ver.0.8.79 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.80 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.79';
+  const VERSION='0.8.80';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='隠し部屋のメイド・水着・剣士立ち絵を、通常立ち絵とは別の専用最前面レイヤーで表示する方式へ変更しました。後から生成される通常立ち絵に隠される問題を修正しています。';
+    if(text) text.textContent='隠し立ち絵表示中に背面へ残っていた通常の栞子立ち絵を非表示にし、メイド・水着・剣士だけが表示されるよう修正しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
