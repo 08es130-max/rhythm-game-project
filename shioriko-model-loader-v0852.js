@@ -42,27 +42,12 @@
       try {
         const config = await fetchAsset('assets/models/shioriko/model.json?v=' + REV, { cache: 'no-cache' });
         manifest = JSON.parse(new TextDecoder().decode(config)); check();
-        // Prefer the temporary full-body static export when present.
-        // If it is not uploaded yet (or fails to load), keep the existing authored model as fallback.
-        const staticTest = new URL('assets/models/shioriko/shioriko-static-test.glb', document.baseURI);
-        staticTest.searchParams.set('v', 'static-fullbody-20260919');
-        let url, bytes;
-        try {
-          const candidate = await fetchAsset(staticTest); check();
-          if (candidate.byteLength > 64 * 1024 * 1024 || candidate.byteLength < 20 || new DataView(candidate).getUint32(0, true) !== 0x46546c67) throw new Error('Invalid static test GLB');
-          url = staticTest;
-          bytes = candidate;
-          manifest = { ...manifest, expressions: [], animations: [], targetHeightMeters: manifest.targetHeightMeters || 1.6 };
-          console.info('[Shioriko3D] Using static full-body test model');
-        } catch (staticError) {
-          check();
-          url = new URL(manifest.path, document.baseURI);
-          if (url.origin !== location.origin || !url.pathname.endsWith('.glb')) throw new Error('Expected same-origin GLB');
-          url.searchParams.set('v', manifest.assetRevision || REV);
-          // Status is authoring metadata: an existing GLB is attempted even before status is updated.
-          bytes = await fetchAsset(url); check();
-          if (bytes.byteLength > 64 * 1024 * 1024 || bytes.byteLength < 20 || new DataView(bytes).getUint32(0, true) !== 0x46546c67) throw new Error('Invalid GLB');
-        }
+        const url = new URL(manifest.path, document.baseURI);
+        if (url.origin !== location.origin || !url.pathname.endsWith('.glb')) throw new Error('Expected same-origin GLB');
+        url.searchParams.set('v', manifest.assetRevision || REV);
+        // Status is authoring metadata: an existing GLB is attempted even before status is updated.
+        const bytes = await fetchAsset(url); check();
+        if (bytes.byteLength > 64 * 1024 * 1024 || bytes.byteLength < 20 || new DataView(bytes).getUint32(0, true) !== 0x46546c67) throw new Error('Invalid GLB');
         const { GLTFLoader } = await import(GLTF_URL); check();
         gltf = await new GLTFLoader().parseAsync(bytes, new URL('.', url).href);
         check();
