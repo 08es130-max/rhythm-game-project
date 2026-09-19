@@ -5,9 +5,9 @@
   const KEY='rhythmGame.shiorikoSecretStanding.v1';
   const VALID=['normal','maid','swimsuit','swordsman'];
   const ASSETS={
-    maid:'assets/shioriko-secret/maid-v0873.webp',
-    swimsuit:'assets/shioriko-secret/swimsuit-v0873.webp',
-    swordsman:'assets/shioriko-secret/swordsman-v0873.webp'
+    maid:'assets/shioriko-secret/shioriko-secret-maid-512.webp',
+    swimsuit:'assets/shioriko-secret/shioriko-secret-swimsuit-512.webp',
+    swordsman:'assets/shioriko-secret/shioriko-secret-swordsman-512.webp'
   };
   const LABELS={normal:'通常',maid:'メイド',swimsuit:'水着',swordsman:'剣士'};
   const card=document.querySelector('.home-character-card');
