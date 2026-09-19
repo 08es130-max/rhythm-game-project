@@ -281,7 +281,24 @@
     return overlay;
   }
 
-  async function showUrSpotlight(result){
+  async function pullSleep(ms,session,{skipNormal=false}={}){
+    const end=performance.now()+ms;
+    while(performance.now()<end){
+      if(session?.skipMode==='all') return;
+      if(skipNormal&&session?.skipMode==='normal') return;
+      await sleep(Math.min(40,Math.max(0,end-performance.now())));
+    }
+  }
+
+  function revealAllSlots(slots){
+    slots.forEach(slot=>{
+      slot.classList.add('is-open');
+      slot.classList.remove('is-ur-pre','is-ur-burst','is-ready');
+    });
+  }
+
+  async function showUrSpotlight(result,session){
+    if(session?.skipMode==='all') return;
     const overlay=ensureUrSpotlight();
     const image=overlay.querySelector('.gacha-ur-spotlight-image');
     const series=overlay.querySelector('.gacha-ur-spotlight-series');
@@ -296,27 +313,41 @@
     overlay.classList.remove('is-leaving');
     void overlay.offsetWidth;
     requestAnimationFrame(()=>overlay.classList.add('is-active'));
-    await sleep(2050);
-    overlay.classList.add('is-leaving');
-    await sleep(420);
+    await pullSleep(1500,session);
+    if(session?.skipMode!=='all'){
+      overlay.classList.add('is-leaving');
+      await pullSleep(250,session);
+    }
     overlay.classList.remove('is-active','is-leaving');
     overlay.hidden=true;
   }
 
-  async function revealSlot(slot,result){
+  async function revealSlot(slot,result,session){
+    if(session?.skipMode==='all'){
+      slot.classList.add('is-open');
+      return;
+    }
     if(result.rarity==='UR'){
       slot.classList.add('is-ur-pre');
-      await sleep(720);
+      await pullSleep(480,session);
+      if(session?.skipMode==='all'){slot.classList.add('is-open');slot.classList.remove('is-ur-pre');return;}
       slot.classList.add('is-ur-burst');
-      await sleep(360);
+      await pullSleep(260,session);
+      slot.classList.add('is-open');
+      await pullSleep(360,session);
+      slot.classList.remove('is-ur-pre','is-ur-burst','is-ready');
+      await showUrSpotlight(result,session);
     }else{
+      if(session?.skipMode==='normal'){
+        slot.classList.add('is-open');
+        return;
+      }
       slot.classList.add('is-ready');
-      await sleep(100);
+      await pullSleep(55,session,{skipNormal:true});
+      slot.classList.add('is-open');
+      await pullSleep(75,session,{skipNormal:true});
+      slot.classList.remove('is-ready');
     }
-    slot.classList.add('is-open');
-    await sleep(result.rarity==='UR'?520:270);
-    slot.classList.remove('is-ur-pre','is-ur-burst','is-ready');
-    if(result.rarity==='UR') await showUrSpotlight(result);
   }
 
   async function runPull(count=PULL_COUNT){
@@ -330,8 +361,15 @@
     }
 
     const cfg=getGachaSettings();
-    const button=screen.querySelector(count===1?'#gachaPullOneBtn':'#gachaPullTenBtn');
-    const pullButtons=[screen.querySelector('#gachaPullOneBtn'),screen.querySelector('#gachaPullTenBtn')].filter(Boolean);
+    const pullButtons=[
+      screen.querySelector('#gachaPullOneBtn'),
+      screen.querySelector('#gachaPullTenBtn'),
+      screen.querySelector('#gachaPullHundredBtn')
+    ].filter(Boolean);
+    const skipActions=screen.querySelector('#gachaSkipActions');
+    const session={skipMode:'none',count};
+    activePullSession=session;
+
     screen.querySelector('#gachaLobby').hidden=true;
     screen.querySelector('#gachaRevealStage').hidden=false;
     const grid=screen.querySelector('#gachaEnvelopeGrid');
@@ -339,8 +377,10 @@
     updateRateDisplay(screen);
     screen.classList.add('is-pulling');
     pullButtons.forEach(b=>b.disabled=true);
+    if(skipActions) skipActions.hidden=count===1;
     grid.innerHTML='';
     grid.classList.toggle('is-single',count===1);
+    grid.classList.toggle('is-hundred',count===100);
     omen.textContent='';
     screen.classList.remove('has-ur-omen');
 
@@ -356,33 +396,33 @@
 
     results.forEach((result,index)=>grid.appendChild(makeEnvelope(result,index)));
     const slots=[...grid.querySelectorAll('.gacha-envelope-slot')];
-    const containsUR=results.some(r=>r.rarity==='UR');
-
-    if(containsUR){
-      omen.textContent='……虹色のきらめき！';
-      screen.classList.add('has-ur-omen');
-      await sleep(1050);
-      omen.textContent='特別な気配がします…';
-      await sleep(650);
-      screen.classList.remove('has-ur-omen');
-    }else{
-      omen.textContent='封筒を開封します';
-      await sleep(360);
-    }
+    omen.textContent='開封中…';
+    await pullSleep(120,session,{skipNormal:true});
 
     for(let i=0;i<slots.length;i++){
-      omen.textContent=`${i+1} / ${count}`;
-      await revealSlot(slots[i],results[i]);
+      if(session.skipMode==='all'){
+        revealAllSlots(slots.slice(i));
+        break;
+      }
+      const result=results[i];
+      if(session.skipMode==='normal'&&result.rarity==='N'){
+        slots[i].classList.add('is-open');
+        continue;
+      }
+      omen.textContent=result.rarity==='UR'?'UR演出！':`${i+1} / ${count}`;
+      await revealSlot(slots[i],result,session);
     }
 
+    if(session.skipMode==='all') revealAllSlots(slots);
     const newCount=results.filter(r=>r.isNew).length;
     const urCount=results.filter(r=>r.rarity==='UR').length;
     const tempNote=cfg.testMode&&!cfg.saveOwned?' ／ 部室未登録':'';
     omen.textContent=urCount?`UR ${urCount}枚${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'勧誘結果';
     pullButtons.forEach(b=>b.disabled=false);
+    if(skipActions) skipActions.hidden=true;
     screen.classList.remove('is-pulling');
+    activePullSession=null;
   }
-
   async function runTenPull(){return runPull(10);}
 
   window.openGachaScreen=function(){
