@@ -1,13 +1,13 @@
-// Ver.0.8.87 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.88 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.87';
+  const VERSION='0.8.88';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='最高レアリティLRを追加しました。三船栞子【煌めくミントローズ】はLR 0.01%で登場し、獲得後は専用ホーム立ち絵と会話が解放されます。LR専用演出とテストモードも追加しました。';
+    if(text) text.textContent='LR栞子の専用画像が正しく表示されるよう修正し、ガチャ結果のLRカードを大きな正方形表示に変更しました。LR演出・結果・ライブアイコンで顔が見切れないよう画像も調整しています。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
