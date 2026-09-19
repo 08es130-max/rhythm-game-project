@@ -257,6 +257,7 @@
       homeLive.dataset.songLibraryNav='1';
       homeLive.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();renderSongLibrary();showLibraryScreen('songLibraryScreen');},true);
     }
+    document.getElementById('livePrepBackBtn')?.addEventListener('click',()=>{renderSongLibrary();showLibraryScreen('songLibraryScreen');});
     document.getElementById('songLibraryHomeBtn')?.addEventListener('click',()=>showLibraryScreen('homeScreen'));
     document.getElementById('openSongAddBtn')?.addEventListener('click',()=>showLibraryScreen('songAddScreen'));
     document.getElementById('songAddBackBtn')?.addEventListener('click',()=>{renderSongLibrary();showLibraryScreen('songLibraryScreen');});
