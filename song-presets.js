@@ -114,6 +114,19 @@ async function preparePresetAudio(audioKey, title) {
 window.preparePresetAudio = preparePresetAudio;
 window.clearPresetAudioSource = clearPresetAudioSource;
 
+const changeSongAudioBtn=document.getElementById('changeSongAudioBtn');
+changeSongAudioBtn?.addEventListener('click',()=>{
+  const key=String(chart?.audioKey||audio?.dataset?.presetKey||'');
+  if(!key){
+    alert('先に楽曲を選択してください。');
+    return;
+  }
+  awaitingPresetAudioKey=key;
+  try{audioFile.value='';}catch(_){}
+  songName.textContent=`${chart?.title||'選択中の楽曲'}（音源を選び直してください）`;
+  try{audioFile.click();}catch(_){}
+});
+
 function nearestEventDistance(times, value) {
   let lo = 0, hi = times.length;
   while (lo < hi) {
