@@ -4,6 +4,7 @@
   const PULL_COUNT=10;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const GACHA_BGM_SRC='assets/audio/gacha-starry-loop-v0864.wav?v=0.8.66-bgm2';
+  let activePullSession=null;
   let gachaAudioCtx=null;
   let gachaBgmBuffer=null;
   let gachaBgmSource=null;
@@ -173,6 +174,7 @@
             <div class="gacha-main-actions">
               <button id="gachaPullOneBtn" class="gacha-pull-btn gacha-pull-one" type="button"><span>1回勧誘</span><small>FREE</small></button>
               <button id="gachaPullTenBtn" class="gacha-pull-btn gacha-pull-ten" type="button"><b>UR期待の10連</b><span>10回勧誘</span><small>FREE</small></button>
+              <button id="gachaPullHundredBtn" class="gacha-pull-btn gacha-pull-hundred" type="button"><span>100回勧誘</span><small>FREE</small></button>
             </div>
           </div>
         </main>
@@ -181,6 +183,10 @@
         <div class="gacha-copy"><strong>勧誘結果</strong><span>N【音符ロリータ】99% ／ UR【マンスリーソング】1%</span></div>
         <div id="gachaOmen" class="gacha-omen" aria-live="polite"></div>
         <div id="gachaEnvelopeGrid" class="gacha-envelope-grid" aria-live="polite"></div>
+        <div id="gachaSkipActions" class="gacha-skip-actions" hidden>
+          <button id="gachaSkipNormalBtn" type="button">URまでスキップ</button>
+          <button id="gachaSkipAllBtn" type="button">全スキップ</button>
+        </div>
         <div class="gacha-actions">
           <button id="gachaBackLobbyBtn" class="gacha-secondary-btn" type="button">スカウト画面へ戻る</button>
           <span class="gacha-note">同じメンバーが重複して出ることがあります。URは初獲得時に部室へ追加されます。</span>
@@ -198,6 +204,9 @@
     screen.querySelector('#gachaHomeBtn')?.addEventListener('click',backHome);
     screen.querySelector('#gachaPullOneBtn')?.addEventListener('click',()=>runPull(1));
     screen.querySelector('#gachaPullTenBtn')?.addEventListener('click',()=>runPull(10));
+    screen.querySelector('#gachaPullHundredBtn')?.addEventListener('click',()=>runPull(100));
+    screen.querySelector('#gachaSkipNormalBtn')?.addEventListener('click',()=>{if(activePullSession)activePullSession.skipMode='normal';});
+    screen.querySelector('#gachaSkipAllBtn')?.addEventListener('click',()=>{if(activePullSession)activePullSession.skipMode='all';});
     screen.querySelector('#gachaBackLobbyBtn')?.addEventListener('click',()=>{
       if(screen.classList.contains('is-pulling'))return;
       screen.querySelector('#gachaRevealStage').hidden=true;
@@ -233,7 +242,7 @@
       </div>
       <article class="gacha-pull-card ${result.rarity==='UR'?'rarity-ur':'rarity-n'}">
         <div class="gacha-rarity">${result.rarity}</div>
-        <img src="${result.unit.icon}" alt="${result.unit.name}">
+        <img src="${result.unit.icon}" alt="${result.unit.name}" loading="lazy" decoding="async">
         <div class="gacha-card-series">${result.unit.series}</div>
         <div class="gacha-card-name">${String(result.unit.name).replace(/【[^】]+】$/u,'')}</div>
         ${result.isNew?'<span class="gacha-new">NEW</span>':''}
