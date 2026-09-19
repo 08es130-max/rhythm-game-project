@@ -1,6 +1,7 @@
 // Ver.0.4.8 ten-pull scouting with envelope reveal, UR spotlight, hidden owner test rate and room unlocks.
 (function(){
   const DEFAULT_UR_RATE=.01;
+  const DEFAULT_LR_RATE=.0001;
   const PULL_COUNT=10;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const GACHA_BGM_SRC='assets/audio/gacha-starry-loop-v0864.wav?v=0.8.66-bgm2';
@@ -103,22 +104,35 @@
   }
   function getGachaSettings(){
     if(typeof window.getAdminGachaSettings==='function') return window.getAdminGachaSettings();
-    return {urRate:DEFAULT_UR_RATE,testMode:false,saveOwned:true};
+    return {urRate:DEFAULT_UR_RATE,lrRate:DEFAULT_LR_RATE,testMode:false,testLrFirst:false,saveOwned:true};
   }
-  function pullOne(){
-    const urRate=getGachaSettings().urRate;
-    const isUR=rand()<urRate;
-    const pool=isUR?window.GACHA_UR_POOL:window.GACHA_N_POOL;
-    return {unit:choice(pool),rarity:isUR?'UR':'N'};
+  function pullOne(index=0,cfg=getGachaSettings()){
+    const lrPool=window.GACHA_LR_POOL||[];
+    const urPool=window.GACHA_UR_POOL||[];
+    const nPool=window.GACHA_N_POOL||[];
+    if(cfg.testLrFirst){
+      if(index===0&&lrPool.length) return {unit:choice(lrPool),rarity:'LR'};
+      return {unit:choice(urPool),rarity:'UR'};
+    }
+    const roll=rand();
+    const lrRate=Number.isFinite(Number(cfg.lrRate))?Number(cfg.lrRate):DEFAULT_LR_RATE;
+    const urRate=Number.isFinite(Number(cfg.urRate))?Number(cfg.urRate):DEFAULT_UR_RATE;
+    if(roll<lrRate&&lrPool.length) return {unit:choice(lrPool),rarity:'LR'};
+    if(roll<lrRate+urRate) return {unit:choice(urPool),rarity:'UR'};
+    return {unit:choice(nPool),rarity:'N'};
   }
   function updateRateDisplay(screen){
     if(!screen) return;
     const cfg=getGachaSettings();
-    const percent=Math.round(cfg.urRate*100);
+    const urPercent=(Number(cfg.urRate)*100).toFixed(Number(cfg.urRate)<.1?2:0).replace(/\\.00$/,'');
     const mini=screen.querySelector('.gacha-rate-mini');
     const copy=screen.querySelector('.gacha-copy span');
-    if(mini) mini.innerHTML=cfg.testMode?`<b>UR</b> ${percent}% <em>TEST</em>`:`<b>UR</b> 1%`;
-    if(copy) copy.textContent=cfg.testMode?`テスト設定 ／ UR ${percent}%`:'N【音符ロリータ】99% ／ UR【マンスリーソング】1%';
+    if(mini){
+      mini.innerHTML=cfg.testLrFirst?'<b>LR→UR</b> <em>TEST</em>':cfg.testMode?`<b>UR</b> ${urPercent}% <em>TEST</em>`:'<b>LR</b> 0.01% ／ <b>UR</b> 1%';
+    }
+    if(copy){
+      copy.textContent=cfg.testLrFirst?'テスト設定 ／ 1枠目LR・残りUR':cfg.testMode?`テスト設定 ／ UR ${urPercent}%`:'LR 0.01% ／ UR 1% ／ N 98.99%';
+    }
     screen.classList.toggle('is-admin-test',cfg.testMode);
   }
 
