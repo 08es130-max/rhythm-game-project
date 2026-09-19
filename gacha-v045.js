@@ -386,7 +386,8 @@
     if(screen.classList.contains('is-pulling')) return;
     const nPool=window.GACHA_N_POOL||[];
     const urPool=window.GACHA_UR_POOL||[];
-    if(!nPool.length||!urPool.length){
+    const lrPool=window.GACHA_LR_POOL||[];
+    if(!nPool.length||!urPool.length||!lrPool.length){
       alert('勧誘データを読み込めませんでした。');
       return;
     }
@@ -418,9 +419,9 @@
     const owned=typeof window.loadGachaOwned==='function'?window.loadGachaOwned():new Set();
     const results=[];
     for(let i=0;i<count;i++){
-      const result=pullOne();
-      result.isNew=result.rarity==='UR'&&!owned.has(result.unit.id);
-      if(result.rarity==='UR') owned.add(result.unit.id);
+      const result=pullOne(i,cfg);
+      result.isNew=(result.rarity==='UR'||result.rarity==='LR')&&!owned.has(result.unit.id);
+      if(result.rarity==='UR'||result.rarity==='LR') owned.add(result.unit.id);
       results.push(result);
     }
     if(cfg.saveOwned&&typeof window.saveGachaOwned==='function') window.saveGachaOwned(owned);
@@ -440,15 +441,19 @@
         slots[i].classList.add('is-open');
         continue;
       }
-      omen.textContent=result.rarity==='UR'?'UR演出！':`${i+1} / ${count}`;
+      omen.textContent=result.rarity==='LR'?'LEGEND RARE…！':result.rarity==='UR'?'UR演出！':`${i+1} / ${count}`;
       await revealSlot(slots[i],result,session);
     }
 
     if(session.skipMode==='all') revealAllSlots(slots);
     const newCount=results.filter(r=>r.isNew).length;
     const urCount=results.filter(r=>r.rarity==='UR').length;
+    const lrCount=results.filter(r=>r.rarity==='LR').length;
     const tempNote=cfg.testMode&&!cfg.saveOwned?' ／ 部室未登録':'';
-    omen.textContent=urCount?`UR ${urCount}枚${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'勧誘結果';
+    const rareParts=[];
+    if(lrCount) rareParts.push(`LR ${lrCount}枚`);
+    if(urCount) rareParts.push(`UR ${urCount}枚`);
+    omen.textContent=rareParts.length?`${rareParts.join(' ／ ')}${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'勧誘結果';
     pullButtons.forEach(b=>b.disabled=false);
     if(skipActions) skipActions.hidden=true;
     screen.classList.remove('is-pulling');
@@ -470,7 +475,7 @@
   window.startGachaBgm=startGachaBgm;
   window.stopGachaBgm=stopGachaBgm;
 
-  // 部室は初期N＋獲得済みURだけを表示する。
+  // 部室は初期N＋獲得済みUR/LRだけを表示する。
   function installOwnedRoomFilter(){
     if(typeof window.getRoomCharacters!=='function') return;
     const replacement=function(){
@@ -513,7 +518,8 @@
       const status=document.getElementById('characterSaveStatus');
       if(status){
         const urOwned=available.filter(c=>c.rarity==='UR').length;
-        status.textContent=`音符ロリータは初期加入。マンスリーソングURは勧誘で獲得すると追加されます。（UR獲得 ${urOwned}/12）`;
+        const lrOwned=available.filter(c=>c.rarity==='LR').length;
+        status.textContent=`音符ロリータは初期加入。UR/LRは勧誘で獲得すると追加されます。（LR ${lrOwned}/1・UR ${urOwned}/12）`;
       }
     };
     window.renderCharacterSelectors=replacement;
