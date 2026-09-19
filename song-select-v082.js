@@ -45,8 +45,8 @@
       const button=card.querySelector('button');
       const known=KNOWN[title]||{};
       const jacket=card.dataset.jacket||known.jacket||'';
-      return {id:card.dataset.song075||card.dataset.songId||`${title}:${i}`,title,artist,bpm:meta.bpm,difficulty:meta.difficulty,badge,button,category:categoryFor(title,artist,badge),notes:known.notes||'--',level:known.level||'★--',palette:paletteFor(title),jacket};
-    }).filter(s=>s.button);
+      return {id:card.dataset.song075||card.dataset.songId||`${title}:${i}`,title,artist,bpm:meta.bpm,difficulty:meta.difficulty,badge,hasLaunchButton:!!button,category:categoryFor(title,artist,badge),notes:known.notes||'--',level:known.level||'★--',palette:paletteFor(title),jacket};
+    }).filter(s=>s.hasLaunchButton);
   }
 
   function ensureUI(){
@@ -83,7 +83,24 @@
     document.getElementById('songSelectAdd')?.addEventListener('click',()=>document.getElementById('openSongAddBtn')?.click());
     document.getElementById('songPrev')?.addEventListener('click',()=>move(-1));
     document.getElementById('songNext')?.addEventListener('click',()=>move(1));
-    document.getElementById('songLiveStart')?.addEventListener('click',()=>state.filtered[state.index]?.button?.click());
+    document.getElementById('songLiveStart')?.addEventListener('click',()=>{
+      const song=state.filtered[state.index];
+      if(!song)return;
+      const grid=document.getElementById('songLibraryGrid');
+      if(!grid)return;
+      const cards=[...grid.querySelectorAll('.song-library-card')];
+      const liveCard=cards.find(card=>{
+        const id=card.dataset.song075||card.dataset.songId||'';
+        const title=card.querySelector('h3')?.textContent?.trim()||'';
+        return String(id)===String(song.id)&&title===song.title;
+      }) || cards.find(card=>card.querySelector('h3')?.textContent?.trim()===song.title);
+      const liveButton=liveCard?.querySelector('button');
+      if(!liveButton){
+        console.warn('選択中の楽曲起動ボタンが見つかりません',song);
+        return;
+      }
+      liveButton.click();
+    });
     let startX=null;
     const carousel=document.getElementById('songCarousel');
     carousel?.addEventListener('pointerdown',e=>{startX=e.clientX;});
