@@ -13,9 +13,63 @@
   const card=document.querySelector('.home-character-card');
   const image=card?.querySelector('.home-character-img');
   let last='';
-  let baseSrc=image?.getAttribute('src')||'';
-  let internal=false;
   let taps=[];
+
+  let secretImage=null;
+  function ensureSecretImage(){
+    if(!card) return null;
+    if(secretImage&&secretImage.isConnected) return secretImage;
+    secretImage=card.querySelector('.home-character-secret-standing-v0878');
+    if(!secretImage){
+      secretImage=document.createElement('img');
+      secretImage.className='home-character-secret-standing-v0878';
+      secretImage.alt='三船栞子 隠し立ち絵';
+      secretImage.decoding='async';
+      secretImage.draggable=false;
+      secretImage.hidden=true;
+      card.appendChild(secretImage);
+    }
+    return secretImage;
+  }
+
+  if(card&&!document.getElementById('secretStandingLayerV0878')){
+    const style=document.createElement('style');
+    style.id='secretStandingLayerV0878';
+    style.textContent=`
+      .home-character-card .home-character-secret-standing-v0878{
+        position:absolute!important;
+        left:50%!important;
+        bottom:0!important;
+        z-index:12!important;
+        width:100%!important;
+        height:100%!important;
+        max-width:none!important;
+        object-fit:contain!important;
+        object-position:center bottom!important;
+        transform:translateX(-50%)!important;
+        pointer-events:none!important;
+        user-select:none!important;
+        -webkit-user-drag:none!important;
+        filter:drop-shadow(0 18px 28px rgba(0,0,0,.34))!important;
+      }
+      .home-character-card .home-character-secret-standing-v0878[hidden]{display:none!important}
+      @media (orientation:landscape){
+        .home-screen .home-character-secret-standing-v0878{
+          width:122%!important;
+          height:132%!important;
+          bottom:-46px!important;
+        }
+      }
+      @media (orientation:landscape) and (max-height:620px){
+        .home-screen .home-character-secret-standing-v0878{
+          width:124%!important;
+          height:134%!important;
+          bottom:-50px!important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   const sets={
     maid:{
@@ -99,40 +153,31 @@
     return true;
   }
 
-  function managedSrc(src){
-    return Object.values(ASSETS).some(x=>String(src||'').includes(x));
-  }
   function applyStanding(){
-    if(!image) return;
+    const overlay=ensureSecretImage();
+    if(!overlay) return;
     const mode=current();
-    const now=image.getAttribute('src')||'';
     if(mode==='normal'){
-      if(managedSrc(now)&&baseSrc){
-        internal=true;image.setAttribute('src',baseSrc);requestAnimationFrame(()=>internal=false);
-      }
+      overlay.hidden=true;
+      overlay.removeAttribute('src');
+      if(card) delete card.dataset.shioSecretStanding;
       return;
     }
-    if(!managedSrc(now)&&now) baseSrc=now;
     const src=ASSETS[mode];
-    if(src&&now!==src){
-      internal=true;image.setAttribute('src',src);requestAnimationFrame(()=>internal=false);
-    }
+    if(!src) return;
+    if(overlay.getAttribute('src')!==src) overlay.setAttribute('src',src);
+    overlay.hidden=false;
     if(card) card.dataset.shioSecretStanding=mode;
   }
 
   function setStanding(mode){
     if(!VALID.includes(mode)) mode='normal';
-    const was=current();
     localStorage.setItem(KEY,mode);
     if(card){
       if(mode==='normal') delete card.dataset.shioSecretStanding;
       else card.dataset.shioSecretStanding=mode;
     }
-    if(mode==='normal'&&was!=='normal'&&image&&baseSrc){
-      internal=true;image.setAttribute('src',baseSrc);requestAnimationFrame(()=>internal=false);
-    }else{
-      applyStanding();
-    }
+    applyStanding();
     window.dispatchEvent(new CustomEvent('rhythmGameShiorikoStandingChanged',{detail:{mode}}));
     setTimeout(()=>{
       if(mode!=='normal') show('normal');
@@ -164,23 +209,22 @@
   document.getElementById('resultHomeBtn')?.addEventListener('click',()=>setTimeout(()=>{if(active())show('normal');},40));
   document.getElementById('retryBtn')?.addEventListener('click',()=>setTimeout(()=>{if(active())show('retry');},40));
 
-  // Keep hidden standing above Classic, expression swaps and other home-art changes.
-  if(image){
+  // Re-assert the dedicated overlay after other home-art systems run.
+  if(card){
     const mo=new MutationObserver(()=>{
-      if(internal) return;
-      const src=image.getAttribute('src')||'';
-      if(active()){
-        if(!managedSrc(src)&&src) baseSrc=src;
-        queueMicrotask(applyStanding);
-      }else if(src&&!managedSrc(src)){
-        baseSrc=src;
-      }
+      if(active()) queueMicrotask(applyStanding);
     });
-    mo.observe(image,{attributes:true,attributeFilter:['src']});
+    mo.observe(card,{childList:true,subtree:true,attributes:true,attributeFilter:['src','class']});
   }
-  ['rhythmGameShiorikoDialogueExpression','rhythmGameShiorikoModeChanged'].forEach(name=>{
+  ['rhythmGameShiorikoDialogueExpression','rhythmGameShiorikoModeChanged','rhythmGameShiorikoHomeArtChanged'].forEach(name=>{
     window.addEventListener(name,()=>{if(active())setTimeout(applyStanding,0);});
   });
+  const home=document.getElementById('homeScreen');
+  if(home){
+    new MutationObserver(()=>{if(!home.hidden&&active())setTimeout(applyStanding,0);})
+      .observe(home,{attributes:true,attributeFilter:['hidden']});
+  }
+  window.addEventListener('pageshow',()=>{if(active())setTimeout(applyStanding,0);});
 
   function injectAdmin(){
     const room=document.getElementById('hiddenAdminRoom');
