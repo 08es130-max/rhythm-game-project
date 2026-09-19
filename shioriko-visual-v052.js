@@ -83,9 +83,18 @@
   card.querySelectorAll('.shio-expression-overlay').forEach(el=>el.remove());
 
   function isExpressionSrc(src){return String(src||'').includes('assets/shioriko-expressions/');}
+  function isSecretStandingSrc(src){return String(src||'').includes('assets/shioriko-secret/');}
+  function secretStandingActive(){
+    const dataMode=String(card.dataset.shioSecretStanding||'normal');
+    if(dataMode&&dataMode!=='normal') return true;
+    try{
+      const mode=window.getShiorikoSecretStanding?.();
+      return !!mode&&mode!=='normal';
+    }catch(_){return false;}
+  }
   function rememberNormalSrc(){
     const src=image.getAttribute('src')||'';
-    if(src&&!isExpressionSrc(src)) normalSrc=src;
+    if(src&&!isExpressionSrc(src)&&!isSecretStandingSrc(src)) normalSrc=src;
   }
   rememberNormalSrc();
 
@@ -114,8 +123,9 @@
       dialogueExpression='normal';
       return;
     }
+    if(secretStandingActive()) return;
     const current=image.getAttribute('src')||'';
-    if(!isExpressionSrc(current)) normalSrc=current||normalSrc;
+    if(!isExpressionSrc(current)&&!isSecretStandingSrc(current)) normalSrc=current||normalSrc;
     if(mode!=='normal'&&EXPR[mode]) setSrc(EXPR[mode]);
     else if(normalSrc) setSrc(normalSrc);
   }
@@ -172,6 +182,14 @@
     applyMode(true);
   });
 
+  window.addEventListener('rhythmGameShiorikoStandingChanged',()=>{
+    if(secretStandingActive()){
+      dialogueExpression='normal';
+      return;
+    }
+    setTimeout(()=>applyMode(false),0);
+  });
+
   const originalSet=window.setShiorikoSecretMode;
   if(typeof originalSet==='function'){
     window.setShiorikoSecretMode=function(mode){
@@ -187,9 +205,9 @@
     const srcChanged=records.some(r=>r.target===image&&r.attributeName==='src');
     if(srcChanged){
       const src=image.getAttribute('src')||'';
-      if(src&&!isExpressionSrc(src)) normalSrc=src;
+      if(src&&!isExpressionSrc(src)&&!isSecretStandingSrc(src)) normalSrc=src;
     }
-    setTimeout(()=>applyMode(false),0);
+    if(!secretStandingActive()) setTimeout(()=>applyMode(false),0);
   });
   observer.observe(card,{attributes:true,attributeFilter:['data-character-id']});
   observer.observe(image,{attributes:true,attributeFilter:['src']});
