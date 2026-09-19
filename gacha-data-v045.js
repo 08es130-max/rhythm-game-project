@@ -13,15 +13,16 @@
     return{id:`monthly-${baseId}`,baseId,name:`${jp}【マンスリーソング】`,rarity:'UR',series:'マンスリーソング',icon,home:icon};
   });
 
+  const lrFallback=`assets/monthly-song/${assetMap.shioriko||'rina'}.webp?v=${version}`;
   const lrShioriko={
     id:'lr-shioriko-eternal-rose',
     baseId:'shioriko',
     name:'三船栞子【煌めくミントローズ】',
     rarity:'LR',
     series:'LEGEND RARE',
-    icon:`assets/lr/shioriko-lr-live-icon.webp?v=${version}`,
-    card:`assets/lr/shioriko-lr-card.webp?v=${version}`,
-    home:`assets/lr/shioriko-lr-home.webp?v=${version}`
+    icon:window.LR_ASSET_ICON||lrFallback,
+    card:window.LR_ASSET_CARD||lrFallback,
+    home:window.LR_ASSET_HOME||lrFallback
   };
   const lrPool=[lrShioriko];
   const unlockable=[...monthly,...lrPool];
