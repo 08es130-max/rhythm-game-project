@@ -212,21 +212,29 @@
 
   async function prepareHpt0838(){
     const title='HAPPY PARTY TRAIN';
-    chart=makeHpt0838();
-    validateChart(chart);
-    chartName.textContent=`${title}（${chart.notes.length} notes）`;
-    offsetInput.value=String(getSavedTimingOffset());
+    const next=makeHpt0838();
+    next.audioKey=HPT_AUDIO_KEY;
+    if(typeof window.setActiveRhythmChart==='function'){
+      window.setActiveRhythmChart(next,`${title}（${next.notes.length} notes）`,HPT_AUDIO_KEY);
+    }else{
+      chart=next;validateChart(chart);
+      chartName.textContent=`${title}（${chart.notes.length} notes）`;
+      offsetInput.value=String(getSavedTimingOffset());
+    }
     audioMode.value='file';
     document.querySelectorAll('.app-screen').forEach(el=>{el.hidden=el.id!=='liveScreen';});
     try{resultPanel.hidden=true;}catch(_){}
     window.scrollTo({top:0,behavior:'auto'});
-    try{
-      const cached=await getPresetAudio(HPT_AUDIO_KEY);
-      if(cached&&usePresetAudio(cached,title)){canStart();return;}
-    }catch(e){console.warn(e);}
-    awaitingPresetAudioKey=HPT_AUDIO_KEY;
-    songName.textContent=`${title}（初回のみ音源ファイルを選択してください）`;
-    audioFile.click();
+    if(typeof window.preparePresetAudio==='function') await window.preparePresetAudio(HPT_AUDIO_KEY,title);
+    else{
+      try{
+        const cached=await getPresetAudio(HPT_AUDIO_KEY);
+        if(cached&&usePresetAudio(cached,title)){canStart();return;}
+      }catch(e){console.warn(e);}
+      awaitingPresetAudioKey=HPT_AUDIO_KEY;
+      songName.textContent=`${title}（初回のみ音源ファイルを選択してください）`;
+      try{audioFile.click();}catch(_){}
+    }
     canStart();
   }
 
