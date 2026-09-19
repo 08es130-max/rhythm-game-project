@@ -148,8 +148,13 @@ function isChartAudioMatched() {
   return !!audio.src && actual === expected;
 }
 
+function isAudioMetadataReady() {
+  if (isSilentMode()) return true;
+  return !!audio.src && audio.readyState >= HTMLMediaElement.HAVE_METADATA && !audio.error;
+}
+
 function canStart() {
-  const sourceReady = isSilentMode() || !!audio.src;
+  const sourceReady = isSilentMode() || isAudioMetadataReady();
   startBtn.disabled = !(sourceReady && chart && isChartAudioMatched());
 }
 
@@ -188,6 +193,15 @@ audioMode.addEventListener('change', () => {
     songName.textContent = audioFile.files?.[0]?.name || '未選択';
   }
   canStart();
+});
+
+audio.addEventListener('loadedmetadata', canStart);
+audio.addEventListener('canplay', canStart);
+audio.addEventListener('error', () => {
+  if (!isSilentMode()) {
+    startBtn.disabled = true;
+    if (audio.src) songName.textContent = '音源を読み込めません（別のMP3/M4A/WAVを選択してください）';
+  }
 });
 
 audioFile.addEventListener('change', () => {
