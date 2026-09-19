@@ -46,6 +46,26 @@ async function getPresetAudio(key) {
   return record;
 }
 
+const livePrepAudioGuide=document.getElementById('livePrepAudioGuide');
+const changeSongAudioBtn=document.getElementById('changeSongAudioBtn');
+
+function setLivePrepAudioState(state,title=''){
+  if(!livePrepAudioGuide||!changeSongAudioBtn) return;
+  if(state==='saved'){
+    livePrepAudioGuide.textContent='音源は保存済みです。変更する場合のみ音源ファイルを選び直してください。';
+    changeSongAudioBtn.textContent='音源を変更';
+    return;
+  }
+  if(state==='selecting'){
+    livePrepAudioGuide.textContent='この楽曲の音源ファイルを選択してください。';
+    changeSongAudioBtn.textContent='音源ファイルを選択';
+    return;
+  }
+  livePrepAudioGuide.textContent=title?'この楽曲の音源ファイルを選択してください。':'楽曲を選択してください。';
+  changeSongAudioBtn.textContent='音源ファイルを選択';
+}
+window.setLivePrepAudioState=setLivePrepAudioState;
+
 function usePresetAudio(record, title) {
   if (!record?.blob) return false;
   if (presetAudioObjectUrl) URL.revokeObjectURL(presetAudioObjectUrl);
@@ -56,6 +76,7 @@ function usePresetAudio(record, title) {
   try { audio.load(); } catch (_) {}
   audioMode.value = 'file';
   songName.textContent = `${title}（保存済み音源）`;
+  setLivePrepAudioState('saved',title);
   try { localStorage.setItem('rhythmPresetAudioSaved:' + record.key, '1'); } catch (_) {}
   canStart();
   return true;
@@ -86,6 +107,7 @@ async function preparePresetAudio(audioKey, title) {
 
   if (isAndroid && !knownSaved) {
     songName.textContent = `${title}（音源ファイルを選択してください）`;
+    setLivePrepAudioState('selecting',title);
     try { audioFile.value = ''; } catch (_) {}
     try { audioFile.click(); } catch (_) {}
     canStart();
@@ -100,9 +122,8 @@ async function preparePresetAudio(audioKey, title) {
   }
 
   awaitingPresetAudioKey = key;
-  songName.textContent = isAndroid
-    ? `${title}（音源ファイル欄をタップして選択してください）`
-    : `${title}（初回のみ音源ファイルを選択してください）`;
+  songName.textContent = `${title}（音源ファイルを選択してください）`;
+  setLivePrepAudioState('selecting',title);
   if (!isAndroid) {
     try { audioFile.value = ''; } catch (_) {}
     try { audioFile.click(); } catch (_) {}
@@ -114,7 +135,6 @@ async function preparePresetAudio(audioKey, title) {
 window.preparePresetAudio = preparePresetAudio;
 window.clearPresetAudioSource = clearPresetAudioSource;
 
-const changeSongAudioBtn=document.getElementById('changeSongAudioBtn');
 changeSongAudioBtn?.addEventListener('click',()=>{
   const key=String(chart?.audioKey||audio?.dataset?.presetKey||'');
   if(!key){
@@ -123,7 +143,8 @@ changeSongAudioBtn?.addEventListener('click',()=>{
   }
   awaitingPresetAudioKey=key;
   try{audioFile.value='';}catch(_){}
-  songName.textContent=`${chart?.title||'選択中の楽曲'}（音源を選び直してください）`;
+  songName.textContent=`${chart?.title||'選択中の楽曲'}（音源ファイルを選択してください）`;
+  setLivePrepAudioState('selecting',chart?.title||'');
   try{audioFile.click();}catch(_){}
 });
 
@@ -263,10 +284,13 @@ audioFile.addEventListener('change', async () => {
   try {
     await savePresetAudio(key, file);
     try { localStorage.setItem('rhythmPresetAudioSaved:' + key, '1'); } catch (_) {}
-    if (key === SPICA_AUDIO_KEY) songName.textContent = 'スピカテリブル（音源をこの端末に保存しました）';
+    setLivePrepAudioState('saved',chart?.title||'');
+    songName.textContent = `${chart?.title||file.name||'選択中の楽曲'}（音源をこの端末に保存しました）`;
   } catch (e) {
     console.warn('音源を端末に保存できませんでした', e);
-    if (key === SPICA_AUDIO_KEY) songName.textContent = 'スピカテリブル（今回はこのファイルで再生します）';
+    if(livePrepAudioGuide) livePrepAudioGuide.textContent='この音源は今回のみ使用します。次回は再度音源ファイルを選択してください。';
+    if(changeSongAudioBtn) changeSongAudioBtn.textContent='音源ファイルを選択';
+    songName.textContent = `${chart?.title||file.name||'選択中の楽曲'}（今回はこのファイルで再生します）`;
   }
   canStart();
 });
