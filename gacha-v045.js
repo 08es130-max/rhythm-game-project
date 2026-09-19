@@ -137,10 +137,11 @@
   }
 
   function featuredUnits(){
-    const pool=Array.isArray(window.GACHA_UR_POOL)?window.GACHA_UR_POOL:[];
-    const preferred=['monthly-shioriko','monthly-setsuna','monthly-ayumu'];
-    const picked=preferred.map(id=>pool.find(u=>u.id===id)).filter(Boolean);
-    pool.forEach(u=>{if(picked.length<3&&!picked.some(x=>x.id===u.id))picked.push(u);});
+    const urPool=Array.isArray(window.GACHA_UR_POOL)?window.GACHA_UR_POOL:[];
+    const lrPool=Array.isArray(window.GACHA_LR_POOL)?window.GACHA_LR_POOL:[];
+    const preferred=['monthly-shioriko','monthly-setsuna'];
+    const picked=[...lrPool.slice(0,1),...preferred.map(id=>urPool.find(u=>u.id===id)).filter(Boolean)];
+    urPool.forEach(u=>{if(picked.length<3&&!picked.some(x=>x.id===u.id))picked.push(u);});
     return picked.slice(0,3);
   }
   function cleanName(unit){return String(unit?.name||'').replace(/【[^】]+】$/u,'');}
@@ -150,7 +151,7 @@
     const cards=screen.querySelector('.gacha-featured-cards');
 
     if(cards){
-      cards.innerHTML=featured.map((u,i)=>`<article class="gacha-feature-card"><div class="gacha-feature-rarity">UR</div><div class="gacha-feature-image-wrap"><img src="${u.icon}" alt="${cleanName(u)}"></div><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong><small>${i===0?'PICK UP':'FEATURED'}</small></article>`).join('');
+      cards.innerHTML=featured.map((u,i)=>`<article class="gacha-feature-card ${u.rarity==='LR'?'is-lr-feature':''}"><div class="gacha-feature-rarity">${u.rarity||'UR'}</div><div class="gacha-feature-image-wrap"><img src="${u.card||u.icon}" alt="${cleanName(u)}"></div><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong><small>${i===0?'LEGEND PICK UP':'FEATURED'}</small></article>`).join('');
     }
   }
 
@@ -194,7 +195,7 @@
         </main>
       </div>
       <div id="gachaRevealStage" class="gacha-stage" hidden>
-        <div class="gacha-copy"><strong>勧誘結果</strong><span>N【音符ロリータ】99% ／ UR【マンスリーソング】1%</span></div>
+        <div class="gacha-copy"><strong>勧誘結果</strong><span>LR 0.01% ／ UR 1% ／ N 98.99%</span></div>
         <div id="gachaOmen" class="gacha-omen" aria-live="polite"></div>
         <div id="gachaEnvelopeGrid" class="gacha-envelope-grid" aria-live="polite"></div>
         <div id="gachaSkipActions" class="gacha-skip-actions" hidden>
@@ -203,7 +204,7 @@
         </div>
         <div class="gacha-actions">
           <button id="gachaBackLobbyBtn" class="gacha-secondary-btn" type="button">スカウト画面へ戻る</button>
-          <span class="gacha-note">同じメンバーが重複して出ることがあります。URは初獲得時に部室へ追加されます。</span>
+          <span class="gacha-note">同じメンバーが重複して出ることがあります。UR/LRは初獲得時に部室へ追加されます。</span>
         </div>
       </div>`;
     shell.appendChild(screen);
@@ -228,10 +229,10 @@
       renderScoutLobby(screen);
     });
     screen.querySelector('#gachaRateBtn')?.addEventListener('click',()=>{
-      const cfg=getGachaSettings();alert(`提供割合\nUR【マンスリーソング】 ${Math.round(cfg.urRate*100)}%\nN【音符ロリータ】 ${Math.max(0,100-Math.round(cfg.urRate*100))}%`);
+      const cfg=getGachaSettings();if(cfg.testLrFirst)alert('提供割合（テスト）\n1枠目 LR 100%\n2枠目以降 UR 100%');else alert(`提供割合\nLR【煌めくミントローズ】 ${(Number(cfg.lrRate||DEFAULT_LR_RATE)*100).toFixed(2)}%\nUR【マンスリーソング】 ${(Number(cfg.urRate||DEFAULT_UR_RATE)*100).toFixed(2)}%\nN【音符ロリータ】 ${(100-(Number(cfg.lrRate||DEFAULT_LR_RATE)+Number(cfg.urRate||DEFAULT_UR_RATE))*100).toFixed(2)}%`);
     });
     screen.querySelector('#gachaDetailBtn')?.addEventListener('click',()=>{
-      alert('ピックアップスカウト「星の約束」\nマンスリーソングURが登場します。\nUR初獲得時は部室へ追加されます。');
+      alert('ピックアップスカウト「星の約束」\n最高レアリティLR「三船栞子【煌めくミントローズ】」が登場します。\nUR/LRは初獲得時に部室へ追加され、LR栞子は専用ホーム立ち絵も解放されます。');
     });
     renderScoutLobby(screen);
     updateRateDisplay(screen);
