@@ -187,18 +187,25 @@
   }
   async function prepareSnowHalation(){
     chart=makeSnowHalationChart();
+    chart.audioKey=SNOW_AUDIO_KEY;
     validateChart(chart);
     chartName.textContent=`Snow halation（${chart.notes.length} notes）`;
     offsetInput.value=String(getSavedTimingOffset());
     audioMode.value='file';
     showLibraryScreen('liveScreen');
-    try{
-      const cached=await getPresetAudio(SNOW_AUDIO_KEY);
-      if(cached&&usePresetAudio(cached,'Snow halation')){canStart();return;}
-    }catch(e){console.warn('Snow halationの保存済み音源を読み込めませんでした',e);}
-    awaitingPresetAudioKey=SNOW_AUDIO_KEY;
-    songName.textContent='Snow halation（初回のみ音源ファイルを選択してください）';
-    audioFile.click();
+    if(typeof window.preparePresetAudio==='function'){
+      await window.preparePresetAudio(SNOW_AUDIO_KEY,'Snow halation');
+    }else{
+      try{
+        const cached=await getPresetAudio(SNOW_AUDIO_KEY);
+        if(cached&&usePresetAudio(cached,'Snow halation')){canStart();return;}
+      }catch(e){console.warn('Snow halationの保存済み音源を読み込めませんでした',e);}
+      awaitingPresetAudioKey=SNOW_AUDIO_KEY;
+      songName.textContent='Snow halation（音源ファイルを選択してください）';
+      window.setLivePrepAudioState?.('selecting','Snow halation');
+      try{audioFile.value='';}catch(_){}
+      try{audioFile.click();}catch(_){}
+    }
     canStart();
   }
   async function prepareSpicaFromLibrary(){
@@ -258,6 +265,7 @@
       homeLive.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();renderSongLibrary();showLibraryScreen('songLibraryScreen');},true);
     }
     document.getElementById('livePrepBackBtn')?.addEventListener('click',()=>{renderSongLibrary();showLibraryScreen('songLibraryScreen');});
+    document.getElementById('livePrepHomeBtn')?.addEventListener('click',()=>showLibraryScreen('homeScreen'));
     document.getElementById('songLibraryHomeBtn')?.addEventListener('click',()=>showLibraryScreen('homeScreen'));
     document.getElementById('openSongAddBtn')?.addEventListener('click',()=>showLibraryScreen('songAddScreen'));
     document.getElementById('songAddBackBtn')?.addEventListener('click',()=>{renderSongLibrary();showLibraryScreen('songLibraryScreen');});
