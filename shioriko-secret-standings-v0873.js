@@ -53,6 +53,11 @@
         filter:drop-shadow(0 18px 28px rgba(0,0,0,.34))!important;
       }
       .home-character-card .home-character-secret-standing-v0878[hidden]{display:none!important}
+      .home-character-card[data-shio-secret-standing] .home-character-cutout-v084,
+      .home-character-card[data-shio-secret-standing] .home-character-img{
+        opacity:0!important;
+        visibility:hidden!important;
+      }
       @media (orientation:landscape){
         .home-screen .home-character-secret-standing-v0878{
           width:122%!important;
@@ -158,9 +163,9 @@
     if(!overlay) return;
     const mode=current();
     if(mode==='normal'){
+      if(card) delete card.dataset.shioSecretStanding;
       overlay.hidden=true;
       overlay.removeAttribute('src');
-      if(card) delete card.dataset.shioSecretStanding;
       return;
     }
     const src=ASSETS[mode];
