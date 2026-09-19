@@ -1,14 +1,14 @@
-// Final version guard for Ver.0.8.71. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.72. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.71';
+  const VERSION='0.8.72';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     const text=document.querySelector('#updateBanner .update-text');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
-    if(text) text.textContent='Android 13で眩耀夜行の譜面が切り替わらない・音源を再生できない問題に対し、譜面の明示セット、初回音源選択のユーザー操作内実行、音源load処理、楽曲カードの再生成抑止を追加しました。';
+    if(text) text.textContent='iPhoneで高精細3Dモデル読み込み時にページが停止する問題へ対応するため、重い全身GLBの自動読み込みを一時停止し、ラウンジ表示を安定版へ戻しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,150);
 })();
