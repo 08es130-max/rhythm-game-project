@@ -260,7 +260,7 @@
 
   function installCards(){
     const grid=document.getElementById('songLibraryGrid');if(!grid)return;
-    grid.querySelectorAll('[data-song075]').forEach(el=>el.remove());
+    grid.querySelectorAll('[data-song075="hpt"],[data-song075="boom"]').forEach(el=>el.remove());
     grid.append(
       makeCard('hpt','HAPPY PARTY TRAIN','Aqours','172.266',()=>prepareBuiltInSong(makeHappyPartyTrainChart,HPT_AUDIO_KEY,'HAPPY PARTY TRAIN')),
       makeCard('boom','Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会','161.499',()=>prepareBuiltInSong(makeBoooooomBeeChart,BOOM_AUDIO_KEY,'Boooooom Boooooom Bee!!'))
