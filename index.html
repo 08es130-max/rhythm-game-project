@@ -75,7 +75,7 @@ window.location.replace(url.toString());
 </div>
 </section>
 <section id="liveScreen" class="app-screen live-screen" hidden>
-<div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
+<div class="screen-header"><button id="livePrepBackBtn" class="home-back-btn" type="button">楽曲選択へ</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
 <div class="version-badge" aria-label="app version">Ver. 0.8.68</div>
 <h2>ライブ準備</h2><p class="sub">準備ができたらSTARTを押してください。</p>
@@ -90,13 +90,7 @@ window.location.replace(url.toString());
 <div class="meta-row"><div>音源: <strong id="songName">未選択</strong></div><div>譜面: <strong id="chartName">未選択</strong></div></div>
 </section>
 <section class="game-wrap">
-<div class="hud live-hud">
-  <button id="liveSongSelectBackBtn" class="live-song-select-back" type="button">‹ 楽曲選択へ</button>
-  <div class="live-current-song"><span class="hud-label">NOW PLAYING</span><strong id="liveCurrentSongTitle">未選択</strong></div>
-  <div><span class="hud-label">SCORE</span><span id="score">0</span></div>
-  <div><span class="hud-label">COMBO</span><span id="combo">0</span></div>
-  <div id="judge" class="judge">READY</div>
-</div>
+<div class="hud"><div><span class="hud-label">SCORE</span><span id="score">0</span></div><div><span class="hud-label">COMBO</span><span id="combo">0</span></div><div id="judge" class="judge">READY</div></div>
 <div id="game" class="game" aria-label="9 lane rhythm game"><div class="live-backdrop" aria-hidden="true"></div><div id="laneLayer" class="lane-layer"></div><div id="comboOverlay" class="combo-overlay" hidden><span id="comboCount" class="combo-count">0</span><span class="combo-text">combo</span></div><div id="notesLayer" class="notes-layer"></div><div class="judge-line"></div><div id="targets" class="targets"></div></div>
 <div class="key-guide">A　S　D　F　SPACE　J　K　L　;</div>
 </section>
