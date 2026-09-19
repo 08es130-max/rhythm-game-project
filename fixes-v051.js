@@ -203,7 +203,11 @@
   }
   async function prepareSpicaFromLibrary(){
     showLibraryScreen('liveScreen');
-    document.getElementById('spicaPresetBtn')?.click();
+    if(typeof window.prepareSpicaSong==='function'){
+      await window.prepareSpicaSong();
+      return;
+    }
+    alert('スピカテリブルの起動処理を読み込めませんでした。');
   }
   async function prepareCustomSong(song){
     try{
