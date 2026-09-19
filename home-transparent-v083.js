@@ -1,13 +1,13 @@
-// Ver.0.8.72 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.73 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.72';
+  const VERSION='0.8.73';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='iPhoneで高精細3Dモデル読み込み時にページが停止する問題へ対応するため、重い全身GLBの自動読み込みを一時停止し、ラウンジ表示を安定版へ戻しました。';
+    if(text) text.textContent='隠し部屋に栞子の立ち絵変更を追加しました。メイド・水着・剣士を選択でき、通常立ち絵より優先表示し、それぞれ専用セリフに切り替わります。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
