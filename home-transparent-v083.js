@@ -1,13 +1,13 @@
-// Ver.0.8.75 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.76 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.75';
+  const VERSION='0.8.76';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='楽曲選択のLIVE STARTが古いボタン参照を保持して別譜面を起動する問題を修正し、選択中の曲IDから現在の最新カードを引き直して起動するよう変更しました。';
+    if(text) text.textContent='ライブ画面に残っていた開発用の「スピカテリブル」「テスト譜面を使う」ショートカットを非表示にしました。内部のデバッグ処理は残しているため、通常プレイ機能には影響しません。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
