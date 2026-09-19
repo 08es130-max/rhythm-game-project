@@ -12,6 +12,7 @@ const speedValue = document.getElementById('speedValue');
 const offsetInput = document.getElementById('offset');
 const songName = document.getElementById('songName');
 const chartName = document.getElementById('chartName');
+const selectedSongTitle = document.getElementById('selectedSongTitle');
 const notesLayer = document.getElementById('notesLayer');
 const laneLayer = document.getElementById('laneLayer');
 const targets = document.getElementById('targets');
@@ -158,11 +159,18 @@ function canStart() {
   startBtn.disabled = !(sourceReady && chart && isChartAudioMatched());
 }
 
+function syncSelectedSongTitle() {
+  if (!selectedSongTitle) return;
+  const title = String(chart?.title || chartName?.textContent || '').replace(/（.*$/u,'').trim();
+  selectedSongTitle.textContent = title || '未選択';
+}
+
 window.setActiveRhythmChart = function(nextChart, label, audioKey) {
   validateChart(nextChart);
   if (audioKey) nextChart.audioKey = String(audioKey);
   chart = nextChart;
   chartName.textContent = label || nextChart.title || '譜面';
+  syncSelectedSongTitle();
   offsetInput.value = String(getSavedTimingOffset());
   canStart();
   return chart;
@@ -170,6 +178,11 @@ window.setActiveRhythmChart = function(nextChart, label, audioKey) {
 window.getActiveRhythmChartTitle = function() {
   return chart?.title || '';
 };
+
+if (chartName && selectedSongTitle) {
+  new MutationObserver(syncSelectedSongTitle).observe(chartName,{childList:true,subtree:true,characterData:true});
+  syncSelectedSongTitle();
+}
 
 function updateComboDisplay() {
   comboEl.textContent = combo;
