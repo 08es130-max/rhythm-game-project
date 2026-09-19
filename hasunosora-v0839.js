@@ -135,9 +135,9 @@
   function applyGenyoChart(){
     const next=makeChart();
     if(typeof window.setActiveRhythmChart==='function'){
-      window.setActiveRhythmChart(next,`${TITLE}（${next.notes.length} notes）`);
+      window.setActiveRhythmChart(next,`${TITLE}（${next.notes.length} notes）`,AUDIO_KEY);
     }else{
-      chart=next;validateChart(chart);
+      next.audioKey=AUDIO_KEY;chart=next;validateChart(chart);
       chartName.textContent=`${TITLE}（${chart.notes.length} notes）`;
       offsetInput.value=String(getSavedTimingOffset());
       canStart();
@@ -145,48 +145,21 @@
     return next;
   }
 
-  async function restoreGenyoAudio(){
-    try{
-      const cached=await getPresetAudio(AUDIO_KEY);
-      if(cached&&usePresetAudio(cached,TITLE)){canStart();return true;}
-    }catch(e){console.warn('眩耀夜行の保存済み音源を読み込めませんでした',e);}
-    return false;
-  }
-
   function prepare(){
-    const next=applyGenyoChart();
+    applyGenyoChart();
     document.body.classList.add('hasunosora-live-active');
     audioMode.value='file';
     document.querySelectorAll('.app-screen').forEach(el=>{el.hidden=el.id!=='liveScreen';});
     try{resultPanel.hidden=true;}catch(_){}
     window.scrollTo({top:0,behavior:'auto'});
-
-    const isAndroid=/Android/i.test(navigator.userAgent||'');
-    let knownSaved=false;
-    try{knownSaved=localStorage.getItem('rhythmPresetAudioSaved:'+AUDIO_KEY)==='1';}catch(_){}
-
-    // Android Chrome may reject a programmatic file picker after an awaited IndexedDB read.
-    // On the first run, open the picker immediately while the LIVE START tap is still active.
-    if(isAndroid&&!knownSaved){
+    if(typeof window.preparePresetAudio==='function'){
+      window.preparePresetAudio(AUDIO_KEY,TITLE).then(()=>canStart());
+    }else{
       awaitingPresetAudioKey=AUDIO_KEY;
       songName.textContent=`${TITLE}（音源ファイルを選択してください）`;
-      try{audioFile.value='';}catch(_){}
       try{audioFile.click();}catch(_){}
       canStart();
-      return;
     }
-
-    restoreGenyoAudio().then(restored=>{
-      if(restored)return;
-      awaitingPresetAudioKey=AUDIO_KEY;
-      songName.textContent=isAndroid
-        ? `${TITLE}（音源ファイル欄をタップして選択してください）`
-        : `${TITLE}（初回のみ音源ファイルを選択してください）`;
-      if(!isAndroid){
-        try{audioFile.click();}catch(_){}
-      }
-      canStart();
-    });
   }
 
   function ensureHasuPage(){
