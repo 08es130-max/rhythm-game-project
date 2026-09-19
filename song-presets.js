@@ -54,6 +54,7 @@ function usePresetAudio(record, title) {
   presetAudioObjectUrl = URL.createObjectURL(record.blob);
   if (audio.src && audio.src.startsWith('blob:')) { try { URL.revokeObjectURL(audio.src); } catch (_) {} }
   audio.src = presetAudioObjectUrl;
+  if (record.key) audio.dataset.presetKey = String(record.key);
   try { audio.load(); } catch (_) {}
   audioMode.value = 'file';
   songName.textContent = `${title}（保存済み音源）`;
@@ -61,6 +62,59 @@ function usePresetAudio(record, title) {
   canStart();
   return true;
 }
+
+function clearPresetAudioSource() {
+  try { audio.pause(); } catch (_) {}
+  try {
+    if (audio.src && audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
+  } catch (_) {}
+  presetAudioObjectUrl = null;
+  try { audio.removeAttribute('src'); } catch (_) {}
+  try { delete audio.dataset.presetKey; } catch (_) {}
+  try { audio.load(); } catch (_) {}
+  canStart();
+}
+
+async function preparePresetAudio(audioKey, title) {
+  const key = String(audioKey || '');
+  if (!key) return false;
+  const isAndroid = /Android/i.test(navigator.userAgent || '');
+  let knownSaved = false;
+  try { knownSaved = localStorage.getItem('rhythmPresetAudioSaved:' + key) === '1'; } catch (_) {}
+
+  clearPresetAudioSource();
+  awaitingPresetAudioKey = key;
+  audioMode.value = 'file';
+
+  if (isAndroid && !knownSaved) {
+    songName.textContent = `${title}（音源ファイルを選択してください）`;
+    try { audioFile.value = ''; } catch (_) {}
+    try { audioFile.click(); } catch (_) {}
+    canStart();
+    return false;
+  }
+
+  try {
+    const cached = await getPresetAudio(key);
+    if (cached && usePresetAudio(cached, title)) return true;
+  } catch (e) {
+    console.warn(`${title}の保存済み音源を読み込めませんでした`, e);
+  }
+
+  awaitingPresetAudioKey = key;
+  songName.textContent = isAndroid
+    ? `${title}（音源ファイル欄をタップして選択してください）`
+    : `${title}（初回のみ音源ファイルを選択してください）`;
+  if (!isAndroid) {
+    try { audioFile.value = ''; } catch (_) {}
+    try { audioFile.click(); } catch (_) {}
+  }
+  canStart();
+  return false;
+}
+
+window.preparePresetAudio = preparePresetAudio;
+window.clearPresetAudioSource = clearPresetAudioSource;
 
 function nearestEventDistance(times, value) {
   let lo = 0, hi = times.length;
@@ -176,21 +230,14 @@ async function loadBuiltInChart(path, fallbackTitle, transform = null) {
 }
 
 async function prepareSpicaAudio() {
-  try {
-    const cached = await getPresetAudio(SPICA_AUDIO_KEY);
-    if (cached && usePresetAudio(cached, 'スピカテリブル')) return true;
-  } catch (e) {
-    console.warn('保存済み音源を読み込めませんでした', e);
-  }
-  awaitingPresetAudioKey = SPICA_AUDIO_KEY;
-  songName.textContent = 'スピカテリブル（初回のみ音源ファイルを選択してください）';
-  audioFile.click();
-  return false;
+  return preparePresetAudio(SPICA_AUDIO_KEY, 'スピカテリブル');
 }
 
 spicaPresetBtn?.addEventListener('click', async () => {
   const parsed = await loadBuiltInChart('charts/spica-terrible.json', 'スピカテリブル', makeSpicaHighDensityChart);
   if (!parsed) return;
+  parsed.audioKey = SPICA_AUDIO_KEY;
+  if (typeof window.setActiveRhythmChart === 'function') window.setActiveRhythmChart(parsed, `スピカテリブル（${parsed.notes.length} notes）`, SPICA_AUDIO_KEY);
   audioMode.value = 'file';
   await prepareSpicaAudio();
   canStart();
@@ -203,6 +250,7 @@ audioFile.addEventListener('change', async () => {
   awaitingPresetAudioKey = null;
   try {
     await savePresetAudio(key, file);
+    audio.dataset.presetKey = String(key);
     try { localStorage.setItem('rhythmPresetAudioSaved:' + key, '1'); } catch (_) {}
     if (key === SPICA_AUDIO_KEY) songName.textContent = 'スピカテリブル（音源をこの端末に保存しました）';
   } catch (e) {
