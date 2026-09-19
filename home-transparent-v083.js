@@ -1,13 +1,13 @@
-// Ver.0.8.76 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.77 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.76';
+  const VERSION='0.8.77';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ライブ画面に残っていた開発用の「スピカテリブル」「テスト譜面を使う」ショートカットを非表示にしました。内部のデバッグ処理は残しているため、通常プレイ機能には影響しません。';
+    if(text) text.textContent='スピカテリブルの開発用ショートカット経路を完全に削除し、通常の楽曲一覧から直接起動する一本化に変更しました。テスト譜面の内部デバッグ機能は残しています。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
