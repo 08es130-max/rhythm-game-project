@@ -718,7 +718,7 @@
 }
 .gacha-ur-spotlight.is-lr .gacha-ur-spotlight-image{
   object-fit:cover!important;
-  object-position:center 34%!important;
+  object-position:center 18%!important;
 }
 .gacha-ur-spotlight.is-lr .gacha-ur-spotlight-series{
   color:#fff6bf!important;
@@ -777,7 +777,7 @@
   border-radius:0!important;
   box-shadow:none!important;
   object-fit:cover!important;
-  object-position:center center!important;
+  object-position:center 18%!important;
 }
 .gacha-pull-card.rarity-lr .gacha-rarity,
 .gacha-pull-card.rarity-lr .gacha-card-series,
