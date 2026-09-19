@@ -140,13 +140,22 @@ function isSilentMode() {
   return audioMode.value === 'silent';
 }
 
-function canStart() {
-  const sourceReady = isSilentMode() || !!audio.src;
-  startBtn.disabled = !(sourceReady && chart);
+function isChartAudioMatched() {
+  if (isSilentMode()) return true;
+  const expected = String(chart?.audioKey || '');
+  if (!expected) return !!audio.src;
+  const actual = String(audio?.dataset?.presetKey || '');
+  return !!audio.src && actual === expected;
 }
 
-window.setActiveRhythmChart = function(nextChart, label) {
+function canStart() {
+  const sourceReady = isSilentMode() || !!audio.src;
+  startBtn.disabled = !(sourceReady && chart && isChartAudioMatched());
+}
+
+window.setActiveRhythmChart = function(nextChart, label, audioKey) {
   validateChart(nextChart);
+  if (audioKey) nextChart.audioKey = String(audioKey);
   chart = nextChart;
   chartName.textContent = label || nextChart.title || '譜面';
   offsetInput.value = String(getSavedTimingOffset());
@@ -186,6 +195,9 @@ audioFile.addEventListener('change', () => {
   if (!file) return;
   if (audio.src && audio.src.startsWith('blob:')) URL.revokeObjectURL(audio.src);
   audio.src = URL.createObjectURL(file);
+  try {
+    if (typeof awaitingPresetAudioKey === 'undefined' || !awaitingPresetAudioKey) delete audio.dataset.presetKey;
+  } catch (_) {}
   try { audio.load(); } catch (_) {}
   audioMode.value = 'file';
   songName.textContent = file.name;
@@ -269,7 +281,10 @@ function exitMobilePlayMode() {
 }
 
 async function startGame() {
-  if (!chart || (!isSilentMode() && !audio.src)) return;
+  if (!chart || (!isSilentMode() && !audio.src) || !isChartAudioMatched()) {
+    canStart();
+    return;
+  }
 
   tryEnterMobilePlayMode();
   resetGame();
