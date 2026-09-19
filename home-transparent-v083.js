@@ -1,13 +1,13 @@
-// Ver.0.8.86 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.87 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.86';
+  const VERSION='0.8.87';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='ガチャ開封テンポを改善し、Nは高速開封・URだけ特別演出で止まるよう変更しました。「URまでスキップ」「全スキップ」と100連勧誘を追加し、100連結果はコンパクト表示に対応しました。';
+    if(text) text.textContent='最高レアリティLRを追加しました。三船栞子【煌めくミントローズ】はLR 0.01%で登場し、獲得後は専用ホーム立ち絵と会話が解放されます。LR専用演出とテストモードも追加しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
