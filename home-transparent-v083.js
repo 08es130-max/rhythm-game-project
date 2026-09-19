@@ -1,13 +1,13 @@
-// Ver.0.8.71 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
+// Ver.0.8.72 patch loader: version sync, safe areas, interaction room, refined Shioriko 3D, and late-loaded chart fixes.
 (function(){
-  const VERSION='0.8.71';
+  const VERSION='0.8.72';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
     const text=document.querySelector('#updateBanner .update-text');
-    if(text) text.textContent='Android 13で眩耀夜行の譜面が切り替わらない・音源を再生できない問題に対し、譜面の明示セット、初回音源選択のユーザー操作内実行、音源load処理、楽曲カードの再生成抑止を追加しました。';
+    if(text) text.textContent='iPhoneで高精細3Dモデル読み込み時にページが停止する問題へ対応するため、重い全身GLBの自動読み込みを一時停止し、ラウンジ表示を安定版へ戻しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,120);
 
@@ -48,7 +48,7 @@
   if(!document.querySelector('script[data-hpt-density-v0838]')) loadScript('hpt-density-v0838.js?v=0.8.38-density1','hpt-density-v0838');
   loadScript('chart-audio-boundary-v0840.js?v=0.8.43-boundary4','chart-boundary-v0840',()=>{loadScript('genyo-yako-chart-v0840.js?v=0.8.43-genyo4','genyo-chart-v0840');});
   loadScript('dazzling-game-v0841.js?v=0.8.43-dazzling4','dazzling-game-v0841');
-  loadScript('interaction-room-v0844.js?v=0.8.61-head-review1','interaction-room-v0844',()=>{loadScript('shioriko-model-loader-v0852.js?v=0.8.55-pipeline5','shioriko-model-loader-v0852');});
+  loadScript('interaction-room-v0844.js?v=0.8.61-head-review1','interaction-room-v0844',()=>{loadScript('shioriko-model-loader-v0852.js?v=0.8.72-ios-recovery1','shioriko-model-loader-v0852');});
 
   function keepHasunosoraTab(){
     const tabs=document.getElementById('songCategoryTabs');const page=document.getElementById('hasunosoraSongScreen');
