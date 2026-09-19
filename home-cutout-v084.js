@@ -3,6 +3,7 @@
   const VERSION=window.APP_VERSION || '0.8.20';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const HOME_ART_KEY='rhythmGame.shiorikoHomeArt.v1';
+  const LR_ID='lr-shioriko-eternal-rose';
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const PREVIOUS_ART={
     normal:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
@@ -14,11 +15,13 @@
     casual:`assets/home-characters/shioriko/casual.png?v=${VERSION}-pngset1`
   };
   // Classic keeps the historical normal and its existing expression fallback.
+  const LR_HOME=`assets/lr/shioriko-lr-home.webp?v=${VERSION}-lr1`;
   const ART_SETS={
     stage:Object.fromEntries(VALID.map(mode=>[
       mode,`assets/home-characters/shioriko/new/${mode}.png?v=${VERSION}-${mode==='normal'?'homeart9':'homeart10'}`
     ])),
-    classic:{...PREVIOUS_ART,normal:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`}
+    classic:{...PREVIOUS_ART,normal:`assets/home-characters/shioriko/normal-v0814.png?v=${VERSION}-homeart4`},
+    lr:Object.fromEntries(VALID.map(mode=>[mode,LR_HOME]))
   };
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
@@ -56,9 +59,17 @@
     const m=document.documentElement.dataset.shioMode || localStorage.getItem(MODE_KEY) || 'normal';
     return VALID.includes(m)?m:'normal';
   };
+  const isLrOwned=()=>{
+    try{
+      if(typeof window.loadGachaOwned==='function') return window.loadGachaOwned().has(LR_ID);
+      const parsed=JSON.parse(localStorage.getItem('rhythmGame.unlockedCharacters.v1')||'[]');
+      return Array.isArray(parsed)&&parsed.includes(LR_ID);
+    }catch(_){return false;}
+  };
   const normalizeHomeArt=(value)=>{
-    const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic'};
-    return Object.prototype.hasOwnProperty.call(aliases,value)?aliases[value]:'stage';
+    const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic',lr:'lr',legend:'lr'};
+    const normalized=Object.prototype.hasOwnProperty.call(aliases,value)?aliases[value]:'stage';
+    return normalized==='lr'&&!isLrOwned()?'stage':normalized;
   };
   const getHomeArt=()=>{
     const saved=localStorage.getItem(HOME_ART_KEY);
@@ -92,13 +103,16 @@
       /* Use the approved normal framing for the entire official set. */
       @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="stage"]{bottom:-101px!important}}
       @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="stage"]{bottom:-105px!important}}
+      /* LR reward standing uses its own approved full-body framing. */
+      @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="lr"]{width:112%!important;height:126%!important;bottom:-42px!important}}
+      @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="lr"]{width:114%!important;height:128%!important;bottom:-46px!important}}
       /* The final yandere source has more empty space above the head. */
       @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="stage"][data-mode="yandere"]{bottom:-71px!important}}
       @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="stage"][data-mode="yandere"]{bottom:-75px!important}}
       .home-art-selector{margin:0 0 16px;padding:14px;border:1px solid #374151;border-radius:14px;background:#111827}
       .home-art-selector h2{margin:0 0 5px;font-size:17px}
       .home-art-selector p{margin:0 0 12px;color:#94a3b8;font-size:12px;line-height:1.5}
-      .home-art-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:760px}
+      .home-art-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:900px}
       .home-art-option{appearance:none;border:2px solid #374151;border-radius:14px;background:#0b1220;padding:8px;color:#f8fafc;cursor:pointer;text-align:left;transition:border-color .12s,box-shadow .12s,transform .12s}
       .home-art-option:active{transform:scale(.985)}
       .home-art-option.is-selected{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.18)}
@@ -117,14 +131,19 @@
     const status=wrap.querySelector('.home-art-current');
     const defs=[
       {id:'stage',label:'ステージスタイル',src:ART_SETS.stage.normal},
-      {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal}
+      {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal},
+      {id:'lr',label:'LEGEND RARE',src:ART_SETS.lr.normal,requiresLr:true}
     ];
     const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'ステージスタイル';
     const refresh=()=>{
       const selected=getHomeArt();
       wrap.querySelectorAll('.home-art-option').forEach(btn=>{
-        btn.classList.toggle('is-selected',btn.dataset.art===selected);
-        btn.setAttribute('aria-pressed',String(btn.dataset.art===selected));
+        const def=defs.find(x=>x.id===btn.dataset.art);
+        const locked=!!def?.requiresLr&&!isLrOwned();
+        btn.hidden=locked;
+        btn.disabled=locked;
+        btn.classList.toggle('is-selected',!locked&&btn.dataset.art===selected);
+        btn.setAttribute('aria-pressed',String(!locked&&btn.dataset.art===selected));
       });
       status.textContent=`選択中：${labelFor(selected)}`;
     };
@@ -142,6 +161,7 @@
       label.textContent=def.label;
       btn.append(img,label);
       btn.addEventListener('click',()=>{
+        if(def.requiresLr&&!isLrOwned()) return;
         localStorage.setItem(HOME_ART_KEY,def.id);
         refresh();
         window.dispatchEvent(new CustomEvent('rhythmGameShiorikoHomeArtChanged',{detail:{art:def.id}}));
@@ -151,7 +171,8 @@
     panel.prepend(wrap);
     refresh();
     window.addEventListener('rhythmGameShiorikoHomeArtChanged',refresh);
-    window.addEventListener('storage',(e)=>{if(e.key===HOME_ART_KEY||e.key===null)refresh();});
+    window.addEventListener('storage',(e)=>{if(e.key===HOME_ART_KEY||e.key==='rhythmGame.unlockedCharacters.v1'||e.key===null)refresh();});
+    window.addEventListener('rhythmGameGachaOwnedChanged',()=>{refresh();applyMode(getMode());});
   }
 
   applyMode(getMode());
