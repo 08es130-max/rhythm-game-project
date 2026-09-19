@@ -367,7 +367,7 @@
       screen.querySelector('#gachaPullHundredBtn')
     ].filter(Boolean);
     const skipActions=screen.querySelector('#gachaSkipActions');
-    const session={skipMode:'none',count};
+    const session={skipMode:count===100?'normal':'none',count};
     activePullSession=session;
 
     screen.querySelector('#gachaLobby').hidden=true;
