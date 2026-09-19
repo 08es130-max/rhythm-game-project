@@ -75,9 +75,10 @@ window.location.replace(url.toString());
 </div>
 </section>
 <section id="liveScreen" class="app-screen live-screen" hidden>
-<div class="screen-header"><button id="livePrepBackBtn" class="home-back-btn" type="button">楽曲選択へ</button><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
+<div class="screen-header"><div class="live-prep-nav"><button id="livePrepBackBtn" class="home-back-btn" type="button">楽曲選択へ</button><button id="livePrepHomeBtn" class="home-back-btn" type="button">ホーム</button></div><h1>ライブ</h1><button id="liveSettingsBtn" class="home-back-btn" type="button">設定</button></div>
 <section class="panel controls" id="controlsPanel">
 <div class="version-badge" aria-label="app version">Ver. 0.8.68</div>
+<div class="selected-song-card"><span>選択中の楽曲</span><strong id="selectedSongTitle">未選択</strong></div>
 <h2>ライブ準備</h2><p class="sub">準備ができたらSTARTを押してください。</p>
 <div class="live-dev-controls" hidden aria-hidden="true">
   <button id="demoBtn" type="button">テスト譜面を使う</button>
@@ -85,8 +86,11 @@ window.location.replace(url.toString());
   <input id="audioFile" type="file" accept="audio/*,video/mp4,.mp4,.m4a,.mp3,.wav" />
   <input id="chartFile" type="file" accept="application/json,.json" />
 </div>
-<div class="button-row"><button id="startBtn" disabled>START</button><button id="changeSongAudioBtn" type="button">音源を変更</button><button id="stopBtn" disabled>STOP</button></div>
-<div class="selected-song-card"><span>選択中の楽曲</span><strong id="selectedSongTitle">未選択</strong></div>
+<div class="audio-source-panel" id="audioSourcePanel">
+  <p id="livePrepAudioGuide">この楽曲の音源ファイルを選択してください。</p>
+  <button id="changeSongAudioBtn" type="button">音源ファイルを選択</button>
+</div>
+<div class="button-row"><button id="startBtn" disabled>START</button><button id="stopBtn" disabled>STOP</button></div>
 <div class="meta-row"><div>音源: <strong id="songName">未選択</strong></div><div>譜面: <strong id="chartName">未選択</strong></div></div>
 </section>
 <section class="game-wrap">
