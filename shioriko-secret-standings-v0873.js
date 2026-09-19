@@ -40,7 +40,7 @@
         position:absolute!important;
         left:50%!important;
         bottom:0!important;
-        z-index:12!important;
+        z-index:6!important;
         width:100%!important;
         height:100%!important;
         max-width:none!important;
