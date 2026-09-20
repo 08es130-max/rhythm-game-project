@@ -91,10 +91,12 @@
 .home-screen.is-lr-home-scene-v096 .home-main{z-index:10!important}
 .home-screen.is-lr-home-scene-v096 .home-right-panel,
 .home-screen.is-lr-home-scene-v096 .update-banner,
-.home-screen.is-lr-home-scene-v096 .home-menu,
+.home-screen.is-lr-home-scene-v096 .home-menu{
+  position:relative;
+  z-index:20!important;
+}
 .home-screen.is-lr-home-scene-v096 .home-character-note,
 .home-screen.is-lr-home-scene-v096 .home-dialogue{
-  position:relative;
   z-index:20!important;
 }
 .home-screen.is-lr-home-scene-v096 .home-lovefes-logo-v085{z-index:32!important}
@@ -139,11 +141,13 @@
 .home-screen.home-lr-scene-active .home-main,
 .home-screen.home-lr-scene-active .home-menu,
 .home-screen.home-lr-scene-active .home-menu-btn,
-.home-screen.home-lr-scene-active .home-character-note,
-.home-screen.home-lr-scene-active .home-dialogue,
 .home-screen.home-lr-scene-active .home-lovefes-logo-v085,
 .home-screen.home-lr-scene-active .home-version{
   position:relative;
+  z-index:20!important;
+}
+.home-screen.home-lr-scene-active .home-character-note,
+.home-screen.home-lr-scene-active .home-dialogue{
   z-index:20!important;
 }
 
