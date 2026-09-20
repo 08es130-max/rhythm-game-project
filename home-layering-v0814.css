@@ -99,3 +99,75 @@
 }
 .home-screen.is-lr-home-scene-v096 .home-lovefes-logo-v085{z-index:32!important}
 .home-screen.is-lr-home-scene-v096 .home-version{z-index:33!important}
+
+
+/* Ver.0.8.96: full-scene LEGEND RARE home background. */
+.home-screen .home-lr-scene-bg-v096{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  z-index:0!important;
+  pointer-events:none!important;
+  user-select:none!important;
+  -webkit-user-drag:none!important;
+  opacity:0;
+  transition:opacity .28s ease;
+}
+.home-screen.home-lr-scene-active .home-lr-scene-bg-v096{
+  opacity:1;
+}
+.home-screen.home-lr-scene-active{
+  background:#09111d!important;
+}
+.home-screen.home-lr-scene-active::before{
+  opacity:0!important;
+}
+
+/* The LR scene already contains Shioriko, so hide the separate standing-art layer. */
+.home-screen.home-lr-scene-active .home-character-cutout-v084,
+.home-screen.home-lr-scene-active .home-character-img{
+  opacity:0!important;
+  visibility:hidden!important;
+}
+
+/* Keep all interactive/home information above the LR artwork. */
+.home-screen.home-lr-scene-active .home-topbar,
+.home-screen.home-lr-scene-active .update-banner,
+.home-screen.home-lr-scene-active .home-main,
+.home-screen.home-lr-scene-active .home-menu,
+.home-screen.home-lr-scene-active .home-menu-btn,
+.home-screen.home-lr-scene-active .home-character-note,
+.home-screen.home-lr-scene-active .home-dialogue,
+.home-screen.home-lr-scene-active .home-lovefes-logo-v085,
+.home-screen.home-lr-scene-active .home-version{
+  position:relative;
+  z-index:20!important;
+}
+
+/* Let the full-scene artwork show through instead of a left-side card surface. */
+.home-screen.home-lr-scene-active .home-character-card{
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+
+/* Improve text readability without covering the artwork. */
+.home-screen.home-lr-scene-active .home-character-note,
+.home-screen.home-lr-scene-active .home-dialogue,
+.home-screen.home-lr-scene-active .home-version{
+  text-shadow:0 2px 8px rgba(0,0,0,.72);
+}
+.home-screen.home-lr-scene-active .home-menu-btn{
+  text-shadow:0 2px 8px rgba(0,0,0,.72);
+}
+
+/* Landscape iPhone: fill edge-to-edge with no blank margin. */
+@media (orientation:landscape){
+  .home-screen.home-lr-scene-active .home-lr-scene-bg-v096{
+    object-fit:cover!important;
+    object-position:center center!important;
+  }
+}
