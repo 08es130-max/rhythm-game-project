@@ -132,7 +132,7 @@
     const defs=[
       {id:'stage',label:'ステージスタイル',src:ART_SETS.stage.normal},
       {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal},
-      {id:'lr',label:'LEGEND RARE',src:ART_SETS.lr.normal,requiresLr:true}
+      {id:'lr',label:'LEGEND RARE 蒼海に舞う翠玉姫',src:ART_SETS.lr.normal,requiresLr:true}
     ];
     const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'ステージスタイル';
     const refresh=()=>{
