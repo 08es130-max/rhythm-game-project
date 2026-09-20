@@ -20,7 +20,7 @@
     rarity:'LR',
     series:'LEGEND RARE',
     icon:`assets/lr/shioriko-lr-live-icon.webp?v=${version}`,
-    card:window.LR_ASSET_CARD||`assets/lr/shioriko-lr-card.webp?v=${version}`,
+    card:`assets/lr/shioriko-lr-card.webp?v=${version}`,
     home:`assets/lr/shioriko-lr-home.webp?v=${version}`
   };
   const lrPool=[lrShioriko];
