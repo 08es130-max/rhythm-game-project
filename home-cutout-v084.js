@@ -16,6 +16,7 @@
   };
   // Classic keeps the historical normal and its existing expression fallback.
   const LR_HOME=`assets/lr/shioriko-lr-home.webp?v=${VERSION}-lrhome1`;
+  const LR_HOME_SCENE=`assets/lr/shioriko-lr-home-scene.webp?v=${VERSION}-lrhomebg1`;
   const ART_SETS={
     stage:Object.fromEntries(VALID.map(mode=>[
       mode,`assets/home-characters/shioriko/new/${mode}.png?v=${VERSION}-${mode==='normal'?'homeart9':'homeart10'}`
@@ -30,9 +31,21 @@
     homeGachaBtn:`assets/home-ui/gacha.png?v=${VERSION}`
   };
 
+  const home=document.getElementById('homeScreen');
   const card=document.querySelector('.home-character-card');
   const original=card?.querySelector('.home-character-img');
-  if(!card||!original) return;
+  if(!home||!card||!original) return;
+
+  let lrScene=home.querySelector('.home-lr-scene-v096');
+  if(!lrScene){
+    lrScene=document.createElement('img');
+    lrScene.className='home-lr-scene-v096';
+    lrScene.alt='';
+    lrScene.decoding='async';
+    lrScene.draggable=false;
+    lrScene.hidden=true;
+    home.prepend(lrScene);
+  }
 
   let cutout=card.querySelector('.home-character-cutout-v084');
   if(!cutout){
@@ -45,11 +58,21 @@
   }
 
   const fallbackToOriginal=()=>{
+    if(home.classList.contains('is-lr-home-scene-v096')){
+      cutout.hidden=true;
+      original.classList.add('home-original-hidden-v084');
+      return;
+    }
     cutout.hidden=true;
     original.classList.remove('home-original-hidden-v084');
   };
 
   cutout.addEventListener('load',()=>{
+    if(home.classList.contains('is-lr-home-scene-v096')){
+      cutout.hidden=true;
+      original.classList.add('home-original-hidden-v084');
+      return;
+    }
     cutout.hidden=false;
     original.classList.add('home-original-hidden-v084');
   });
@@ -81,14 +104,31 @@
 
   const applyMode=(mode)=>{
     const m=VALID.includes(mode)?mode:'normal';
+    const art=getHomeArt();
+    const useLrScene=art==='lr';
     document.documentElement.dataset.shioMode=m;
-    cutout.dataset.artSet=getHomeArt();
+    home.classList.toggle('is-lr-home-scene-v096',useLrScene);
+    if(useLrScene){
+      const sceneUrl=new URL(LR_HOME_SCENE,location.href).href;
+      if(lrScene.src!==sceneUrl) lrScene.src=LR_HOME_SCENE;
+      lrScene.hidden=false;
+      cutout.hidden=true;
+      original.classList.add('home-original-hidden-v084');
+      cutout.dataset.artSet=art;
+      cutout.dataset.mode=m;
+      return;
+    }
+    lrScene.hidden=true;
+    cutout.dataset.artSet=art;
     cutout.dataset.mode=m;
     const src=getArtSrc(m);
     if(!src){fallbackToOriginal();return;}
     if(cutout.src!==new URL(src,location.href).href){
       cutout.hidden=true;
       cutout.src=src;
+    }else{
+      cutout.hidden=false;
+      original.classList.add('home-original-hidden-v084');
     }
   };
 
@@ -132,7 +172,7 @@
     const defs=[
       {id:'stage',label:'ステージスタイル',src:ART_SETS.stage.normal},
       {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal},
-      {id:'lr',label:'LEGEND RARE 蒼海に舞う翠玉姫',src:ART_SETS.lr.normal,requiresLr:true}
+      {id:'lr',label:'LEGEND RARE 蒼海に舞う翠玉姫',src:LR_HOME_SCENE,requiresLr:true}
     ];
     const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'ステージスタイル';
     const refresh=()=>{
@@ -187,8 +227,7 @@
     if(e.key===null) applyMode('normal');
   });
   const restoreHomeArt=()=>applyMode(localStorage.getItem(MODE_KEY)||'normal');
-  const home=document.getElementById('homeScreen');
-  if(home) new MutationObserver(()=>{if(!home.hidden)restoreHomeArt();})
+  new MutationObserver(()=>{if(!home.hidden)restoreHomeArt();})
     .observe(home,{attributes:true,attributeFilter:['hidden']});
   window.addEventListener('pageshow',restoreHomeArt);
 
