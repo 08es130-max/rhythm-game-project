@@ -335,7 +335,7 @@
     const label=overlay.querySelector('.gacha-ur-spotlight-label');
     const isLR=result.rarity==='LR';
     const nextSrc=isLR
-      ? (window.LR_ASSET_CARD||result.unit.card||result.unit.icon)
+      ? (result.unit.card||window.LR_ASSET_CARD||result.unit.icon)
       : result.unit.icon;
 
     overlay.classList.toggle('is-lr',isLR);
