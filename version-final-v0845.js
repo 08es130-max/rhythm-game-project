@@ -1,14 +1,14 @@
-// Final version guard for Ver.0.8.94. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.95. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.94';
+  const VERSION='0.8.95';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     const text=document.querySelector('#updateBanner .update-text');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
-    if(text) text.textContent='LR排出演出をUR演出から完全分離し、LR入りガチャ開始時の専用予兆と、画面切替を伴うLEGEND RARE専用シネマティック演出を新規実装しました。';
+    if(text) text.textContent='LR栞子の名称を「三船栞子【蒼海に舞う翠玉姫】」へ変更し、ホームスタイル・部室・ライブ側の表示名も同じ名称へ統一しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,150);
 })();
