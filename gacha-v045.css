@@ -1168,3 +1168,101 @@
     animation-iteration-count:1!important;
   }
 }
+
+
+/* Ver.0.8.104: landscape scout lobby fits in one screen with no scrolling. */
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-screen{
+    height:100dvh!important;
+    min-height:100dvh!important;
+    overflow:hidden!important;
+  }
+  .gacha-topbar{
+    height:48px!important;
+    grid-template-columns:96px 1fr 118px!important;
+  }
+  .gacha-heading h1{font-size:17px!important}
+  .gacha-lobby{
+    height:calc(100dvh - 48px)!important;
+    overflow:hidden!important;
+    grid-template-columns:126px minmax(0,1fr)!important;
+    gap:6px!important;
+    padding:5px max(22px,env(safe-area-inset-right)) 5px max(22px,env(safe-area-inset-left))!important;
+  }
+  .gacha-nav{
+    min-height:0!important;
+    gap:4px!important;
+  }
+  .gacha-nav button{
+    min-height:0!important;
+    padding:5px 7px!important;
+    border-radius:8px!important;
+  }
+  .gacha-nav button strong{font-size:9px!important}
+  .gacha-nav button small{font-size:5px!important;margin-top:1px!important}
+  .gacha-lobby-main{
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    display:grid!important;
+    grid-template-rows:minmax(0,1fr) 86px 38px!important;
+    gap:5px!important;
+    align-content:stretch!important;
+  }
+  .gacha-banner{
+    height:100%!important;
+    min-height:0!important;
+    max-height:none!important;
+    align-self:stretch!important;
+  }
+  .gacha-banner img{
+    width:100%!important;
+    height:100%!important;
+    object-fit:cover!important;
+    object-position:center 24%!important;
+  }
+  .gacha-featured-cards{
+    height:86px!important;
+    min-height:0!important;
+    gap:5px!important;
+  }
+  .gacha-feature-image-wrap{
+    padding:4px 6px 22px!important;
+  }
+  .gacha-feature-card .gacha-feature-series{bottom:19px!important}
+  .gacha-feature-card strong{bottom:7px!important;font-size:7px!important}
+  .gacha-lobby-bottom{
+    height:38px!important;
+    min-height:0!important;
+    grid-template-columns:auto minmax(0,1fr)!important;
+    gap:6px!important;
+    overflow:visible!important;
+  }
+  .gacha-links button{
+    padding:4px 7px!important;
+    font-size:6px!important;
+  }
+  .gacha-main-actions{
+    flex-wrap:nowrap!important;
+    gap:5px!important;
+    min-width:0!important;
+  }
+  .gacha-pull-btn{
+    min-width:0!important;
+    flex:1 1 0!important;
+    padding:5px 8px!important;
+    border-radius:10px!important;
+  }
+  .gacha-pull-btn span{
+    margin-top:0!important;
+    font-size:10px!important;
+  }
+  .gacha-pull-btn small{
+    margin-top:0!important;
+    font-size:5px!important;
+  }
+}
+
+/* The 10-pull button no longer carries an expectation/guarantee label. */
+.gacha-pull-ten b{display:none!important}
+.gacha-pull-ten span{margin-top:0!important}
