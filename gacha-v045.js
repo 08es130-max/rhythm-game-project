@@ -229,10 +229,10 @@
       renderScoutLobby(screen);
     });
     screen.querySelector('#gachaRateBtn')?.addEventListener('click',()=>{
-      const cfg=getGachaSettings();if(cfg.testLrFirst)alert('提供割合（テスト）\n1枠目 LR 100%\n2枠目以降 UR 100%');else alert(`提供割合\nLR【煌めくミントローズ】 ${(Number(cfg.lrRate||DEFAULT_LR_RATE)*100).toFixed(2)}%\nUR【マンスリーソング】 ${(Number(cfg.urRate||DEFAULT_UR_RATE)*100).toFixed(2)}%\nN【音符ロリータ】 ${(100-(Number(cfg.lrRate||DEFAULT_LR_RATE)+Number(cfg.urRate||DEFAULT_UR_RATE))*100).toFixed(2)}%`);
+      const cfg=getGachaSettings();if(cfg.testLrFirst)alert('提供割合（テスト）\n1枠目 LR 100%\n2枠目以降 UR 100%');else alert(`提供割合\nLR【蒼海に舞う翠玉姫】 ${(Number(cfg.lrRate||DEFAULT_LR_RATE)*100).toFixed(2)}%\nUR【マンスリーソング】 ${(Number(cfg.urRate||DEFAULT_UR_RATE)*100).toFixed(2)}%\nN【音符ロリータ】 ${(100-(Number(cfg.lrRate||DEFAULT_LR_RATE)+Number(cfg.urRate||DEFAULT_UR_RATE))*100).toFixed(2)}%`);
     });
     screen.querySelector('#gachaDetailBtn')?.addEventListener('click',()=>{
-      alert('ピックアップスカウト「星の約束」\n最高レアリティLR「三船栞子【煌めくミントローズ】」が登場します。\nUR/LRは初獲得時に部室へ追加され、LR栞子は専用ホーム立ち絵も解放されます。');
+      alert('ピックアップスカウト「星の約束」\n最高レアリティLR「三船栞子【蒼海に舞う翠玉姫】」が登場します。\nUR/LRは初獲得時に部室へ追加され、LR栞子は専用ホーム立ち絵も解放されます。');
     });
     renderScoutLobby(screen);
     updateRateDisplay(screen);
