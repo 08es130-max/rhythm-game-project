@@ -1266,3 +1266,41 @@
 /* The 10-pull button no longer carries an expectation/guarantee label. */
 .gacha-pull-ten b{display:none!important}
 .gacha-pull-ten span{margin-top:0!important}
+
+
+/* Ver.0.8.105: larger scout buttons, slightly smaller landscape banner. */
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-lobby-main{
+    grid-template-rows:minmax(0,1fr) 82px 54px!important;
+    gap:5px!important;
+  }
+  .gacha-banner{
+    max-height:calc(100dvh - 48px - 82px - 54px - 10px)!important;
+  }
+  .gacha-featured-cards{
+    height:82px!important;
+  }
+  .gacha-lobby-bottom{
+    height:54px!important;
+    align-items:stretch!important;
+  }
+  .gacha-main-actions{
+    align-items:stretch!important;
+  }
+  .gacha-pull-btn{
+    min-height:48px!important;
+    padding:7px 10px!important;
+    border-radius:12px!important;
+  }
+  .gacha-pull-btn span{
+    font-size:13px!important;
+    line-height:1.05!important;
+  }
+  .gacha-pull-btn small{
+    margin-top:2px!important;
+    font-size:6px!important;
+  }
+  .gacha-links{
+    align-items:center!important;
+  }
+}
