@@ -1304,3 +1304,111 @@
     align-items:center!important;
   }
 }
+
+
+/* Ver.0.8.106: larger rate button and split pickup cards. */
+.gacha-feature-card{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:1fr!important;
+  align-items:stretch!important;
+  gap:8px!important;
+}
+.gacha-feature-info{
+  position:relative!important;
+  z-index:3!important;
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-items:flex-start!important;
+  padding:8px 0 8px 10px!important;
+  box-sizing:border-box!important;
+}
+.gacha-feature-info .gacha-feature-rarity{
+  position:static!important;
+  margin:0 0 6px 0!important;
+}
+.gacha-feature-info .gacha-feature-series{
+  position:static!important;
+  margin:0 0 4px 0!important;
+}
+.gacha-feature-info strong{
+  position:static!important;
+  display:block!important;
+  max-width:100%!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.gacha-feature-image-wrap{
+  position:relative!important;
+  inset:auto!important;
+  z-index:2!important;
+  align-self:stretch!important;
+  justify-self:end!important;
+  height:100%!important;
+  width:auto!important;
+  aspect-ratio:1/1!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+.gacha-feature-card .gacha-feature-image-wrap img{
+  width:100%!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  border-radius:0!important;
+}
+.gacha-feature-card>small{display:none!important}
+
+#gachaRateBtn{
+  min-width:112px!important;
+  min-height:44px!important;
+  padding:8px 16px!important;
+  border-radius:12px!important;
+  font-size:12px!important;
+  font-weight:900!important;
+}
+#gachaDetailBtn{display:none!important}
+
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-lobby-main{
+    grid-template-rows:minmax(0,1fr) 88px 54px!important;
+  }
+  .gacha-featured-cards{
+    height:88px!important;
+  }
+  .gacha-feature-card{
+    grid-template-columns:minmax(0,1fr) 88px!important;
+    gap:5px!important;
+  }
+  .gacha-feature-info{
+    padding:6px 0 6px 8px!important;
+  }
+  .gacha-feature-info .gacha-feature-rarity{
+    font-size:7px!important;
+    margin-bottom:5px!important;
+  }
+  .gacha-feature-info .gacha-feature-series{
+    font-size:6px!important;
+    margin-bottom:3px!important;
+  }
+  .gacha-feature-info strong{
+    font-size:10px!important;
+    line-height:1.1!important;
+  }
+  .gacha-feature-image-wrap{
+    width:88px!important;
+    height:88px!important;
+    aspect-ratio:1/1!important;
+  }
+  #gachaRateBtn{
+    min-width:104px!important;
+    min-height:44px!important;
+    padding:7px 13px!important;
+    font-size:10px!important;
+  }
+}
