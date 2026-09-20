@@ -175,3 +175,33 @@
     object-position:center center!important;
   }
 }
+
+
+/* Ver.0.8.101: keep unified home menu above LR background. */
+.home-screen.is-lr-home-scene-v096 .home-main,
+.home-screen.home-lr-scene-active .home-main{
+  position:relative!important;
+  z-index:20!important;
+}
+.home-screen.is-lr-home-scene-v096 .home-menu,
+.home-screen.home-lr-scene-active .home-menu{
+  position:relative!important;
+  z-index:30!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
+.home-screen.is-lr-home-scene-v096 .home-menu>.home-menu-btn,
+.home-screen.home-lr-scene-active .home-menu>.home-menu-btn{
+  position:relative!important;
+  z-index:31!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+.home-screen.is-lr-home-scene-v096 .home-menu>.home-menu-btn>.home-menu-art,
+.home-screen.home-lr-scene-active .home-menu>.home-menu-btn>.home-menu-art{
+  position:relative!important;
+  z-index:32!important;
+  visibility:visible!important;
+  opacity:1!important;
+}
