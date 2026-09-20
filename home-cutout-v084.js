@@ -16,7 +16,7 @@
   };
   // Classic keeps the historical normal and its existing expression fallback.
   const LR_HOME=`assets/lr/shioriko-lr-home.webp?v=${VERSION}-lrhome1`;
-  const LR_HOME_SCENE=`assets/lr/shioriko-lr-home-scene.webp?v=${VERSION}-lrhomebg4`;
+  const LR_HOME_SCENE=window.LR_HOME_SCENE_ASSET||`assets/lr/shioriko-lr-home-scene.webp?v=${VERSION}-lrhomebg5`;
   const ART_SETS={
     stage:Object.fromEntries(VALID.map(mode=>[
       mode,`assets/home-characters/shioriko/new/${mode}.png?v=${VERSION}-${mode==='normal'?'homeart9':'homeart10'}`
