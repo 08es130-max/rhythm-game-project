@@ -16,7 +16,7 @@
   };
   // Classic keeps the historical normal and its existing expression fallback.
   const LR_HOME=`assets/lr/shioriko-lr-home.webp?v=${VERSION}-lrhome1`;
-  const LR_HOME_SCENE=window.LR_HOME_SCENE_ASSET||`assets/lr/shioriko-lr-home-scene.webp?v=${VERSION}-lrhomebg1`;
+  const LR_HOME_SCENE=`assets/lr/shioriko-lr-home-scene.webp?v=${VERSION}-lrhomebg2`;
   const ART_SETS={
     stage:Object.fromEntries(VALID.map(mode=>[
       mode,`assets/home-characters/shioriko/new/${mode}.png?v=${VERSION}-${mode==='normal'?'homeart9':'homeart10'}`
@@ -110,8 +110,18 @@
     home.classList.toggle('is-lr-home-scene-v096',useLrScene);
     if(useLrScene){
       const sceneUrl=new URL(LR_HOME_SCENE,location.href).href;
-      if(lrScene.src!==sceneUrl) lrScene.src=LR_HOME_SCENE;
-      lrScene.hidden=false;
+      lrScene.onload=()=>{lrScene.hidden=false;};
+      lrScene.onerror=()=>{
+        lrScene.hidden=true;
+        home.classList.remove('is-lr-home-scene-v096');
+        original.classList.remove('home-original-hidden-v084');
+      };
+      if(lrScene.src!==sceneUrl){
+        lrScene.hidden=true;
+        lrScene.src=LR_HOME_SCENE;
+      }else{
+        lrScene.hidden=false;
+      }
       cutout.hidden=true;
       original.classList.add('home-original-hidden-v084');
       cutout.dataset.artSet=art;
