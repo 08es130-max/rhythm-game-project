@@ -188,7 +188,7 @@
             </div>
             <div class="gacha-main-actions">
               <button id="gachaPullOneBtn" class="gacha-pull-btn gacha-pull-one" type="button"><span>1回勧誘</span><small>FREE</small></button>
-              <button id="gachaPullTenBtn" class="gacha-pull-btn gacha-pull-ten" type="button"><b>UR期待の10連</b><span>10回勧誘</span><small>FREE</small></button>
+              <button id="gachaPullTenBtn" class="gacha-pull-btn gacha-pull-ten" type="button"><span>10回勧誘</span><small>FREE</small></button>
               <button id="gachaPullHundredBtn" class="gacha-pull-btn gacha-pull-hundred" type="button"><span>100回勧誘</span><small>FREE</small></button>
             </div>
           </div>
