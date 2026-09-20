@@ -49,3 +49,53 @@
     bottom:-50px!important;
   }
 }
+
+
+/* Ver.0.8.96: full-scene LR home background. */
+.home-screen .home-lr-scene-v096{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  z-index:0!important;
+  object-fit:cover;
+  object-position:center center;
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.home-screen .home-lr-scene-v096[hidden]{display:none!important}
+
+.home-screen.is-lr-home-scene-v096{
+  background:#eef8ff!important;
+}
+.home-screen.is-lr-home-scene-v096::before,
+.home-screen.is-lr-home-scene-v096::after,
+.home-screen.is-lr-home-scene-v096 .home-main::before,
+.home-screen.is-lr-home-scene-v096 .home-main::after{
+  content:none!important;
+  display:none!important;
+}
+.home-screen.is-lr-home-scene-v096 .home-character-cutout-v084,
+.home-screen.is-lr-home-scene-v096 .home-character-img{
+  display:none!important;
+}
+.home-screen.is-lr-home-scene-v096 .home-character-card{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.home-screen.is-lr-home-scene-v096 .home-topbar{z-index:30!important}
+.home-screen.is-lr-home-scene-v096 .home-main{z-index:10!important}
+.home-screen.is-lr-home-scene-v096 .home-right-panel,
+.home-screen.is-lr-home-scene-v096 .update-banner,
+.home-screen.is-lr-home-scene-v096 .home-menu,
+.home-screen.is-lr-home-scene-v096 .home-character-note,
+.home-screen.is-lr-home-scene-v096 .home-dialogue{
+  position:relative;
+  z-index:20!important;
+}
+.home-screen.is-lr-home-scene-v096 .home-lovefes-logo-v085{z-index:32!important}
+.home-screen.is-lr-home-scene-v096 .home-version{z-index:33!important}
