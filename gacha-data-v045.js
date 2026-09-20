@@ -16,7 +16,7 @@
   const lrShioriko={
     id:'lr-shioriko-eternal-rose',
     baseId:'shioriko',
-    name:'三船栞子【煌めくミントローズ】',
+    name:'三船栞子【蒼海に舞う翠玉姫】',
     rarity:'LR',
     series:'LEGEND RARE',
     icon:`assets/lr/shioriko-lr-live-icon.webp?v=${version}`,
