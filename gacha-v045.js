@@ -138,9 +138,8 @@
 
   function featuredUnits(){
     const urPool=Array.isArray(window.GACHA_UR_POOL)?window.GACHA_UR_POOL:[];
-    const lrPool=Array.isArray(window.GACHA_LR_POOL)?window.GACHA_LR_POOL:[];
     const preferred=['monthly-shioriko','monthly-setsuna'];
-    const picked=[...lrPool.slice(0,1),...preferred.map(id=>urPool.find(u=>u.id===id)).filter(Boolean)];
+    const picked=preferred.map(id=>urPool.find(u=>u.id===id)).filter(Boolean);
     urPool.forEach(u=>{if(picked.length<3&&!picked.some(x=>x.id===u.id))picked.push(u);});
     return picked.slice(0,3);
   }
