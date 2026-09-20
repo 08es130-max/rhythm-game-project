@@ -249,7 +249,7 @@
     item.className=`gacha-envelope-slot rarity-slot-${String(result.rarity||'N').toLowerCase()}`;
     item.dataset.index=String(index);
     const rarityClass=result.rarity==='LR'?'rarity-lr':result.rarity==='UR'?'rarity-ur':'rarity-n';
-    const imageSrc=result.rarity==='LR'?(result.unit.card||result.unit.icon):result.unit.icon;
+    const imageSrc=result.rarity==='LR'?result.unit.card:result.unit.icon;
     item.innerHTML=`
       <div class="gacha-envelope-shell" aria-hidden="true">
         <div class="gacha-envelope-paper"></div>
@@ -333,14 +333,10 @@
     const name=overlay.querySelector('.gacha-ur-spotlight-name');
     const badge=overlay.querySelector('.gacha-ur-spotlight-new');
     const label=overlay.querySelector('.gacha-ur-spotlight-label');
-    const isLR=result.rarity==='LR';
-    const nextSrc=isLR
-      ? (result.unit.card||window.LR_ASSET_CARD||result.unit.icon)
-      : result.unit.icon;
+    const nextSrc=result.unit.icon;
 
-    overlay.classList.toggle('is-lr',isLR);
+    overlay.classList.remove('is-lr');
 
-    // Do not expose the previous UR artwork for even one frame.
     image.style.visibility='hidden';
     image.removeAttribute('src');
     await preloadGachaImage(nextSrc);
@@ -349,20 +345,120 @@
     image.src=nextSrc;
     image.alt=result.unit.name;
     image.style.visibility='visible';
-    series.textContent=isLR?'LEGEND RARE':result.unit.series;
+    series.textContent=result.unit.series;
     name.textContent=String(result.unit.name).replace(/【[^】]+】$/u,'');
-    if(label) label.textContent=isLR?'LR GET!':'UR GET!';
+    if(label) label.textContent='UR GET!';
     badge.hidden=!result.isNew;
     overlay.hidden=false;
     overlay.classList.remove('is-leaving');
     void overlay.offsetWidth;
     requestAnimationFrame(()=>overlay.classList.add('is-active'));
-    await pullSleep(isLR?2200:1500,session);
+    await pullSleep(1500,session);
     if(session?.skipMode!=='all'){
       overlay.classList.add('is-leaving');
-      await pullSleep(isLR?360:250,session);
+      await pullSleep(250,session);
     }
     overlay.classList.remove('is-active','is-leaving','is-lr');
+    overlay.hidden=true;
+    image.style.visibility='hidden';
+  }
+
+
+  function ensureLrPrelude(){
+    let overlay=document.getElementById('gachaLrPrelude');
+    if(overlay) return overlay;
+    overlay=document.createElement('div');
+    overlay.id='gachaLrPrelude';
+    overlay.className='gacha-lr-prelude';
+    overlay.hidden=true;
+    overlay.innerHTML=`
+      <div class="gacha-lr-prelude-backdrop"></div>
+      <div class="gacha-lr-prelude-stars"></div>
+      <div class="gacha-lr-prelude-ring ring-a"></div>
+      <div class="gacha-lr-prelude-ring ring-b"></div>
+      <div class="gacha-lr-prelude-ring ring-c"></div>
+      <div class="gacha-lr-prelude-mark">✦</div>
+      <div class="gacha-lr-prelude-text">
+        <small>LEGEND SIGNAL</small>
+        <strong>特別な気配を感じます…</strong>
+      </div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  async function showLrPrelude(session){
+    if(session?.skipMode==='all') return;
+    const overlay=ensureLrPrelude();
+    overlay.hidden=false;
+    overlay.classList.remove('is-leaving');
+    void overlay.offsetWidth;
+    requestAnimationFrame(()=>overlay.classList.add('is-active'));
+    await pullSleep(1350,session);
+    if(session?.skipMode!=='all'){
+      overlay.classList.add('is-leaving');
+      await pullSleep(320,session);
+    }
+    overlay.classList.remove('is-active','is-leaving');
+    overlay.hidden=true;
+  }
+
+  function ensureLrCinematic(){
+    let overlay=document.getElementById('gachaLrCinematic');
+    if(overlay) return overlay;
+    overlay=document.createElement('div');
+    overlay.id='gachaLrCinematic';
+    overlay.className='gacha-lr-cinematic';
+    overlay.hidden=true;
+    const particles=Array.from({length:36},(_,i)=>`<i class="gacha-lr-cinematic-particle p-${i+1}" style="--i:${i}"></i>`).join('');
+    overlay.innerHTML=`
+      <div class="gacha-lr-cinematic-bg"></div>
+      <div class="gacha-lr-cinematic-aurora"></div>
+      <div class="gacha-lr-cinematic-rays"></div>
+      <div class="gacha-lr-cinematic-rings">
+        <i class="ring ring-a"></i><i class="ring ring-b"></i><i class="ring ring-c"></i>
+      </div>
+      <div class="gacha-lr-cinematic-flash"></div>
+      <div class="gacha-lr-cinematic-particles">${particles}</div>
+      <div class="gacha-lr-cinematic-panel">
+        <div class="gacha-lr-label">LEGEND RARE</div>
+        <div class="gacha-lr-image-wrap"><img class="gacha-lr-image" alt="LRメンバー"></div>
+        <div class="gacha-lr-name">三船栞子</div>
+        <div class="gacha-lr-get">LR GET!</div>
+        <div class="gacha-lr-new" hidden>NEW</div>
+      </div>`;
+    document.body.appendChild(overlay);
+    return overlay;
+  }
+
+  async function showLrCinematic(result,session){
+    if(session?.skipMode==='all') return;
+    const overlay=ensureLrCinematic();
+    const image=overlay.querySelector('.gacha-lr-image');
+    const name=overlay.querySelector('.gacha-lr-name');
+    const badge=overlay.querySelector('.gacha-lr-new');
+    const src=result.unit.card;
+
+    image.style.visibility='hidden';
+    image.removeAttribute('src');
+    await preloadGachaImage(src);
+    if(session?.skipMode==='all') return;
+
+    image.src=src;
+    image.alt=result.unit.name;
+    name.textContent=String(result.unit.name).replace(/【[^】]+】$/u,'');
+    badge.hidden=!result.isNew;
+    image.style.visibility='visible';
+
+    overlay.hidden=false;
+    overlay.classList.remove('is-leaving');
+    void overlay.offsetWidth;
+    requestAnimationFrame(()=>overlay.classList.add('is-active'));
+    await pullSleep(2750,session);
+    if(session?.skipMode!=='all'){
+      overlay.classList.add('is-leaving');
+      await pullSleep(420,session);
+    }
+    overlay.classList.remove('is-active','is-leaving');
     overlay.hidden=true;
     image.style.visibility='hidden';
   }
@@ -374,14 +470,14 @@
     }
     if(result.rarity==='LR'){
       slot.classList.add('is-lr-pre');
-      await pullSleep(900,session);
+      await pullSleep(520,session);
       if(session?.skipMode==='all'){slot.classList.add('is-open');slot.classList.remove('is-lr-pre');return;}
       slot.classList.add('is-lr-burst');
-      await pullSleep(520,session);
+      await pullSleep(360,session);
       slot.classList.add('is-open');
-      await pullSleep(520,session);
+      await pullSleep(260,session);
       slot.classList.remove('is-lr-pre','is-lr-burst','is-ready');
-      await showUrSpotlight(result,session);
+      await showLrCinematic(result,session);
     }else if(result.rarity==='UR'){
       slot.classList.add('is-ur-pre');
       await pullSleep(480,session);
@@ -449,6 +545,11 @@
       results.push(result);
     }
     if(cfg.saveOwned&&typeof window.saveGachaOwned==='function') window.saveGachaOwned(owned);
+
+    const hasLR=results.some(result=>result.rarity==='LR');
+    if(hasLR&&session.skipMode!=='all'){
+      await showLrPrelude(session);
+    }
 
     results.forEach((result,index)=>grid.appendChild(makeEnvelope(result,index)));
     const slots=[...grid.querySelectorAll('.gacha-envelope-slot')];
@@ -552,5 +653,7 @@
 
   ensureScreen();
   ensureUrSpotlight();
+  ensureLrPrelude();
+  ensureLrCinematic();
   installOwnedRoomFilter();
 })();
