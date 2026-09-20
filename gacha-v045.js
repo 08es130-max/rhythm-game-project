@@ -314,6 +314,17 @@
     });
   }
 
+  function preloadGachaImage(src){
+    return new Promise(resolve=>{
+      if(!src){resolve();return;}
+      const probe=new Image();
+      probe.onload=()=>resolve();
+      probe.onerror=()=>resolve();
+      probe.src=src;
+      if(probe.complete) resolve();
+    });
+  }
+
   async function showUrSpotlight(result,session){
     if(session?.skipMode==='all') return;
     const overlay=ensureUrSpotlight();
@@ -323,9 +334,21 @@
     const badge=overlay.querySelector('.gacha-ur-spotlight-new');
     const label=overlay.querySelector('.gacha-ur-spotlight-label');
     const isLR=result.rarity==='LR';
+    const nextSrc=isLR
+      ? (window.LR_ASSET_CARD||result.unit.card||result.unit.icon)
+      : result.unit.icon;
+
     overlay.classList.toggle('is-lr',isLR);
-    image.src=isLR?(result.unit.card||result.unit.icon):result.unit.icon;
+
+    // Do not expose the previous UR artwork for even one frame.
+    image.style.visibility='hidden';
+    image.removeAttribute('src');
+    await preloadGachaImage(nextSrc);
+    if(session?.skipMode==='all') return;
+
+    image.src=nextSrc;
     image.alt=result.unit.name;
+    image.style.visibility='visible';
     series.textContent=isLR?'LEGEND RARE':result.unit.series;
     name.textContent=String(result.unit.name).replace(/【[^】]+】$/u,'');
     if(label) label.textContent=isLR?'LR GET!':'UR GET!';
@@ -341,6 +364,7 @@
     }
     overlay.classList.remove('is-active','is-leaving','is-lr');
     overlay.hidden=true;
+    image.style.visibility='hidden';
   }
 
   async function revealSlot(slot,result,session){
