@@ -151,7 +151,7 @@
     const cards=screen.querySelector('.gacha-featured-cards');
 
     if(cards){
-      cards.innerHTML=featured.map((u,i)=>`<article class="gacha-feature-card ${u.rarity==='LR'?'is-lr-feature':''}"><div class="gacha-feature-rarity">${u.rarity||'UR'}</div><div class="gacha-feature-image-wrap"><img src="${u.card||u.icon}" alt="${cleanName(u)}"></div><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong><small>${i===0?'LEGEND PICK UP':'FEATURED'}</small></article>`).join('');
+      cards.innerHTML=featured.map(u=>`<article class="gacha-feature-card ${u.rarity==='LR'?'is-lr-feature':''}"><div class="gacha-feature-info"><div class="gacha-feature-rarity">${u.rarity||'UR'}</div><div class="gacha-feature-series">${u.series||'マンスリーソング'}</div><strong>${cleanName(u)}</strong></div><div class="gacha-feature-image-wrap"><img src="${u.card||u.icon}" alt="${cleanName(u)}"></div></article>`).join('');
     }
   }
 
@@ -184,7 +184,6 @@
           <div class="gacha-lobby-bottom">
             <div class="gacha-links">
               <button id="gachaRateBtn" type="button">提供割合</button>
-              <button id="gachaDetailBtn" type="button">詳細</button>
             </div>
             <div class="gacha-main-actions">
               <button id="gachaPullOneBtn" class="gacha-pull-btn gacha-pull-one" type="button"><span>1回勧誘</span><small>FREE</small></button>
@@ -230,9 +229,6 @@
     });
     screen.querySelector('#gachaRateBtn')?.addEventListener('click',()=>{
       const cfg=getGachaSettings();if(cfg.testLrFirst)alert('提供割合（テスト）\n1枠目 LR 100%\n2枠目以降 UR 100%');else alert(`提供割合\nLR【蒼海に舞う翠玉姫】 ${(Number(cfg.lrRate||DEFAULT_LR_RATE)*100).toFixed(2)}%\nUR【マンスリーソング】 ${(Number(cfg.urRate||DEFAULT_UR_RATE)*100).toFixed(2)}%\nN【音符ロリータ】 ${(100-(Number(cfg.lrRate||DEFAULT_LR_RATE)+Number(cfg.urRate||DEFAULT_UR_RATE))*100).toFixed(2)}%`);
-    });
-    screen.querySelector('#gachaDetailBtn')?.addEventListener('click',()=>{
-      alert('ピックアップスカウト「星の約束」\n最高レアリティLR「三船栞子【蒼海に舞う翠玉姫】」が登場します。\nUR/LRは初獲得時に部室へ追加され、LR栞子は専用ホーム立ち絵も解放されます。');
     });
     renderScoutLobby(screen);
     updateRateDisplay(screen);
