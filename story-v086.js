@@ -242,3 +242,20 @@
   renderChapters();
   window.LOVEFES_STORY={open:openStory,close:closeStory,data:STORY,version:VERSION};
 })();
+
+/* Ver.0.8.118: use the Settings Home button form and reserve title space. */
+.story-home-quick{
+  border:0!important;
+  border-radius:12px!important;
+  padding:10px 14px!important;
+  font-weight:800!important;
+  background:#e2e8f0!important;
+  color:#0f172a!important;
+  box-shadow:none!important;
+  letter-spacing:normal!important;
+}
+.story-top{padding-left:max(92px,calc(env(safe-area-inset-left) + 92px))!important}
+@media (orientation:landscape) and (pointer:coarse){
+  .story-top{padding-left:max(88px,calc(env(safe-area-inset-left) + 88px))!important}
+  .story-home-quick{padding:10px 14px!important;font-size:10px!important}
+}
