@@ -202,6 +202,7 @@
         </div>
         <div class="gacha-actions">
           <button id="gachaBackLobbyBtn" class="gacha-secondary-btn" type="button">スカウト画面へ戻る</button>
+          <button id="gachaRepeatPullBtn" class="gacha-pull-btn gacha-pull-ten" type="button" hidden>もう一度10回勧誘</button>
           <span class="gacha-note">同じメンバーが重複して出ることがあります。UR/LRは初獲得時に部室へ追加されます。</span>
         </div>
       </div>`;
@@ -218,6 +219,10 @@
     screen.querySelector('#gachaPullOneBtn')?.addEventListener('click',()=>runPull(1));
     screen.querySelector('#gachaPullTenBtn')?.addEventListener('click',()=>runPull(10));
     screen.querySelector('#gachaPullHundredBtn')?.addEventListener('click',()=>runPull(100));
+    screen.querySelector('#gachaRepeatPullBtn')?.addEventListener('click',event=>{
+      const count=Number(event.currentTarget.dataset.count||10);
+      runPull(count);
+    });
     screen.querySelector('#gachaSkipNormalBtn')?.addEventListener('click',()=>{if(activePullSession)activePullSession.skipMode='normal';});
     screen.querySelector('#gachaSkipAllBtn')?.addEventListener('click',()=>{if(activePullSession)activePullSession.skipMode='all';});
     screen.querySelector('#gachaBackLobbyBtn')?.addEventListener('click',()=>{
@@ -514,6 +519,7 @@
       screen.querySelector('#gachaPullHundredBtn')
     ].filter(Boolean);
     const skipActions=screen.querySelector('#gachaSkipActions');
+    const repeatButton=screen.querySelector('#gachaRepeatPullBtn');
     const session={skipMode:count===100?'normal':'none',count};
     activePullSession=session;
 
@@ -525,6 +531,7 @@
     screen.classList.add('is-pulling');
     pullButtons.forEach(b=>b.disabled=true);
     if(skipActions) skipActions.hidden=count===1;
+    if(repeatButton){repeatButton.hidden=true;repeatButton.disabled=true;}
     grid.innerHTML='';
     grid.classList.toggle('is-single',count===1);
     grid.classList.toggle('is-hundred',count===100);
@@ -576,6 +583,13 @@
     omen.textContent=rareParts.length?`${rareParts.join(' ／ ')}${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'勧誘結果';
     pullButtons.forEach(b=>b.disabled=false);
     if(skipActions) skipActions.hidden=true;
+    if(repeatButton){
+      repeatButton.dataset.count=String(count);
+      repeatButton.textContent=count===1?'もう一度1回勧誘':`もう一度${count}回勧誘`;
+      repeatButton.classList.toggle('gacha-pull-hundred',count===100);
+      repeatButton.hidden=false;
+      repeatButton.disabled=false;
+    }
     screen.classList.remove('is-pulling');
     activePullSession=null;
   }
