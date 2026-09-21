@@ -595,6 +595,14 @@
     const screen=ensureScreen();
     hideOtherScreens();
     updateRateDisplay(screen);
+    // ガチャ画面へ入り直したときは、前回の結果ではなく必ず勧誘選択画面から始める。
+    screen.querySelector('#gachaRevealStage').hidden=true;
+    screen.querySelector('#gachaLobby').hidden=false;
+    screen.classList.remove('is-pulling');
+    activePullSession=null;
+    const repeatButton=screen.querySelector('#gachaRepeatPullBtn');
+    if(repeatButton){repeatButton.hidden=true;repeatButton.disabled=false;}
+    renderScoutLobby(screen);
     screen.hidden=false;
     startGachaBgm();
     screen.querySelector('#gachaPullTenBtn')?.focus({preventScroll:true});
