@@ -160,7 +160,7 @@
     screen.hidden=true;
     screen.innerHTML=`
       <div class="gacha-topbar">
-        <button id="gachaHomeBtn" class="gacha-home-btn" type="button">‹ 戻る</button>
+        <button id="gachaHomeBtn" class="gacha-home-btn" type="button">ホーム</button>
         <div class="gacha-heading"><div class="gacha-heading-kicker">SCOUT</div><h1>SCOUT / 勧誘</h1><small>あなたと、もう一度ステージへ</small></div>
         <div class="gacha-wallet"><span class="gacha-gem">◆</span><div><small>SCOUT PASS</small><strong>FREE</strong></div></div>
       </div>
