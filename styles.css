@@ -5,13 +5,15 @@
 
 /* Ver.0.8.110: 勧誘・ライブ画面ではページ全体を固定してスクロールさせない */
 body:has(#gachaScreen:not([hidden])),
-body:has(#liveScreen:not([hidden])){
+body:has(#liveScreen:not([hidden])),
+body:has(#songLibraryScreen:not([hidden])){
   overflow:hidden!important;
   overscroll-behavior:none;
   touch-action:none;
 }
 body:has(#gachaScreen:not([hidden])) .app-shell,
-body:has(#liveScreen:not([hidden])) .app-shell{
+body:has(#liveScreen:not([hidden])) .app-shell,
+body:has(#songLibraryScreen:not([hidden])) .app-shell{
   height:100dvh;
   max-height:100dvh;
   overflow:hidden!important;
