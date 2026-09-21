@@ -126,12 +126,8 @@
     const cfg=getGachaSettings();
     const urPercent=(Number(cfg.urRate)*100).toFixed(Number(cfg.urRate)<.1?2:0).replace(/\.00$/,'');
     const mini=screen.querySelector('.gacha-rate-mini');
-    const copy=screen.querySelector('.gacha-copy span');
     if(mini){
       mini.innerHTML=cfg.testLrFirst?'<b>LR→UR</b> <em>TEST</em>':cfg.testMode?`<b>UR</b> ${urPercent}% <em>TEST</em>`:'<b>LR</b> 0.01% ／ <b>UR</b> 1%';
-    }
-    if(copy){
-      copy.textContent=cfg.testLrFirst?'テスト設定 ／ 1枠目LR・残りUR':cfg.testMode?`テスト設定 ／ UR ${urPercent}%`:'LR 0.01% ／ UR 1% ／ N 98.99%';
     }
     screen.classList.toggle('is-admin-test',cfg.testMode);
   }
@@ -193,7 +189,7 @@
         </main>
       </div>
       <div id="gachaRevealStage" class="gacha-stage" hidden>
-        <div class="gacha-copy"><strong>勧誘結果</strong><span>LR 0.01% ／ UR 1% ／ N 98.99%</span></div>
+        <div class="gacha-copy"><strong>勧誘結果</strong></div>
         <div id="gachaOmen" class="gacha-omen" aria-live="polite"></div>
         <div id="gachaEnvelopeGrid" class="gacha-envelope-grid" aria-live="polite"></div>
         <div id="gachaSkipActions" class="gacha-skip-actions" hidden>
@@ -580,7 +576,7 @@
     const rareParts=[];
     if(lrCount) rareParts.push(`LR ${lrCount}枚`);
     if(urCount) rareParts.push(`UR ${urCount}枚`);
-    omen.textContent=rareParts.length?`${rareParts.join(' ／ ')}${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'勧誘結果';
+    omen.textContent=rareParts.length?`${rareParts.join(' ／ ')}${newCount?` ／ 新規 ${newCount}人`:''}${tempNote}`:'';
     pullButtons.forEach(b=>b.disabled=false);
     if(skipActions) skipActions.hidden=true;
     if(repeatButton){
