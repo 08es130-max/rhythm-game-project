@@ -1439,3 +1439,19 @@
     justify-content:flex-start!important;
   }
 }
+
+/* Ver.0.8.112: compact rate button and close the small gap above it. */
+@media (orientation:landscape) and (pointer:coarse){
+  #gachaRateBtn{
+    min-width:78px!important;
+    min-height:20px!important;
+    height:21px!important;
+    padding:1px 8px!important;
+    border-radius:8px!important;
+    font-size:8px!important;
+  }
+  .gacha-links{
+    align-items:flex-start!important;
+    transform:translateY(-4px);
+  }
+}
