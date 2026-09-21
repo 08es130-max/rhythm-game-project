@@ -1487,3 +1487,16 @@
     padding:6px 16px!important;
   }
 }
+
+/* Ver.0.8.114: keep repeat controls clear of the result grid. */
+@media (orientation:landscape) and (pointer:coarse){
+  #gachaRevealStage .gacha-actions{
+    transform:none!important;
+    margin-top:6px!important;
+    position:relative!important;
+    z-index:20!important;
+  }
+  #gachaRevealStage .gacha-envelope-grid.is-hundred{
+    max-height:calc(100dvh - 154px)!important;
+  }
+}
