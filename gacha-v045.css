@@ -1506,3 +1506,17 @@
   .gacha-topbar{padding-left:max(14px,env(safe-area-inset-left))!important}
   .gacha-home-btn{justify-self:start!important}
 }
+
+/* Ver.0.8.118: match the Settings screen Home button form. */
+.gacha-home-btn{
+  border:0!important;
+  border-radius:12px!important;
+  padding:10px 14px!important;
+  font-weight:800!important;
+  background:#e2e8f0!important;
+  color:#0f172a!important;
+  box-shadow:none!important;
+}
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-home-btn{padding:10px 14px!important;font-size:10px!important}
+}
