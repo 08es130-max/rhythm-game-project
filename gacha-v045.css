@@ -1500,3 +1500,9 @@
     max-height:calc(100dvh - 154px)!important;
   }
 }
+
+/* Ver.0.8.117: align the Home control to the common top-left position. */
+@media (orientation:landscape) and (pointer:coarse){
+  .gacha-topbar{padding-left:max(14px,env(safe-area-inset-left))!important}
+  .gacha-home-btn{justify-self:start!important}
+}
