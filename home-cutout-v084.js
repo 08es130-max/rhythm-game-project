@@ -6,7 +6,9 @@
   const LR_HOME_CHARACTER_KEY='rhythmGame.lrHomeCharacter.v1';
   const LR_ID='lr-shioriko-eternal-rose';
   const LR_AYUMU_ID='lr-ayumu-flower-garden';
+  const LR_KASUMI_ID='lr-kasumi-flower-garden';
   const LR_AYUMU_HOME=`assets/lr/lr-ayumu-home.webp?v=${VERSION}-lrhome1`;
+  const LR_KASUMI_HOME=`assets/lr/lr-kasumi-home.webp?v=${VERSION}-lrhome1`;
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const PREVIOUS_ART={
     normal:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
@@ -93,7 +95,7 @@
       return Array.isArray(parsed)&&parsed.includes(id);
     }catch(_){return false;}
   };
-  const isLrOwned=()=>isOwned(LR_ID)||isOwned(LR_AYUMU_ID);
+  const isLrOwned=()=>isOwned(LR_ID)||isOwned(LR_AYUMU_ID)||isOwned(LR_KASUMI_ID);
   const normalizeHomeArt=(value)=>{
     const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic',lr:'lr',legend:'lr'};
     const normalized=Object.prototype.hasOwnProperty.call(aliases,value)?aliases[value]:'stage';
@@ -112,7 +114,7 @@
     const art=getHomeArt();
     const useLrScene=art==='lr';
     const lrCharacter=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
-    const lrSceneSrc=lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:LR_HOME_SCENE;
+    const lrSceneSrc=lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:lrCharacter==='kasumi'&&isOwned(LR_KASUMI_ID)?LR_KASUMI_HOME:LR_HOME_SCENE;
     document.documentElement.dataset.shioMode=m;
     home.classList.toggle('is-lr-home-scene-v096',useLrScene);
     if(useLrScene){
@@ -242,6 +244,7 @@
         const owned=[];
         if(isOwned(LR_ID)) owned.push({id:'shioriko',label:'栞子',src:LR_HOME_SCENE});
         if(isOwned(LR_AYUMU_ID)) owned.push({id:'ayumu',label:'歩夢',src:LR_AYUMU_HOME});
+        if(isOwned(LR_KASUMI_ID)) owned.push({id:'kasumi',label:'かすみ',src:LR_KASUMI_HOME});
         let current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||owned[0]?.id||'shioriko';
         if(owned.length&&!owned.some(x=>x.id===current)){
           current=owned[0].id;
@@ -270,6 +273,7 @@
         const owned=[];
         if(isOwned(LR_ID)) owned.push('shioriko');
         if(isOwned(LR_AYUMU_ID)) owned.push('ayumu');
+        if(isOwned(LR_KASUMI_ID)) owned.push('kasumi');
         if(owned.length===1) localStorage.setItem(LR_HOME_CHARACTER_KEY,owned[0]);
         setTimeout(refreshLrChoices,0);
       });
