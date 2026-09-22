@@ -27,7 +27,14 @@
     card:`assets/lr/lr-ayumu-card.webp?v=${version}`,
     home:`assets/lr/lr-ayumu-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu];
+  const lrKasumi={
+    id:'lr-kasumi-flower-garden',baseId:'kasumi',name:'中須かすみ【陽だまりに咲く花】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-kasumi-live.webp?v=${version}`,
+    card:`assets/lr/lr-kasumi-card.webp?v=${version}`,
+    home:`assets/lr/lr-kasumi-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -62,6 +69,7 @@
   window.GACHA_LR_POOL=lrPool;
   window.GACHA_LR_SHIORIKO_ID=lrShioriko.id;
   window.GACHA_LR_AYUMU_ID=lrAyumu.id;
+  window.GACHA_LR_KASUMI_ID=lrKasumi.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
