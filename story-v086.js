@@ -226,7 +226,8 @@
 
   const storedSpeed=localStorage.getItem(SPEED_KEY);speedSelect.value=['45','26','12','0'].includes(storedSpeed)?storedSpeed:'26';
   speedSelect.addEventListener('change',()=>localStorage.setItem(SPEED_KEY,speedSelect.value));
-  $('homeStoryBtn')?.addEventListener('click',openStory);
+  // Bind by delegation so later home-menu normalization/replacement cannot drop the Story action.
+  document.addEventListener('click',e=>{const btn=e.target?.closest?.('#homeStoryBtn');if(!btn)return;e.preventDefault();openStory();});
   $('storyQuickHomeBtn')?.addEventListener('click',closeStory);
   $('storyMenuBtn')?.addEventListener('click',openMenu);
   $('storyMenuClose')?.addEventListener('click',closeMenu);
