@@ -29,6 +29,7 @@
   };
   const MENU={
     homeLiveBtn:`assets/home-ui/live.png?v=${VERSION}`,
+    homeStoryBtn:`assets/ui/home-v0855/story.png?v=${VERSION}`,
     homeSettingsBtn:`assets/home-ui/settings.png?v=${VERSION}`,
     homeCharactersBtn:`assets/home-ui/room.png?v=${VERSION}`,
     homeGachaBtn:`assets/home-ui/gacha.png?v=${VERSION}`
