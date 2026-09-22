@@ -275,3 +275,34 @@ chartFile.addEventListener('change', async () => {
 injectTapSoundSetting();
 prepareSavedTapSound().catch(() => {});
 restoreDeviceSettings();
+
+
+// Ver.0.8.123: restore explicit PWA latest-version refresh control.
+(function(){
+  const btn=document.getElementById('forceLatestBtn');
+  const status=document.getElementById('forceLatestStatus');
+  if(!btn)return;
+  btn.addEventListener('click',async()=>{
+    btn.disabled=true;
+    if(status)status.textContent='最新版を確認しています…';
+    try{
+      if('serviceWorker' in navigator){
+        const regs=await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(async reg=>{
+          try{await reg.update();}catch(_){}
+          if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+        }));
+      }
+      const res=await fetch(`version.json?t=${Date.now()}`,{cache:'no-store'});
+      const data=res.ok?await res.json():{};
+      const version=data.version||window.APP_VERSION||'latest';
+      const url=new URL(location.href);
+      url.searchParams.set('v',version);
+      url.searchParams.set('refresh',String(Date.now()));
+      location.replace(url.toString());
+    }catch(_){
+      if(status)status.textContent='更新確認に失敗しました。もう一度お試しください。';
+      btn.disabled=false;
+    }
+  });
+})();
