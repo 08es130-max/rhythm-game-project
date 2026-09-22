@@ -1,4 +1,4 @@
-// Ver.0.8.87: N / UR / LR pools and owned unlocks.
+// Ver.0.8.119: N / UR / LR pools and owned unlocks.
 (function(){
   const lib=window.CHARACTER_LIBRARY;
   if(!Array.isArray(lib)) return;
@@ -6,7 +6,7 @@
   const nPool=lib.filter(c=>c&&c.id!=='default'&&/【音符ロリータ】$/u.test(String(c.name||'')));
   nPool.forEach(c=>{c.rarity='N';c.series='音符ロリータ';});
 
-  const version=window.APP_VERSION||'0.8.87';
+  const version=window.APP_VERSION||'0.8.119';
   const assetMap={mia:'lanzhu',rina:'shioriko',setsuna:'setsuna',emma:'emma',shioriko:'rina',lanzhu:'mia',ai:'kanata',shizuku:'karin',ayumu:'kasumi',kasumi:'ayumu',karin:'shizuku',kanata:'ai'};
   const monthly=[['ayumu','上原歩夢'],['kasumi','中須かすみ'],['shizuku','桜坂しずく'],['karin','朝香果林'],['ai','宮下愛'],['kanata','近江彼方'],['setsuna','優木せつ菜'],['emma','エマ・ヴェルデ'],['rina','天王寺璃奈'],['shioriko','三船栞子'],['mia','ミア・テイラー'],['lanzhu','鐘嵐珠']].map(([baseId,jp])=>{
     const icon=`assets/monthly-song/${assetMap[baseId]||baseId}.webp?v=${version}`;
@@ -14,16 +14,20 @@
   });
 
   const lrShioriko={
-    id:'lr-shioriko-eternal-rose',
-    baseId:'shioriko',
-    name:'三船栞子【蒼海に舞う翠玉姫】',
-    rarity:'LR',
-    series:'LEGEND RARE',
+    id:'lr-shioriko-eternal-rose',baseId:'shioriko',name:'三船栞子【蒼海に舞う翠玉姫】',
+    rarity:'LR',series:'LEGEND RARE',
     icon:`assets/lr/shioriko-lr-live-icon.webp?v=${version}`,
     card:window.LR_ASSET_CARD||`assets/lr/shioriko-lr-card.webp?v=${version}`,
     home:`assets/lr/shioriko-lr-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko];
+  const lrAyumu={
+    id:'lr-ayumu-flower-garden',baseId:'ayumu',name:'上原歩夢【花園に結ぶ約束】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-ayumu-live.webp?v=${version}`,
+    card:`assets/lr/lr-ayumu-card.webp?v=${version}`,
+    home:`assets/lr/lr-ayumu-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -57,6 +61,7 @@
   window.GACHA_UR_POOL=monthly;
   window.GACHA_LR_POOL=lrPool;
   window.GACHA_LR_SHIORIKO_ID=lrShioriko.id;
+  window.GACHA_LR_AYUMU_ID=lrAyumu.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
