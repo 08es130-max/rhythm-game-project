@@ -7,7 +7,7 @@
 
   function readRate(){
     const raw=localStorage.getItem(RATE_KEY);
-    if(raw==='lr-first') return 'lr-first';
+    if(raw==='lr-first'||raw==='lr-100') return raw;
     const value=Number(raw);
     return [0.01,0.1].includes(value)?value:NORMAL_RATE;
   }
@@ -18,12 +18,14 @@
   function settings(){
     const mode=readRate();
     const lrTest=mode==='lr-first';
-    const urRate=lrTest?1:Number(mode);
+    const lr100=mode==='lr-100';
+    const urRate=lrTest?1:lr100?0:Number(mode);
     return {
       urRate,
-      lrRate:lrTest?0:NORMAL_LR_RATE,
-      testMode:lrTest||urRate!==NORMAL_RATE,
+      lrRate:lr100?1:lrTest?0:NORMAL_LR_RATE,
+      testMode:lrTest||lr100||urRate!==NORMAL_RATE,
       testLrFirst:lrTest,
+      testLr100:lr100,
       saveOwned:(!lrTest&&urRate===NORMAL_RATE)?true:readSaveOwned()
     };
   }
@@ -57,6 +59,7 @@
                 <option value="0.01">通常</option>
                 <option value="0.1">テスト UR 10%</option>
                 <option value="lr-first">テスト 先頭LR＋残りUR100%</option>
+                <option value="lr-100">テスト LR 100%</option>
               </select>
             </div>
           </div>
@@ -79,10 +82,10 @@
 
     function sync(){
       const current=settings();
-      rate.value=current.testLrFirst?'lr-first':String(current.urRate);
+      rate.value=current.testLr100?'lr-100':current.testLrFirst?'lr-first':String(current.urRate);
       save.checked=readSaveOwned();
       save.disabled=!current.testMode;
-      status.textContent=current.testLrFirst?'テストモード：1枠目LR固定・残りUR100%':current.testMode?`テストモード：UR ${Math.round(current.urRate*100)}%`:'通常モード：LR 0.01% / UR 1%';
+      status.textContent=current.testLr100?'テストモード：LR 100%':current.testLrFirst?'テストモード：1枠目LR固定・残りUR100%':current.testMode?`テストモード：UR ${Math.round(current.urRate*100)}%`:'通常モード：LR 0.01% / UR 1%';
       overlay.classList.toggle('is-test',current.testMode);
     }
     function persist(){
