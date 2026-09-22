@@ -116,6 +116,10 @@
 
     convertLoungeToFullArt();
 
+    // Keep only the six actual buttons as grid children. Legacy literal text nodes
+    // (for example a written "\\n") otherwise consume a CSS-grid cell on iPhone.
+    [...menu.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE)node.remove();});
+
     const buttons=[];
     for(const [id,label,key] of IDS){
       const btn=document.getElementById(id);
@@ -141,7 +145,7 @@
             if(oldSrc) img.src=oldSrc;
           };
         }
-        const primary=`${ASSET_BASE}${key}.png?v=${window.APP_VERSION||'0.8.126'}-icons2`;
+        const primary=`${ASSET_BASE}${key}.png?v=${window.APP_VERSION||'0.8.128'}-icons2`;
         if(img.dataset.v0855Fallback!=='1' && !img.src.includes(`/home-v0855/${key}.png`)){
           img.src=primary;
         }
