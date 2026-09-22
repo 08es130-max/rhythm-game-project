@@ -278,7 +278,7 @@ restoreDeviceSettings();
 
 
 
-// Ver.0.8.124: keep the PWA refresh control present even if older HTML is cached.
+// Ver.0.8.127: keep the PWA refresh control present and place it first in settings.
 (function(){
   const grid=document.querySelector('#settingsScreen .settings-grid');
   if(!grid)return;
@@ -288,10 +288,12 @@ restoreDeviceSettings();
     const card=document.createElement('div');
     card.className='setting-card';
     card.innerHTML='<div>アプリ更新</div><button id="forceLatestBtn" class="timing-adjust-btn" type="button">最新版にする</button><small id="forceLatestStatus">PWAのキャッシュを更新して最新版を読み込みます。</small>';
-    grid.appendChild(card);
+    grid.prepend(card);
     btn=card.querySelector('#forceLatestBtn');
     status=card.querySelector('#forceLatestStatus');
   }
+  const card=btn.closest('.setting-card');
+  if(card && grid.firstElementChild!==card) grid.prepend(card);
   if(btn.dataset.latestBound==='1')return;
   btn.dataset.latestBound='1';
   btn.addEventListener('click',async()=>{
