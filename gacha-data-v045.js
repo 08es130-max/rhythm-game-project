@@ -34,7 +34,14 @@
     card:`assets/lr/lr-kasumi-card.webp?v=${version}`,
     home:`assets/lr/lr-kasumi-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi];
+  const lrShizuku={
+    id:'lr-shizuku-blue-garden',baseId:'shizuku',name:'桜坂しずく【蒼花に紡ぐ舞台】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-shizuku-live.webp?v=${version}`,
+    card:`assets/lr/lr-shizuku-card.webp?v=${version}`,
+    home:`assets/lr/lr-shizuku-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -70,6 +77,7 @@
   window.GACHA_LR_SHIORIKO_ID=lrShioriko.id;
   window.GACHA_LR_AYUMU_ID=lrAyumu.id;
   window.GACHA_LR_KASUMI_ID=lrKasumi.id;
+  window.GACHA_LR_SHIZUKU_ID=lrShizuku.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
