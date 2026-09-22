@@ -122,7 +122,12 @@
       if(!btn) return false;
       btn.title=label;
       btn.setAttribute('aria-label',label);
-      const img=btn.querySelector('.home-menu-art');
+      let img=btn.querySelector('.home-menu-art');
+      if(!img){
+        img=document.createElement('img');
+        img.className='home-menu-art';
+        btn.replaceChildren(img);
+      }
       if(img){
         img.alt=label;
         img.decoding='async';
@@ -136,7 +141,7 @@
             if(oldSrc) img.src=oldSrc;
           };
         }
-        const primary=`${ASSET_BASE}${key}.png?v=${window.APP_VERSION||'0.8.124'}-icons2`;
+        const primary=`${ASSET_BASE}${key}.png?v=${window.APP_VERSION||'0.8.126'}-icons2`;
         if(img.dataset.v0855Fallback!=='1' && !img.src.includes(`/home-v0855/${key}.png`)){
           img.src=primary;
         }
