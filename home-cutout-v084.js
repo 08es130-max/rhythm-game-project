@@ -3,7 +3,10 @@
   const VERSION=window.APP_VERSION || '0.8.20';
   const MODE_KEY='rhythmGame.shiorikoDialogueMode.v1';
   const HOME_ART_KEY='rhythmGame.shiorikoHomeArt.v1';
+  const LR_HOME_CHARACTER_KEY='rhythmGame.lrHomeCharacter.v1';
   const LR_ID='lr-shioriko-eternal-rose';
+  const LR_AYUMU_ID='lr-ayumu-flower-garden';
+  const LR_AYUMU_HOME=`assets/lr/lr-ayumu-home.webp?v=${VERSION}-lrhome1`;
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const PREVIOUS_ART={
     normal:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
@@ -82,13 +85,14 @@
     const m=document.documentElement.dataset.shioMode || localStorage.getItem(MODE_KEY) || 'normal';
     return VALID.includes(m)?m:'normal';
   };
-  const isLrOwned=()=>{
+  const isOwned=(id)=>{
     try{
-      if(typeof window.loadGachaOwned==='function') return window.loadGachaOwned().has(LR_ID);
+      if(typeof window.loadGachaOwned==='function') return window.loadGachaOwned().has(id);
       const parsed=JSON.parse(localStorage.getItem('rhythmGame.unlockedCharacters.v1')||'[]');
-      return Array.isArray(parsed)&&parsed.includes(LR_ID);
+      return Array.isArray(parsed)&&parsed.includes(id);
     }catch(_){return false;}
   };
+  const isLrOwned=()=>isOwned(LR_ID)||isOwned(LR_AYUMU_ID);
   const normalizeHomeArt=(value)=>{
     const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic',lr:'lr',legend:'lr'};
     const normalized=Object.prototype.hasOwnProperty.call(aliases,value)?aliases[value]:'stage';
@@ -106,10 +110,12 @@
     const m=VALID.includes(mode)?mode:'normal';
     const art=getHomeArt();
     const useLrScene=art==='lr';
+    const lrCharacter=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
+    const lrSceneSrc=lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:LR_HOME_SCENE;
     document.documentElement.dataset.shioMode=m;
     home.classList.toggle('is-lr-home-scene-v096',useLrScene);
     if(useLrScene){
-      const sceneUrl=new URL(LR_HOME_SCENE,location.href).href;
+      const sceneUrl=new URL(lrSceneSrc,location.href).href;
       lrScene.onload=()=>{lrScene.hidden=false;};
       lrScene.onerror=()=>{
         lrScene.hidden=true;
@@ -118,7 +124,7 @@
       };
       if(lrScene.src!==sceneUrl){
         lrScene.hidden=true;
-        lrScene.src=LR_HOME_SCENE;
+        lrScene.src=lrSceneSrc;
       }else{
         lrScene.hidden=false;
       }
@@ -182,7 +188,7 @@
     const defs=[
       {id:'stage',label:'ステージスタイル',src:ART_SETS.stage.normal},
       {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal},
-      {id:'lr',label:'LEGEND RARE 蒼海に舞う翠玉姫',src:LR_HOME_SCENE,requiresLr:true}
+      {id:'lr',label:'LEGEND RARE',src:LR_HOME_SCENE,requiresLr:true}
     ];
     const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'ステージスタイル';
     const refresh=()=>{
@@ -218,6 +224,23 @@
       });
       options.appendChild(btn);
     });
+    const lrDef=defs.find(def=>def.id==='lr');
+    if(lrDef){
+      const lrBtn=[...options.querySelectorAll('.home-art-option')].find(btn=>btn.dataset.art==='lr');
+      if(lrBtn){
+        lrBtn.querySelector('strong').textContent='LEGEND RARE';
+        lrBtn.addEventListener('click',()=>{
+          const choices=[];
+          if(isOwned(LR_ID))choices.push('shioriko');
+          if(isOwned(LR_AYUMU_ID))choices.push('ayumu');
+          if(choices.length>1){
+            const current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
+            localStorage.setItem(LR_HOME_CHARACTER_KEY,current==='shioriko'?'ayumu':'shioriko');
+          }else if(choices.length===1)localStorage.setItem(LR_HOME_CHARACTER_KEY,choices[0]);
+          applyMode(getMode());
+        });
+      }
+    }
     panel.prepend(wrap);
     refresh();
     window.addEventListener('rhythmGameShiorikoHomeArtChanged',refresh);
