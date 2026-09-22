@@ -136,7 +136,7 @@
             if(oldSrc) img.src=oldSrc;
           };
         }
-        const primary=`${ASSET_BASE}${key}.png?v=0.8.55-icons1`;
+        const primary=`${ASSET_BASE}${key}.png?v=${window.APP_VERSION||'0.8.124'}-icons2`;
         if(img.dataset.v0855Fallback!=='1' && !img.src.includes(`/home-v0855/${key}.png`)){
           img.src=primary;
         }
