@@ -244,7 +244,11 @@
   window.LOVEFES_STORY={open:openStory,close:closeStory,data:STORY,version:VERSION};
 })();
 
-/* Ver.0.8.118: use the Settings Home button form and reserve title space. */
+/* Ver.0.8.131: story home-button styling must be injected as CSS, never left as raw JS. */
+(function(){
+  const s=document.createElement('style');
+  s.id='storyHomeQuickStyleV0131';
+  s.textContent=`
 .story-home-quick{
   border:0!important;
   border-radius:12px!important;
@@ -259,4 +263,6 @@
 @media (orientation:landscape) and (pointer:coarse){
   .story-top{padding-left:max(88px,calc(env(safe-area-inset-left) + 88px))!important}
   .story-home-quick{padding:10px 14px!important;font-size:10px!important}
-}
+}`;
+  document.head.appendChild(s);
+})();
