@@ -228,7 +228,7 @@
       renderScoutLobby(screen);
     });
     screen.querySelector('#gachaRateBtn')?.addEventListener('click',()=>{
-      const cfg=getGachaSettings();if(cfg.testLrFirst)alert('提供割合（テスト）\n1枠目 LR 100%\n2枠目以降 UR 100%');else alert(`提供割合\nLR【蒼海に舞う翠玉姫】 ${(Number(cfg.lrRate||DEFAULT_LR_RATE)*100).toFixed(2)}%\nUR【マンスリーソング】 ${(Number(cfg.urRate||DEFAULT_UR_RATE)*100).toFixed(2)}%\nN【音符ロリータ】 ${(100-(Number(cfg.lrRate||DEFAULT_LR_RATE)+Number(cfg.urRate||DEFAULT_UR_RATE))*100).toFixed(2)}%`);
+      const cfg=getGachaSettings();if(cfg.testLrFirst)alert('提供割合（テスト）\n1枠目 LR 100%\n2枠目以降 UR 100%');else alert(`提供割合\nLR【LEGEND RARE】 ${(Number(cfg.lrRate||DEFAULT_LR_RATE)*100).toFixed(2)}%\nUR【マンスリーソング】 ${(Number(cfg.urRate||DEFAULT_UR_RATE)*100).toFixed(2)}%\nN【音符ロリータ】 ${(100-(Number(cfg.lrRate||DEFAULT_LR_RATE)+Number(cfg.urRate||DEFAULT_UR_RATE))*100).toFixed(2)}%`);
     });
     renderScoutLobby(screen);
     updateRateDisplay(screen);
@@ -657,7 +657,7 @@
       if(status){
         const urOwned=available.filter(c=>c.rarity==='UR').length;
         const lrOwned=available.filter(c=>c.rarity==='LR').length;
-        status.textContent=`音符ロリータは初期加入。UR/LRは勧誘で獲得すると追加されます。（LR ${lrOwned}/1・UR ${urOwned}/12）`;
+        status.textContent=`音符ロリータは初期加入。UR/LRは勧誘で獲得すると追加されます。（LR ${lrOwned}/${(window.GACHA_LR_POOL||[]).length}・UR ${urOwned}/12）`;
       }
     };
     window.renderCharacterSelectors=replacement;
