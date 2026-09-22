@@ -123,6 +123,7 @@
     const lrSceneSrc=lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:lrCharacter==='kasumi'&&isOwned(LR_KASUMI_ID)?LR_KASUMI_HOME:lrCharacter==='shizuku'&&isOwned(LR_SHIZUKU_ID)?LR_SHIZUKU_HOME:lrCharacter==='karin'&&isOwned(LR_KARIN_ID)?LR_KARIN_HOME:lrCharacter==='kanata'&&isOwned(LR_KANATA_ID)?LR_KANATA_HOME:LR_HOME_SCENE;
     document.documentElement.dataset.shioMode=m;
     home.classList.toggle('is-lr-home-scene-v096',useLrScene);
+    home.dataset.lrHomeCharacter=useLrScene?lrCharacter:'';
     if(useLrScene){
       const sceneUrl=new URL(lrSceneSrc,location.href).href;
       lrScene.onload=()=>{lrScene.hidden=false;};
@@ -171,6 +172,11 @@
       /* LR reward standing uses its own approved full-body framing. */
       @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="lr"]{width:112%!important;height:126%!important;bottom:-42px!important}}
       @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="lr"]{width:114%!important;height:128%!important;bottom:-46px!important}}
+      /* Ver.0.8.139: keep the LoveFes logo fixed; shift only LR Karin/Kanata scene framing right. */
+      @media (orientation:landscape){
+        .home-screen[data-lr-home-character="karin"] .home-lr-scene-v096{object-position:56% center!important}
+        .home-screen[data-lr-home-character="kanata"] .home-lr-scene-v096{object-position:61% center!important}
+      }
       /* The final yandere source has more empty space above the head. */
       @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="stage"][data-mode="yandere"]{bottom:-71px!important}}
       @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="stage"][data-mode="yandere"]{bottom:-75px!important}}
