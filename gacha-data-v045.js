@@ -55,7 +55,14 @@
     card:`assets/lr/lr-kanata-card.webp?v=${version}`,
     home:`assets/lr/lr-kanata-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata];
+  const lrSetsuna={
+    id:'lr-setsuna-rose-garden',baseId:'setsuna',name:'優木せつ菜【紅薔薇に燃ゆる情熱】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-setsuna-live.webp?v=${version}`,
+    card:`assets/lr/lr-setsuna-card.webp?v=${version}`,
+    home:`assets/lr/lr-setsuna-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -94,6 +101,7 @@
   window.GACHA_LR_SHIZUKU_ID=lrShizuku.id;
   window.GACHA_LR_KARIN_ID=lrKarin.id;
   window.GACHA_LR_KANATA_ID=lrKanata.id;
+  window.GACHA_LR_SETSUNA_ID=lrSetsuna.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
