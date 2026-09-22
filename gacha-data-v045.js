@@ -41,7 +41,14 @@
     card:`assets/lr/lr-shizuku-card.webp?v=${version}`,
     home:`assets/lr/lr-shizuku-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku];
+  const lrKarin={
+    id:'lr-karin-blue-garden',baseId:'karin',name:'朝香果林【蒼薔薇のエスコート】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-karin-live.webp?v=${version}`,
+    card:`assets/lr/lr-karin-card.webp?v=${version}`,
+    home:`assets/lr/lr-karin-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -78,6 +85,7 @@
   window.GACHA_LR_AYUMU_ID=lrAyumu.id;
   window.GACHA_LR_KASUMI_ID=lrKasumi.id;
   window.GACHA_LR_SHIZUKU_ID=lrShizuku.id;
+  window.GACHA_LR_KARIN_ID=lrKarin.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
