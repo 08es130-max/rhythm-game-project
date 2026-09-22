@@ -277,27 +277,35 @@ prepareSavedTapSound().catch(() => {});
 restoreDeviceSettings();
 
 
-// Ver.0.8.123: restore explicit PWA latest-version refresh control.
+
+// Ver.0.8.124: keep the PWA refresh control present even if older HTML is cached.
 (function(){
-  const btn=document.getElementById('forceLatestBtn');
-  const status=document.getElementById('forceLatestStatus');
-  if(!btn)return;
+  const grid=document.querySelector('#settingsScreen .settings-grid');
+  if(!grid)return;
+  let btn=document.getElementById('forceLatestBtn');
+  let status=document.getElementById('forceLatestStatus');
+  if(!btn){
+    const card=document.createElement('div');
+    card.className='setting-card';
+    card.innerHTML='<div>アプリ更新</div><button id="forceLatestBtn" class="timing-adjust-btn" type="button">最新版にする</button><small id="forceLatestStatus">PWAのキャッシュを更新して最新版を読み込みます。</small>';
+    grid.appendChild(card);
+    btn=card.querySelector('#forceLatestBtn');
+    status=card.querySelector('#forceLatestStatus');
+  }
+  if(btn.dataset.latestBound==='1')return;
+  btn.dataset.latestBound='1';
   btn.addEventListener('click',async()=>{
     btn.disabled=true;
     if(status)status.textContent='最新版を確認しています…';
     try{
       if('serviceWorker' in navigator){
         const regs=await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(async reg=>{
-          try{await reg.update();}catch(_){}
-          if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
-        }));
+        await Promise.all(regs.map(async reg=>{try{await reg.update();}catch(_){} if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});}));
       }
-      const res=await fetch(`version.json?t=${Date.now()}`,{cache:'no-store'});
+      const res=await fetch('version.json?t='+Date.now(),{cache:'no-store'});
       const data=res.ok?await res.json():{};
-      const version=data.version||window.APP_VERSION||'latest';
       const url=new URL(location.href);
-      url.searchParams.set('v',version);
+      url.searchParams.set('v',data.version||window.APP_VERSION||'latest');
       url.searchParams.set('refresh',String(Date.now()));
       location.replace(url.toString());
     }catch(_){
