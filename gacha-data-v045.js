@@ -48,7 +48,14 @@
     card:`assets/lr/lr-karin-card.webp?v=${version}`,
     home:`assets/lr/lr-karin-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin];
+  const lrKanata={
+    id:'lr-kanata-lavender-garden',baseId:'kanata',name:'近江彼方【夢見草のまどろみ】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-kanata-live.webp?v=${version}`,
+    card:`assets/lr/lr-kanata-card.webp?v=${version}`,
+    home:`assets/lr/lr-kanata-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -86,6 +93,7 @@
   window.GACHA_LR_KASUMI_ID=lrKasumi.id;
   window.GACHA_LR_SHIZUKU_ID=lrShizuku.id;
   window.GACHA_LR_KARIN_ID=lrKarin.id;
+  window.GACHA_LR_KANATA_ID=lrKanata.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
