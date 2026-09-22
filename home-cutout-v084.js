@@ -176,6 +176,12 @@
       .home-art-option img{display:block;width:100%;height:140px;object-fit:contain;border-radius:10px;background:linear-gradient(180deg,#101d34,#0a1324)}
       .home-art-option strong{display:block;margin-top:7px;font-size:13px;text-align:center}
       .home-art-current{margin-top:9px;color:#7dd3fc;font-size:12px;font-weight:700}
+      .lr-home-character-options{grid-column:1/-1;display:flex;gap:10px;padding:10px;border:1px solid #334155;border-radius:12px;background:#0f172a}
+      .lr-home-character-options[hidden]{display:none!important}
+      .lr-home-character-option{width:150px;border:2px solid #334155;border-radius:12px;background:#0b1220;padding:6px;color:#f8fafc}
+      .lr-home-character-option.is-selected{border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,.18)}
+      .lr-home-character-option img{display:block;width:100%;height:72px;object-fit:cover;border-radius:8px}
+      .lr-home-character-option strong{display:block;margin-top:4px;text-align:center;font-size:11px}
       @media (orientation:landscape) and (pointer:coarse){.home-art-selector{padding:9px;margin-bottom:10px}.home-art-selector h2{font-size:14px}.home-art-selector p{margin-bottom:7px;font-size:10px}.home-art-options{max-width:520px;gap:8px}.home-art-option{padding:5px}.home-art-option img{height:78px}.home-art-option strong{font-size:11px;margin-top:4px}.home-art-current{margin-top:5px;font-size:10px}}
     `;
     document.head.appendChild(style);
@@ -225,22 +231,53 @@
       });
       options.appendChild(btn);
     });
-    const lrDef=defs.find(def=>def.id==='lr');
-    if(lrDef){
-      const lrBtn=[...options.querySelectorAll('.home-art-option')].find(btn=>btn.dataset.art==='lr');
-      if(lrBtn){
-        lrBtn.querySelector('strong').textContent='LEGEND RARE';
-        lrBtn.addEventListener('click',()=>{
-          const choices=[];
-          if(isOwned(LR_ID))choices.push('shioriko');
-          if(isOwned(LR_AYUMU_ID))choices.push('ayumu');
-          if(choices.length>1){
-            const current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
-            localStorage.setItem(LR_HOME_CHARACTER_KEY,current==='shioriko'?'ayumu':'shioriko');
-          }else if(choices.length===1)localStorage.setItem(LR_HOME_CHARACTER_KEY,choices[0]);
-          applyMode(getMode());
+    const lrBtn=[...options.querySelectorAll('.home-art-option')].find(btn=>btn.dataset.art==='lr');
+    if(lrBtn){
+      const lrChoices=document.createElement('div');
+      lrChoices.className='lr-home-character-options';
+      lrChoices.hidden=true;
+      lrBtn.insertAdjacentElement('afterend',lrChoices);
+
+      const refreshLrChoices=()=>{
+        const owned=[];
+        if(isOwned(LR_ID)) owned.push({id:'shioriko',label:'栞子',src:LR_HOME_SCENE});
+        if(isOwned(LR_AYUMU_ID)) owned.push({id:'ayumu',label:'歩夢',src:LR_AYUMU_HOME});
+        let current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||owned[0]?.id||'shioriko';
+        if(owned.length&&!owned.some(x=>x.id===current)){
+          current=owned[0].id;
+          localStorage.setItem(LR_HOME_CHARACTER_KEY,current);
+        }
+        lrChoices.replaceChildren();
+        owned.forEach(ch=>{
+          const choice=document.createElement('button');
+          choice.type='button';
+          choice.className='lr-home-character-option';
+          choice.classList.toggle('is-selected',ch.id===current);
+          choice.innerHTML=`<img src="${ch.src}" alt="${ch.label}"><strong>${ch.label}</strong>`;
+          choice.addEventListener('click',(e)=>{
+            e.stopPropagation();
+            localStorage.setItem(LR_HOME_CHARACTER_KEY,ch.id);
+            localStorage.setItem(HOME_ART_KEY,'lr');
+            refresh();
+            refreshLrChoices();
+            applyMode(getMode());
+          });
+          lrChoices.appendChild(choice);
         });
-      }
+        lrChoices.hidden=getHomeArt()!=='lr'||owned.length<2;
+      };
+      lrBtn.addEventListener('click',()=>{
+        const owned=[];
+        if(isOwned(LR_ID)) owned.push('shioriko');
+        if(isOwned(LR_AYUMU_ID)) owned.push('ayumu');
+        if(owned.length===1) localStorage.setItem(LR_HOME_CHARACTER_KEY,owned[0]);
+        setTimeout(refreshLrChoices,0);
+      });
+      const baseRefresh=refresh;
+      const refreshWithLr=()=>{baseRefresh();refreshLrChoices();};
+      window.addEventListener('rhythmGameShiorikoHomeArtChanged',refreshLrChoices);
+      window.addEventListener('rhythmGameGachaOwnedChanged',refreshLrChoices);
+      refreshLrChoices();
     }
     panel.prepend(wrap);
     refresh();
