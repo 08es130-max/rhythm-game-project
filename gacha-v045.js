@@ -127,7 +127,7 @@
     const urPercent=(Number(cfg.urRate)*100).toFixed(Number(cfg.urRate)<.1?2:0).replace(/\.00$/,'');
     const mini=screen.querySelector('.gacha-rate-mini');
     if(mini){
-      mini.innerHTML=cfg.testLrFirst?'<b>LR→UR</b> <em>TEST</em>':cfg.testMode?`<b>UR</b> ${urPercent}% <em>TEST</em>`:'<b>LR</b> 0.01% ／ <b>UR</b> 1%';
+      mini.innerHTML=cfg.testLr100?'<b>LR</b> 100% <em>TEST</em>':cfg.testLrFirst?'<b>LR→UR</b> <em>TEST</em>':cfg.testMode?`<b>UR</b> ${urPercent}% <em>TEST</em>`:'<b>LR</b> 0.01% ／ <b>UR</b> 1%';
     }
     screen.classList.toggle('is-admin-test',cfg.testMode);
   }
