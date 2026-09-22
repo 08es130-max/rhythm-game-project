@@ -1,8 +1,7 @@
 // Ver.0.8.28: story UI polish + in-app refresh control + default note speed 2.4 + iPhone safe areas + approved story icon handoff.
 (function(){
   'use strict';
-  const VERSION='0.8.33';
-  window.APP_VERSION=VERSION;
+  const VERSION=window.APP_VERSION||'0.8.125';
 
   const NOTE_SPEED_KEY='rhythmGame.noteSpeed';
   if(localStorage.getItem(NOTE_SPEED_KEY)===null){
