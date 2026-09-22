@@ -259,9 +259,9 @@
   box-shadow:none!important;
   letter-spacing:normal!important;
 }
-.story-top{padding-left:max(92px,calc(env(safe-area-inset-left) + 92px))!important}
+.story-top{padding-left:max(132px,calc(env(safe-area-inset-left) + 132px))!important}
 @media (orientation:landscape) and (pointer:coarse){
-  .story-top{padding-left:max(88px,calc(env(safe-area-inset-left) + 88px))!important}
+  .story-top{padding-left:max(132px,calc(env(safe-area-inset-left) + 132px))!important}
   .story-home-quick{padding:10px 14px!important;font-size:10px!important}
 }`;
   document.head.appendChild(s);
