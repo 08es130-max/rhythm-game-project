@@ -35,7 +35,7 @@
       .home-menu-story::before{display:none!important;content:none!important}
       .home-menu-story .home-menu-art{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:center!important;border:0!important;margin:0!important;padding:0!important;pointer-events:none!important}
       .story-overlay{--story-safe-left:max(16px,env(safe-area-inset-left));--story-safe-right:max(16px,env(safe-area-inset-right));--story-safe-top:max(10px,env(safe-area-inset-top));--story-safe-bottom:max(10px,env(safe-area-inset-bottom))}
-      .story-top{left:0!important;right:0!important;padding-top:var(--story-safe-top)!important;padding-left:calc(var(--story-safe-left) + 8px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important}
+      .story-top{left:0!important;right:0!important;padding-top:var(--story-safe-top)!important;padding-left:calc(var(--story-safe-left) + 132px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important}
       .story-chapters{padding-top:66px!important;padding-left:calc(var(--story-safe-left) + 8px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important;padding-bottom:calc(var(--story-safe-bottom) + 14px)!important;box-sizing:border-box!important}
       .story-chapter-head,.story-chapter-grid{box-sizing:border-box!important}
       .story-reader{left:0!important;right:0!important}
