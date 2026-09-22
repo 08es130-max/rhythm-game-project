@@ -174,8 +174,8 @@
       @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="lr"]{width:114%!important;height:128%!important;bottom:-46px!important}}
       /* Ver.0.8.139: keep the LoveFes logo fixed; shift only LR Karin/Kanata scene framing right. */
       @media (orientation:landscape){
-        .home-screen[data-lr-home-character="karin"] .home-lr-scene-v096{object-position:56% center!important}
-        .home-screen[data-lr-home-character="kanata"] .home-lr-scene-v096{object-position:61% center!important}
+        .home-screen[data-lr-home-character="karin"] .home-lr-scene-v096{transform:translateX(6%)!important;width:106%!important;max-width:none!important}
+        .home-screen[data-lr-home-character="kanata"] .home-lr-scene-v096{transform:translateX(10%)!important;width:110%!important;max-width:none!important}
       }
       /* The final yandere source has more empty space above the head. */
       @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="stage"][data-mode="yandere"]{bottom:-71px!important}}
