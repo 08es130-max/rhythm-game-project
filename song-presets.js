@@ -207,13 +207,18 @@ function makeSpicaMasterReferenceChart(source) {
 
     if(activeHold&&n!==activeHold&&n.timeMs>activeHold.timeMs&&n.timeMs<activeHold.holdEndMs){
       const heldLeft=activeHold.lane<4;
-      // Same lane is occupied. The held thumb's whole side is also reserved so the
-      // free thumb never has to cross over it.
+      // A hold already occupies one thumb. During its body allow ONE tap at a time
+      // on the free side only; simultaneous taps here would require three fingers.
       if(n.lane===activeHold.lane) continue;
       if(heldLeft ? n.lane<5 : n.lane>3) continue;
+      const tapAlreadyInWindow=firstPart.some(x=>
+        x!==activeHold&&x.timeMs>activeHold.timeMs&&x.timeMs<activeHold.holdEndMs&&
+        Math.abs(x.timeMs-n.timeMs)<=55
+      );
+      if(tapAlreadyInWindow) continue;
     }
 
-    // Hard safety: a timestamp can require at most two thumbs.
+    // Hard safety outside holds: at most two simultaneous tap starts.
     const same=firstPart.filter(x=>Math.abs(x.timeMs-n.timeMs)<=18);
     if(same.length>=2) continue;
     if(same.some(x=>x.lane===n.lane)) continue;
