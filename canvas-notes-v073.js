@@ -105,7 +105,13 @@
     while(firstLiveIndex<activeNotes.length){
       const n=activeNotes[firstLiveIndex];
       if(n.holdVisualOnly&&Number.isFinite(n.holdEndMs)){
-        if(now>n.holdEndMs+TRAIL_MS){n.finished=true;firstLiveIndex++;continue;}
+        // Started holds remain active until release judgment. If the player keeps holding
+        // past the GOOD window, resolve it as MISS without touching normal-note timing.
+        if(n.holdStarted&&!n.holdResolved&&now>n.holdEndMs+HIT_WINDOWS.good){
+          n.holdFailed=true;n.holdResolved=true;n.missRegistered=true;n.finished=true;
+          counts.miss++;combo=0;judgeEl.textContent='MISS';updateHud();
+        }
+        if(n.holdResolved||now>n.holdEndMs+TRAIL_MS){n.finished=true;firstLiveIndex++;continue;}
         break;
       }
       if(n.finished||n.hit){firstLiveIndex++;continue;}
@@ -183,6 +189,7 @@
       // Visual-only hold prototype must remain visible after its start circle is tapped.
       // Keep the ribbon and release circle alive until the hold end reaches/passes judgment.
       if(n.holdVisualOnly&&Number.isFinite(n.holdEndMs)){
+        if(n.holdResolved)continue;
         if(now<=n.holdEndMs+TRAIL_MS){
           drawHoldBody(n,now,leadMs,spawn,targetPoints);
           if(!n.hit){
