@@ -266,49 +266,94 @@ function makeSpicaMasterReferenceChart(source) {
   }
 
   // Full-song continuation.
-  // Reuse the proven MASTER pattern through verse 2 / chorus, then merge the original
-  // full-song rhythm skeleton so the latter half does not suddenly become sparse.
-  const verse2Shift=120395-2252;
-  const secondMaster=firstPart
-    .map(n=>({
-      ...n,
-      timeMs:n.timeMs+verse2Shift,
-      ...(Number.isFinite(n.holdEndMs)?{holdEndMs:n.holdEndMs+verse2Shift}:{})
-    }))
-    .filter(n=>n.timeMs<=243900);
+  // Do not reuse the sparse tail of the video transcription. The useful dense MASTER
+  // material is the opening through the first chorus (~72.8s); reuse that structure
+  // for verse 2, then reuse the pre-chorus/chorus sections again for the finale.
+  const denseVerseStart=2252;
+  const denseVerseEnd=72826;
+  const preChorusStart=39776;
+  const chorusStart=45926;
 
-  const fullSongTail=source.notes
+  function shiftedSection(fromMs,toMs,targetStartMs){
+    const shift=targetStartMs-fromMs;
+    return firstPart
+      .filter(n=>n.timeMs>=fromMs&&n.timeMs<=toMs)
+      .map(n=>({
+        ...n,
+        timeMs:n.timeMs+shift,
+        ...(Number.isFinite(n.holdEndMs)?{holdEndMs:n.holdEndMs+shift}:{})
+      }));
+  }
+
+  // Verse 2 through its chorus: same proven MASTER flow as verse 1.
+  const secondVerse=shiftedSection(denseVerseStart,denseVerseEnd,120395);
+
+  // Final build-up and last chorus. These are deliberately based on the denser
+  // pre-chorus/chorus material rather than the sparse detector tail.
+  const finalBuild=shiftedSection(preChorusStart,chorusStart-1,191200);
+  const finalChorus=shiftedSection(chorusStart,denseVerseEnd,197350);
+
+  // Keep only a small amount of song-specific tail timing as accent anchors. Do not
+  // stack the full old chart on top of MASTER material; that was the source of
+  // impossible bursts in 0.8.202.
+  const accents=source.notes
     .filter(n=>n.timeMs>=120000)
+    .filter((n,i,arr)=>{
+      const prev=arr[i-1];
+      return !prev||n.timeMs-prev.timeMs>=300;
+    })
     .map(n=>({...n}));
 
-  // Merge repeated MASTER + full-song-specific rhythm. Avoid duplicate circles and
-  // never create more than two simultaneous starts.
-  const merged=[...firstPart,...secondMaster,...fullSongTail]
+  const candidates=[...firstPart,...secondVerse,...finalBuild,...finalChorus,...accents]
     .sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+  // Physical two-thumb density guard:
+  // - max 2 starts in any 115ms rolling window
+  // - no more than one ordinary tap within 115ms while a hold is active
+  // - preserve hold starts/releases and MASTER-derived notes before sparse accents
   const full=[];
-  for(const n of merged){
-    if(full.some(x=>Math.abs(x.timeMs-n.timeMs)<=45&&x.lane===n.lane))continue;
-    const same=full.filter(x=>Math.abs(x.timeMs-n.timeMs)<=18);
-    if(same.length>=2)continue;
+  for(const n of candidates){
+    if(full.some(x=>Math.abs(x.timeMs-n.timeMs)<=40&&x.lane===n.lane))continue;
+
+    const recent=full.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+    if(recent.length>=2)continue;
+
+    const active=full.find(x=>
+      Number.isFinite(x.holdEndMs)&&
+      n.timeMs>x.timeMs&&n.timeMs<x.holdEndMs
+    );
+    if(active){
+      const recentTap=full.some(x=>
+        !x.holdVisualOnly&&
+        x!==active&&
+        Math.abs(x.timeMs-n.timeMs)<115
+      );
+      if(recentTap)continue;
+      const heldLeft=active.lane<4;
+      const heldRight=active.lane>4;
+      if(heldLeft&&n.lane<5)continue;
+      if(heldRight&&n.lane>3)continue;
+      if(n.lane===active.lane)continue;
+    }
+
     full.push({...n});
   }
 
-  // The repeated MASTER plus the legacy full-song skeleton lands around 1,270 starts.
-  // Fill only empty rhythmic slots on an eighth-note grid (165 BPM) so the second half
-  // keeps MASTER density without becoming random. Existing chart notes always win.
+  // Fill genuine empty spaces only. The fill itself obeys the same two-thumb density
+  // limit, so it can raise overall note count without creating unplayable clusters.
   const eighthMs=60000/165/2;
   const fillLanePattern=[0,2,4,6,8,7,5,3,1,3,5,7];
-  for(let k=0,t=120395;t<=240300&&full.length<1530;k++,t=120395+k*eighthMs){
+  for(let k=0,t=120395;t<=240300&&full.length<1525;k++,t=120395+k*eighthMs){
     const timeMs=Math.round(t);
-    if(full.some(n=>Math.abs(n.timeMs-timeMs)<58))continue;
+    if(full.some(n=>Math.abs(n.timeMs-timeMs)<72))continue;
+    const recent=full.filter(n=>Math.abs(n.timeMs-timeMs)<115);
+    if(recent.length>=2)continue;
 
     const active=full.find(n=>
       Number.isFinite(n.holdEndMs)&&
       timeMs>n.timeMs&&timeMs<n.holdEndMs
     );
-    // During a hold there is already one fixed thumb. Do not add an extra fill near
-    // another ordinary tap because that would require three fingers.
-    if(active&&full.some(n=>!n.holdVisualOnly&&Math.abs(n.timeMs-timeMs)<100))continue;
+    if(active&&full.some(n=>!n.holdVisualOnly&&n!==active&&Math.abs(n.timeMs-timeMs)<115))continue;
 
     let lane=fillLanePattern[k%fillLanePattern.length];
     if(active){
@@ -322,29 +367,23 @@ function makeSpicaMasterReferenceChart(source) {
     full.push({timeMs,lane});
   }
 
-  // Final phrase: deliberate closing accents instead of a mechanical fill.
-  // Mirror pairs are two-thumb friendly; center + side accents give the last cadence
-  // a clear rise and finish.
+  // Final cadence: a short deliberate pattern, still within two-thumb capacity.
   const ending=[
     [240768,7],
-    [241325,8],
-    [241688,2],
-    [241870,6],
-    [242052,3],
-    [242234,5],
-    [242416,4],
-    [242625,3],
-    [242997,1],
-    [243183,6],
-    [243562,4],
-    [243744,0],
-    [243744,8],
-    [243926,2]
+    [241132,2],[241132,6],
+    [241496,3],[241496,5],
+    [241860,4],
+    [242224,1],[242224,7],
+    [242588,2],[242588,6],
+    [242952,3],[242952,5],
+    [243316,4],
+    [243680,0],[243680,8],
+    [243926,4]
   ];
   for(const [timeMs,lane] of ending){
-    if(full.some(n=>Math.abs(n.timeMs-timeMs)<=35&&n.lane===lane))continue;
-    const same=full.filter(n=>Math.abs(n.timeMs-timeMs)<=18);
-    if(same.length>=2)continue;
+    if(full.some(n=>Math.abs(n.timeMs-timeMs)<=40&&n.lane===lane))continue;
+    const recent=full.filter(n=>Math.abs(n.timeMs-timeMs)<115);
+    if(recent.length>=2)continue;
     full.push({timeMs,lane});
   }
 
@@ -353,7 +392,7 @@ function makeSpicaMasterReferenceChart(source) {
   return {
     ...source,
     bpm:165,
-    difficulty:'MASTER動画転記 / 全曲高密度 / 2本指最適化 / 長押しあり',
+    difficulty:'MASTER動画転記 / 全曲2本指密度制御 / 長押しあり',
     noteCount:full.length,
     judgmentCount:full.length+full.filter(n=>Number.isFinite(n.holdEndMs)).length,
     notes:full
