@@ -156,8 +156,11 @@
       return;
     }
     if(!game.contains(target))return;
-    let lane=laneFromTarget(target);
-    if(lane<0&&holdPointers.size>0)lane=laneFromPoint(e.clientX,e.clientY);
+    // During a hold always resolve the free thumb by coordinates. On iOS/PWA the
+    // second pointer can inherit/retarget to the held element, which made taps land
+    // on the hold lane or disappear even when e.target looked valid.
+    let lane=holdPointers.size>0?laneFromPoint(e.clientX,e.clientY):laneFromTarget(target);
+    if(lane<0)lane=laneFromTarget(target);
     if(lane<0)return;
     if(activePointers.has(e.pointerId))return;
     activePointers.add(e.pointerId);
@@ -213,9 +216,21 @@
     holdPointers.clear();
   }
 
-  document.addEventListener('pointerdown',handlePointerDown,{capture:true,passive:true});
-  document.addEventListener('pointerup',releasePointer,{capture:true,passive:true});
-  document.addEventListener('pointercancel',releasePointer,{capture:true,passive:true});
+  // Live gameplay must own multi-touch. preventDefault suppresses iOS long-press
+  // magnifier/callout/gesture handling that otherwise steals or delays the second thumb.
+  function livePointerDown(e){
+    if(playing&&!gamePaused&&game.contains(e.target)){
+      if(e.cancelable)e.preventDefault();
+    }
+    handlePointerDown(e);
+  }
+  function livePointerRelease(e){
+    if(playing&&game.contains(e.target)&&e.cancelable)e.preventDefault();
+    releasePointer(e);
+  }
+  document.addEventListener('pointerdown',livePointerDown,{capture:true,passive:false});
+  document.addEventListener('pointerup',livePointerRelease,{capture:true,passive:false});
+  document.addEventListener('pointercancel',livePointerRelease,{capture:true,passive:false});
   window.addEventListener('blur',resetPointers,{passive:true});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)resetPointers();},{passive:true});
 
