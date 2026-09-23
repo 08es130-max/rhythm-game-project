@@ -168,17 +168,6 @@
     const style=document.createElement('style');
     style.id='homeArtSelectorStyle';
     style.textContent=`
-      /* Ver.0.8.143: LR home scenes keep the whole source image visible instead of cover-cropping it. */
-      @media (orientation:landscape){
-        .home-screen.is-lr-home-scene-v096 .home-lr-scene-v096{
-          object-fit:contain!important;
-          object-position:center center!important;
-          transform:none!important;
-          width:100%!important;
-          height:100%!important;
-          max-width:none!important;
-        }
-      }
       /* Use the approved normal framing for the entire official set. */
       @media (orientation:landscape){.home-screen .home-character-cutout-v084[data-art-set="stage"]{bottom:-101px!important}}
       @media (orientation:landscape) and (max-height:620px){.home-screen .home-character-cutout-v084[data-art-set="stage"]{bottom:-105px!important}}
