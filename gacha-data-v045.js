@@ -69,7 +69,14 @@
     card:`assets/lr/lr-ai-card.webp?v=${version}`,
     home:`assets/lr/lr-ai-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi];
+  const lrEmma={
+    id:'lr-emma-flower-garden',baseId:'emma',name:'エマ・ヴェルデ【花園に祈る陽だまり】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-emma-live.webp?v=${version}`,
+    card:`assets/lr/lr-emma-card.webp?v=${version}`,
+    home:`assets/lr/lr-emma-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -110,6 +117,7 @@
   window.GACHA_LR_KANATA_ID=lrKanata.id;
   window.GACHA_LR_SETSUNA_ID=lrSetsuna.id;
   window.GACHA_LR_AI_ID=lrAi.id;
+  window.GACHA_LR_EMMA_ID=lrEmma.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
