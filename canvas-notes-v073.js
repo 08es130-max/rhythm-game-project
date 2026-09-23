@@ -112,6 +112,25 @@
     }
   }
 
+  function pointForNoteTime(timeMs,now,leadMs,lane,spawn,targetPoints){
+    const dt=timeMs-now,progress=getNoteProgress(dt,leadMs),p=targetPoints[lane];
+    return {x:spawn.x+(p.x-spawn.x)*progress,y:spawn.y+(p.y-spawn.y)*progress,progress};
+  }
+
+  function drawHoldBody(n,now,leadMs,spawn,targetPoints){
+    if(!Number.isFinite(n.holdEndMs))return;
+    const a=pointForNoteTime(n.timeMs,now,leadMs,n.lane,spawn,targetPoints);
+    const b=pointForNoteTime(n.holdEndMs,now,leadMs,n.lane,spawn,targetPoints);
+    ctx.save();ctx.lineCap='round';
+    ctx.shadowColor='rgba(96,165,250,.65)';ctx.shadowBlur=8;
+    ctx.strokeStyle='rgba(191,219,254,.42)';ctx.lineWidth=22;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    ctx.shadowBlur=0;ctx.strokeStyle='rgba(96,165,250,.9)';ctx.lineWidth=8;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore();
+    const endScale=b.progress<=1?.45+.55*b.progress:1;
+    drawNote(b.x,b.y,endScale,false,false);
+  }
+
   function drawNote(x,y,scale,missed,simultaneous){
     const img=simultaneous?buildSimultaneousSprite():buildSprite();
     const size=76*scale;
@@ -137,6 +156,7 @@
       if(dt>leadMs)break;
       if(!n.missRegistered&&dt<-MISS_WINDOW)registerMiss(n);
       if(dt<-TRAIL_MS){n.finished=true;continue;}
+      if(n.holdVisualOnly&&Number.isFinite(n.holdEndMs))drawHoldBody(n,now,leadMs,spawn,targetPoints);
       const progress=getNoteProgress(dt,leadMs);
       const p=targetPoints[n.lane];
       const x=spawn.x+(p.x-spawn.x)*progress;
