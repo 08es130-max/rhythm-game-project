@@ -1520,3 +1520,7 @@
 @media (orientation:landscape) and (pointer:coarse){
   .gacha-home-btn{padding:10px 14px!important;font-size:10px!important}
 }
+
+/* Ver.0.8.176: explicit LR envelope artwork; class selector avoids :has() dependency in iPhone PWA. */
+.gacha-envelope-slot.rarity-slot-lr .gacha-envelope-shell{box-shadow:0 0 0 2px rgba(255,255,255,.88),0 0 18px rgba(250,204,21,.55),0 0 32px rgba(103,232,249,.42),0 10px 28px rgba(126,34,206,.34)!important}
+.gacha-envelope-slot.rarity-slot-lr .gacha-envelope-shell::before{background-image:url('assets/gacha-envelope-lr-v08173.webp?v=0.8.176')!important;transform:scaleX(1)!important;filter:brightness(1.04) contrast(1.04) saturate(1.08)!important}
