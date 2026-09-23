@@ -150,8 +150,17 @@
     // normal pointer handling remains unchanged when closest('.target') succeeds.
     const target=best>=0?targets.children[best]:null;
     const tr=target?.getBoundingClientRect?.();
-    const radius=tr?Math.max(tr.width,tr.height)*1.15:0;
-    return bestD<=radius?best:-1;
+    // During a hold the free thumb often lands slightly inside/outside the visible
+    // judgment circle. Choose the nearest lane from the whole lower play area rather
+    // than requiring the touch to remain inside a small radius around the icon.
+    // The nearest-center mapping still gives exactly one lane, so adjacent lanes do
+    // not fire together.
+    const gameRect=game?.getBoundingClientRect?.();
+    if(!tr||!gameRect)return -1;
+    const pad=Math.max(tr.width,tr.height)*1.75;
+    const inPlayArea=x>=gameRect.left-pad&&x<=gameRect.right+pad&&
+      y>=gameRect.top+gameRect.height*0.30-pad&&y<=gameRect.bottom+pad;
+    return inPlayArea?best:-1;
   }
 
   function handlePointerDown(e){
