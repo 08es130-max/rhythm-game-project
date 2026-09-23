@@ -90,7 +90,14 @@
     card:`assets/lr/lr-rina-card.webp?v=${version}`,
     home:`assets/lr/lr-rina-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma,lrMia,lrRina];
+  const lrLanzhu={
+    id:'lr-lanzhu-rose-palace',baseId:'lanzhu',name:'鐘嵐珠【薔薇宮に咲く女王】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-lanzhu-live.webp?v=${version}`,
+    card:`assets/lr/lr-lanzhu-card.webp?v=${version}`,
+    home:`assets/lr/lr-lanzhu-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma,lrMia,lrRina,lrLanzhu];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -134,6 +141,7 @@
   window.GACHA_LR_EMMA_ID=lrEmma.id;
   window.GACHA_LR_MIA_ID=lrMia.id;
   window.GACHA_LR_RINA_ID=lrRina.id;
+  window.GACHA_LR_LANZHU_ID=lrLanzhu.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
