@@ -72,6 +72,9 @@
       chord(at(b,15),0,8);
     });
 
+    // Ver.0.8.171 visual-only hold-note prototype. It is ignored by hit logic for now.
+    // Place one clearly visible hold in the early section for safe rendering verification.
+    notes.push({timeMs:Math.round(at(8,0)),lane:4,holdEndMs:Math.round(at(9,0)),holdVisualOnly:true});
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     if(notes.length>TARGET){
       const groups=new Map();notes.forEach((n,i)=>{if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);groups.get(n.timeMs).push(i);});
