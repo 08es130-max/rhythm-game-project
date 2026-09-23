@@ -229,9 +229,13 @@ function makeSpicaMasterReferenceChart(source) {
   // hold due to detector jitter, demote it to a tap rather than creating a 3-finger
   // requirement.
   let heldUntil=-Infinity;
+  const holdSafetyGapMs=220;
   for(const n of firstPart){
     if(Number.isFinite(n.holdEndMs)){
-      if(n.timeMs<heldUntil){
+      // Leave a short gap after a hold end before another hold may start.
+      // The release judgment itself has a GOOD window, so back-to-back holds can
+      // otherwise coexist physically even when their chart bodies do not overlap.
+      if(n.timeMs<heldUntil+holdSafetyGapMs){
         delete n.holdEndMs; delete n.holdVisualOnly;
       }else heldUntil=n.holdEndMs;
     }
