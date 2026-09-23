@@ -76,7 +76,14 @@
     card:`assets/lr/lr-emma-card.webp?v=${version}`,
     home:`assets/lr/lr-emma-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma];
+  const lrMia={
+    id:'lr-mia-silver-garden',baseId:'mia',name:'ミア・テイラー【白銀に響く旋律】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-mia-live.webp?v=${version}`,
+    card:`assets/lr/lr-mia-card.webp?v=${version}`,
+    home:`assets/lr/lr-mia-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma,lrMia];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -118,6 +125,7 @@
   window.GACHA_LR_SETSUNA_ID=lrSetsuna.id;
   window.GACHA_LR_AI_ID=lrAi.id;
   window.GACHA_LR_EMMA_ID=lrEmma.id;
+  window.GACHA_LR_MIA_ID=lrMia.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
