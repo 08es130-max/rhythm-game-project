@@ -372,6 +372,27 @@ function makeSpicaMasterReferenceChart(source) {
     }
   }
 
+  // Raise total count with safe two-note chords instead of faster streams.
+  // A chord is added only when the surrounding 130ms is completely empty, so note
+  // count increases without increasing per-thumb repetition speed.
+  const chordPairs=[[0,8],[1,7],[2,6],[3,5]];
+  const quarterMs=60000/165;
+  for(let pass=0;pass<4&&full.length<1500;pass++){
+    const phase=(quarterMs/4)*pass;
+    for(let k=0,t=120395+phase;t<=239900&&full.length<1500;k++,t=120395+phase+k*quarterMs){
+      const timeMs=Math.round(t);
+      if(full.some(n=>Math.abs(n.timeMs-timeMs)<130))continue;
+      const active=full.find(n=>
+        Number.isFinite(n.holdEndMs)&&
+        timeMs>n.timeMs&&timeMs<n.holdEndMs
+      );
+      if(active)continue;
+
+      const [leftLane,rightLane]=chordPairs[(k+pass)%chordPairs.length];
+      full.push({timeMs,lane:leftLane},{timeMs,lane:rightLane});
+    }
+  }
+
   // Final cadence: a short deliberate pattern, still within two-thumb capacity.
   const ending=[
     [240768,7],
