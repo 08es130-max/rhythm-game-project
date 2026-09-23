@@ -134,7 +134,14 @@
     const v=localStorage.getItem(KEY)||'normal';
     return VALID.includes(v)?v:'normal';
   }
-  function active(){return current()!=='normal';}
+  function isShiorikoHome(){
+    if(localStorage.getItem('rhythmGame.shiorikoHomeArt.v1')==='lr'){
+      return (localStorage.getItem('rhythmGame.lrHomeCharacter.v1')||'shioriko')==='shioriko';
+    }
+    const id=card?.dataset.characterId||localStorage.getItem('rhythmGame.homeCharacter')||'default';
+    return ['default','shioriko','shioriko-icon','shioriko-lolita'].includes(id);
+  }
+  function active(){return isShiorikoHome()&&current()!=='normal';}
   function pick(pool){
     if(!pool?.length) return '';
     const options=pool.filter(x=>x!==last);
