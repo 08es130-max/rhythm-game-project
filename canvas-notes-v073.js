@@ -5,6 +5,7 @@
   let canvas=null;
   let ctx=null;
   let sprite=null;
+  let simultaneousSprite=null;
   let geom=null;
   let geomDirty=true;
   let noteRef=null;
@@ -33,6 +34,21 @@
     c.beginPath();c.arc(cx,cy,23,0,Math.PI*2);c.lineWidth=2.5;c.strokeStyle='rgba(255,255,255,.76)';c.stroke();
     sprite=s;
     return sprite;
+  }
+
+  function buildSimultaneousSprite(){
+    if(simultaneousSprite)return simultaneousSprite;
+    const base=buildSprite();
+    const s=document.createElement('canvas');s.width=96;s.height=96;
+    const d=s.getContext('2d');d.drawImage(base,0,0);
+    // Thick white bar through the center: visual-only cue for simultaneous notes.
+    d.save();d.translate(48,48);d.lineCap='round';
+    d.shadowColor='rgba(30,64,175,.85)';d.shadowBlur=5;
+    d.strokeStyle='rgba(255,255,255,.98)';d.lineWidth=10;
+    d.beginPath();d.moveTo(-24,0);d.lineTo(24,0);d.stroke();
+    d.shadowBlur=0;d.strokeStyle='rgba(191,219,254,.95)';d.lineWidth=2;
+    d.beginPath();d.moveTo(-24,0);d.lineTo(24,0);d.stroke();d.restore();
+    simultaneousSprite=s;return simultaneousSprite;
   }
 
   function ensureCanvas(){
@@ -88,8 +104,8 @@
     }
   }
 
-  function drawNote(x,y,scale,missed){
-    const img=buildSprite();
+  function drawNote(x,y,scale,missed,simultaneous){
+    const img=simultaneous?buildSimultaneousSprite():buildSprite();
     const size=76*scale;
     ctx.globalAlpha=missed?.76:1;
     ctx.drawImage(img,x-size/2,y-size/2,size,size);
@@ -118,7 +134,7 @@
       const x=spawn.x+(p.x-spawn.x)*progress;
       const y=spawn.y+(p.y-spawn.y)*progress;
       const scale=progress<=1?.45+.55*progress:1;
-      drawNote(x,y,scale,n.missRegistered);
+      drawNote(x,y,scale,n.missRegistered,n.simultaneous);
     }
 
     if(isSilentMode()&&now>=silentDurationMs){clearCanvas();finishGame();return;}
