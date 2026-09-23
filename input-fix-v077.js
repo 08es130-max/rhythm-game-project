@@ -179,6 +179,11 @@
     if(lane<0)return;
     if(activePointers.has(e.pointerId))return;
     activePointers.add(e.pointerId);
+    // Capture every live pointer, not only the hold pointer. On iOS the free thumb can
+    // otherwise be cancelled/retargeted when the first thumb is already captured.
+    try{
+      if(game?.setPointerCapture&&Number.isFinite(e.pointerId))game.setPointerCapture(e.pointerId);
+    }catch(_){}
     const whenMs=songTimeForEvent(e.timeStamp);
     if(startHoldIfPresent(lane,whenMs,e.pointerId))return;
     fastHitLaneAt(lane,whenMs);
@@ -224,10 +229,10 @@
     if(n){
       resolveHoldRelease(n,songTimeForEvent(e.timeStamp));
       holdPointers.delete(e.pointerId);
-      try{
-        if(game?.hasPointerCapture?.(e.pointerId))game.releasePointerCapture(e.pointerId);
-      }catch(_){}
     }
+    try{
+      if(game?.hasPointerCapture?.(e.pointerId))game.releasePointerCapture(e.pointerId);
+    }catch(_){}
   }
   function resetPointers(){
     for(const pointerId of holdPointers.keys()){
