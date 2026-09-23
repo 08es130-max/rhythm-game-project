@@ -199,10 +199,10 @@
       .home-art-current{margin-top:9px;color:#7dd3fc;font-size:12px;font-weight:700}
       .lr-home-character-options{grid-column:1/-1;display:flex;gap:10px;padding:10px;border:1px solid #334155;border-radius:12px;background:#0f172a}
       .lr-home-character-options[hidden]{display:none!important}
-      .lr-home-character-option{width:150px;border:2px solid #334155;border-radius:12px;background:#0b1220;padding:6px;color:#f8fafc}
+      .lr-home-character-option{width:150px;border:2px solid #334155;border-radius:12px;background:#0b1220;padding:9px 6px 7px;color:#f8fafc}
       .lr-home-character-option.is-selected{border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,.18)}
-      .lr-home-character-option img{display:block;width:100%;height:72px;object-fit:cover;border-radius:8px}
-      .lr-home-character-option strong{display:block;margin-top:4px;text-align:center;font-size:11px}
+      .lr-home-character-color{display:block;width:22px;height:22px;margin:0 auto 5px;border-radius:50%;background:var(--lr-color,#fff);box-shadow:0 0 0 2px rgba(255,255,255,.2)}
+      .lr-home-character-option strong{display:block;margin-top:2px;text-align:center;font-size:11px}
       @media (orientation:landscape) and (pointer:coarse){.home-art-selector{padding:9px;margin-bottom:10px}.home-art-selector h2{font-size:14px}.home-art-selector p{margin-bottom:7px;font-size:10px}.home-art-options{max-width:520px;gap:8px}.home-art-option{padding:5px}.home-art-option img{height:78px}.home-art-option strong{font-size:11px;margin-top:4px}.home-art-current{margin-top:5px;font-size:10px}}
     `;
     document.head.appendChild(style);
@@ -289,12 +289,18 @@
           localStorage.setItem(LR_HOME_CHARACTER_KEY,current);
         }
         lrChoices.replaceChildren();
+        const themeColors={
+          ayumu:'#ed7d95',kasumi:'#e7d600',shizuku:'#01b7ed',karin:'#485ec6',
+          ai:'#ff5800',kanata:'#a664a0',setsuna:'#d81c2f',emma:'#84c36e',
+          rina:'#9ca5b9',shioriko:'#37b484',mia:'#d6d6d6',lanzhu:'#f8c8c4'
+        };
         owned.forEach(ch=>{
           const choice=document.createElement('button');
           choice.type='button';
           choice.className='lr-home-character-option';
           choice.classList.toggle('is-selected',ch.id===current);
-          choice.innerHTML=`<img src="${ch.src}" alt="${ch.label}"><strong>${ch.label}</strong>`;
+          choice.style.setProperty('--lr-color',themeColors[ch.id]||'#fff');
+          choice.innerHTML=`<span class="lr-home-character-color" aria-hidden="true"></span><strong>${ch.label}</strong>`;
           choice.addEventListener('click',(e)=>{
             e.stopPropagation();
             localStorage.setItem(LR_HOME_CHARACTER_KEY,ch.id);
