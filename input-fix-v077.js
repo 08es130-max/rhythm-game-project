@@ -276,6 +276,21 @@
     if(playing&&game.contains(e.target)&&e.cancelable)e.preventDefault();
     releasePointer(e);
   }
+  // iOS Safari can recognize magnifier/double-tap gestures at the Touch Event
+  // layer before Pointer Events fully reach the game. Suppress native touch gestures
+  // only while an actual live is running; menus and the rest of the app are untouched.
+  function suppressNativeLiveTouch(e){
+    if(!playing||gamePaused)return;
+    const t=e.target;
+    if(!t||!game.contains(t))return;
+    if(t.closest?.('#pauseBtn'))return;
+    if(e.cancelable)e.preventDefault();
+  }
+  game.addEventListener('touchstart',suppressNativeLiveTouch,{capture:true,passive:false});
+  game.addEventListener('touchmove',suppressNativeLiveTouch,{capture:true,passive:false});
+  game.addEventListener('touchend',suppressNativeLiveTouch,{capture:true,passive:false});
+  game.addEventListener('touchcancel',suppressNativeLiveTouch,{capture:true,passive:false});
+
   document.addEventListener('pointerdown',livePointerDown,{capture:true,passive:false});
   document.addEventListener('pointerup',livePointerRelease,{capture:true,passive:false});
   document.addEventListener('pointercancel',livePointerRelease,{capture:true,passive:false});
