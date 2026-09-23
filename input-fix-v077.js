@@ -70,7 +70,13 @@
     n.holdResolved=false;
     n.holdFailed=false;
     holdPointers.set(pointerId,n);
+    // A hold counts as two judgments: start + release. Award the start immediately.
+    counts[grade]++;
+    combo++;
+    maxCombo=Math.max(maxCombo,combo);
+    score+=grade==='perfect'?1000:grade==='great'?700:400;
     judgeEl.textContent=grade.toUpperCase();
+    updateHud();
     playTapSound(grade);
     return true;
   }
