@@ -339,32 +339,37 @@ function makeSpicaMasterReferenceChart(source) {
     full.push({...n});
   }
 
-  // Fill genuine empty spaces only. The fill itself obeys the same two-thumb density
-  // limit, so it can raise overall note count without creating unplayable clusters.
-  const eighthMs=60000/165/2;
+  // Fill genuine empty spaces only. Use a 16th-note candidate grid, but accept a
+  // candidate only when it sits in a real gap and the 115ms / two-thumb capacity
+  // remains satisfied. This raises overall density without creating burst clusters.
+  const sixteenthMs=60000/165/4;
   const fillLanePattern=[0,2,4,6,8,7,5,3,1,3,5,7];
-  for(let k=0,t=120395;t<=240300&&full.length<1525;k++,t=120395+k*eighthMs){
-    const timeMs=Math.round(t);
-    if(full.some(n=>Math.abs(n.timeMs-timeMs)<72))continue;
-    const recent=full.filter(n=>Math.abs(n.timeMs-timeMs)<115);
-    if(recent.length>=2)continue;
+  for(let pass=0;pass<2&&full.length<1510;pass++){
+    const phase=pass?sixteenthMs/2:0;
+    for(let k=0,t=120395+phase;t<=240300&&full.length<1510;k++,t=120395+phase+k*sixteenthMs){
+      const timeMs=Math.round(t);
+      // Never squeeze a fill into an already busy local phrase.
+      if(full.some(n=>Math.abs(n.timeMs-timeMs)<92))continue;
+      const recent=full.filter(n=>Math.abs(n.timeMs-timeMs)<115);
+      if(recent.length>=2)continue;
 
-    const active=full.find(n=>
-      Number.isFinite(n.holdEndMs)&&
-      timeMs>n.timeMs&&timeMs<n.holdEndMs
-    );
-    if(active&&full.some(n=>!n.holdVisualOnly&&n!==active&&Math.abs(n.timeMs-timeMs)<115))continue;
+      const active=full.find(n=>
+        Number.isFinite(n.holdEndMs)&&
+        timeMs>n.timeMs&&timeMs<n.holdEndMs
+      );
+      if(active&&full.some(n=>!n.holdVisualOnly&&n!==active&&Math.abs(n.timeMs-timeMs)<125))continue;
 
-    let lane=fillLanePattern[k%fillLanePattern.length];
-    if(active){
-      const heldLeft=active.lane<4;
-      const heldRight=active.lane>4;
-      if(heldLeft&&lane<5)lane=5+(k%4);
-      else if(heldRight&&lane>3)lane=k%4;
-      else if(active.lane===4)lane=k%2?1:7;
-      if(lane===active.lane)continue;
+      let lane=fillLanePattern[(k+pass*3)%fillLanePattern.length];
+      if(active){
+        const heldLeft=active.lane<4;
+        const heldRight=active.lane>4;
+        if(heldLeft&&lane<5)lane=5+(k%4);
+        else if(heldRight&&lane>3)lane=k%4;
+        else if(active.lane===4)lane=k%2?1:7;
+        if(lane===active.lane)continue;
+      }
+      full.push({timeMs,lane});
     }
-    full.push({timeMs,lane});
   }
 
   // Final cadence: a short deliberate pattern, still within two-thumb capacity.
