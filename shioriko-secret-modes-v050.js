@@ -169,8 +169,16 @@
     'うまくいかない時もあります。焦らなくて大丈夫です。……私は、あなたならできると信じています。'
   ]);
 
+  function selectedLrCharacter(){
+    return localStorage.getItem('rhythmGame.lrHomeCharacter.v1')||'shioriko';
+  }
+  function isShiorikoHome(){
+    if(localStorage.getItem(HOME_ART_KEY)==='lr') return selectedLrCharacter()==='shioriko';
+    const id=homeCard?.dataset.characterId||localStorage.getItem('rhythmGame.homeCharacter')||'default';
+    return ['default','shioriko','shioriko-icon','shioriko-lolita'].includes(id);
+  }
   function isLrHomeActive(){
-    if(localStorage.getItem(HOME_ART_KEY)!=='lr') return false;
+    if(!isShiorikoHome()||localStorage.getItem(HOME_ART_KEY)!=='lr') return false;
     try{
       if(typeof window.loadGachaOwned==='function') return window.loadGachaOwned().has(LR_ID);
       const parsed=JSON.parse(localStorage.getItem('rhythmGame.unlockedCharacters.v1')||'[]');
@@ -197,6 +205,7 @@
     window.dispatchEvent(new CustomEvent('rhythmGameShiorikoDialogueExpression',{detail:{mode}}));
   }
   function showFrom(mode,kind='normal'){
+    if(!isShiorikoHome()) return false;
     const s=sets[mode];
     if(!s) return false;
     const text=pick(poolFor(s,kind));
@@ -223,9 +232,9 @@
     if(mode==='normal') return false;
     return showFrom(mode,kind);
   }
-  function isSpecial(){return isLrHomeActive()||(currentMode()!=='normal'&&!!sets[currentMode()]);}
+  function isSpecial(){return isShiorikoHome()&&(isLrHomeActive()||(currentMode()!=='normal'&&!!sets[currentMode()]));}
   function tryNormalSurprise(kind='normal'){
-    if(isLrHomeActive()||currentMode()!=='normal') return false;
+    if(!isShiorikoHome()||isLrHomeActive()||currentMode()!=='normal') return false;
     const roll=Math.random();
     if(roll<0.10) return showFrom('dere',kind);
     if(roll<0.20) return showFrom('clumsy',kind);
