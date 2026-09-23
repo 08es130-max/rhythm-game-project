@@ -1,7 +1,6 @@
 const PRESET_AUDIO_DB = 'rhythmGamePresetAudio';
 const PRESET_AUDIO_STORE = 'audio';
 const SPICA_AUDIO_KEY = 'spica-terrible';
-const SPICA_TARGET_JUDGMENT_COUNT = 675;
 let awaitingPresetAudioKey = null;
 let presetAudioObjectUrl = null;
 
@@ -178,89 +177,83 @@ function limitEventsToTwo(notes) {
 function makeSpicaMasterReferenceChart(source) {
   if (!source?.notes?.length) return source;
 
-  // Rebuild Spica Terrible around the SIF MASTER reference:
-  // stairs / alternating bursts / one-hand restraint with holds / denser chorus.
-  // A hold is one chart object but two combo judgments (start + release).
-  const base = limitEventsToTwo(source.notes);
-  const notes = base.map(n=>({...n}));
-  const first = notes[0]?.timeMs || 0;
-  const last = notes[notes.length-1]?.timeMs || first;
-  const duration = Math.max(1,last-first);
+  // Full-version Spica Terrible: keep the authored timing as the backbone.
+  // Do NOT chase a fixed combo count. The original SIF MASTER is a short edit;
+  // LoveFes uses the full song, so density/pattern language matters more than 675.
+  const authored=limitEventsToTwo(source.notes).map(n=>({...n}));
+  const notes=authored.map(n=>({...n}));
+  const first=notes[0]?.timeMs||0;
+  const last=notes[notes.length-1]?.timeMs||first;
+  const beat=60000/165;
+  const half=beat/2;
 
-  // Convert selected musical accents into holds. Keep them short enough for two-thumb play,
-  // and reserve only one side for ordinary notes while a thumb is fixed.
-  const holdFractions=[.16,.205,.255,.39,.445,.505,.615,.675,.735,.82,.875,.925];
-  const usedHoldStarts=new Set();
-  for(let h=0;h<holdFractions.length;h++){
-    const target=first+duration*holdFractions[h];
-    let bestIndex=-1,bestDist=Infinity;
-    for(let i=0;i<notes.length;i++){
-      const n=notes[i];
-      if(n.holdEndMs||usedHoldStarts.has(n.timeMs))continue;
-      const d=Math.abs(n.timeMs-target);
-      if(d<bestDist){bestDist=d;bestIndex=i;}
+  // Use the first-song-section's authored lane movement as a motif source for the
+  // later full-version section instead of manufacturing endless 16th-note staircases.
+  // Only fill genuinely sparse gaps, and copy short local motifs (2-6 notes).
+  const motifEnd=Math.min(last,first+123000);
+  const motif=authored.filter(n=>n.timeMs<=motifEnd);
+  const secondStart=motifEnd+beat*2;
+  const occupied=new Map();
+  const mark=n=>{
+    if(!occupied.has(n.timeMs))occupied.set(n.timeMs,new Set());
+    occupied.get(n.timeMs).add(n.lane);
+  };
+  notes.forEach(mark);
+
+  // Repeat recognizable first-half phrases into matching sparse places in the second half.
+  // This intentionally allows verse 1 / verse 2 to share chart language, as requested.
+  const phrase=motif.filter(n=>n.timeMs>=first+18000&&n.timeMs<first+118000);
+  if(phrase.length&&secondStart<last-4000){
+    const span=Math.max(1,(first+118000)-(first+18000));
+    for(const src of phrase){
+      const rel=src.timeMs-(first+18000);
+      const t=Math.round(secondStart+rel);
+      if(t>=last-1500)break;
+      if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)<105)continue;
+      const lanes=occupied.get(t)||new Set();
+      if(lanes.size>=2||lanes.has(src.lane))continue;
+      const n={timeMs:t,lane:src.lane};
+      notes.push(n);mark(n);
     }
-    if(bestIndex<0)continue;
-    const hold=notes[bestIndex];
-    const holdLen=h%3===0?1115:h%3===1?743:929;
-    hold.holdEndMs=Math.min(last-200,hold.timeMs+holdLen);
-    hold.holdVisualOnly=true;
-    usedHoldStarts.add(hold.timeMs);
+  }
 
-    const holdOnLeft=hold.lane<=4;
+  notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+  // Long notes: short restraints distributed across both halves.
+  // Never use center lane for holds (matching the original MASTER tendency), and while
+  // holding, remove same-side notes so two-thumb play never requires finger crossing.
+  const holdTargets=[.105,.145,.205,.285,.355,.435,.535,.585,.645,.725,.795,.865,.925];
+  for(let h=0;h<holdTargets.length;h++){
+    const target=first+(last-first)*holdTargets[h];
+    let best=null,bestDist=Infinity;
+    for(const n of notes){
+      if(n.holdEndMs||n.lane===4)continue;
+      const d=Math.abs(n.timeMs-target);
+      if(d<bestDist){best=n;bestDist=d;}
+    }
+    if(!best)continue;
+    const len=[Math.round(beat*1.5),Math.round(beat*2),Math.round(beat*2.5)][h%3];
+    best.holdEndMs=Math.min(last-300,best.timeMs+len);
+    best.holdVisualOnly=true;
+  }
+
+  // Enforce the established LoveFes hold ergonomics after holds are chosen.
+  for(const hold of notes.filter(n=>Number.isFinite(n.holdEndMs))){
+    const left=hold.lane<4;
     for(let i=notes.length-1;i>=0;i--){
       const n=notes[i];
       if(n===hold||n.timeMs<=hold.timeMs||n.timeMs>=hold.holdEndMs)continue;
-      // Never put a normal note on the held lane. While holding, keep free-hand notes
-      // on the opposite side so the player is never asked to cross fingers.
-      const wrongSide=n.lane===hold.lane||(holdOnLeft?n.lane<5:n.lane>3);
-      if(wrongSide)notes.splice(i,1);
+      if(n.lane===hold.lane||(left?n.lane<5:n.lane>3))notes.splice(i,1);
     }
-  }
-
-  // MASTER reference has 675 combo. Since every hold contributes two judgments,
-  // fill ordinary notes only until the total judgment count approaches 675.
-  const judgmentCount=()=>notes.length+notes.filter(n=>Number.isFinite(n.holdEndMs)).length;
-  const occupied=new Map();
-  notes.forEach(n=>{
-    if(!occupied.has(n.timeMs))occupied.set(n.timeMs,new Set());
-    occupied.get(n.timeMs).add(n.lane);
-  });
-  const beat=60000/165;
-  const half=beat/2;
-  const quarter=beat/4;
-  const candidates=[];
-  for(let t=first+beat*4;t<last-beat*2;t+=quarter){
-    const time=Math.round(t);
-    if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),time)<82)continue;
-    candidates.push(time);
-  }
-
-  let ci=0;
-  while(judgmentCount()<SPICA_TARGET_JUDGMENT_COUNT&&ci<candidates.length){
-    const t=candidates[ci++];
-    // Do not add a note that violates an active hold's one-side rule.
-    const activeHold=notes.find(n=>Number.isFinite(n.holdEndMs)&&t>n.timeMs&&t<n.holdEndMs);
-    let phase=Math.floor((t-first)/half)%16;
-    let lane=phase<=8?phase:16-phase;
-    if(activeHold){
-      if(activeHold.lane<=4) lane=Math.max(5,lane);
-      else lane=Math.min(3,lane);
-      if(lane===activeHold.lane)continue;
-    }
-    const lanes=occupied.get(t)||new Set();
-    if(lanes.size>=2||lanes.has(lane))continue;
-    lanes.add(lane);occupied.set(t,lanes);
-    notes.push({timeMs:t,lane});
   }
 
   notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
   return {
     ...source,
     bpm:165,
-    difficulty:'MASTER参考 / 二本指向け / 長押しあり',
+    difficulty:'MASTER参考 / フル版 / 長押しあり',
     noteCount:notes.length,
-    judgmentCount:judgmentCount(),
+    judgmentCount:notes.length+notes.filter(n=>Number.isFinite(n.holdEndMs)).length,
     notes
   };
 }
