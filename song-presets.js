@@ -177,54 +177,85 @@ function limitEventsToTwo(notes) {
 function makeSpicaMasterReferenceChart(source) {
   if (!source?.notes?.length) return source;
 
-  // Full-version Spica Terrible: keep the authored timing as the backbone.
-  // Do NOT chase a fixed combo count. The original SIF MASTER is a short edit;
-  // LoveFes uses the full song, so density/pattern language matters more than 675.
-  const authored=limitEventsToTwo(source.notes).map(n=>({...n}));
-  const notes=authored.map(n=>({...n}));
-  const first=notes[0]?.timeMs||0;
-  const last=notes[notes.length-1]?.timeMs||first;
-  const beat=60000/165;
-  const half=beat/2;
-
-  // Use the first-song-section's authored lane movement as a motif source for the
-  // later full-version section instead of manufacturing endless 16th-note staircases.
-  // Only fill genuinely sparse gaps, and copy short local motifs (2-6 notes).
-  const motifEnd=Math.min(last,first+123000);
-  const motif=authored.filter(n=>n.timeMs<=motifEnd);
-  const secondStart=motifEnd+beat*2;
+  // Spica Terrible MASTER-inspired full chart.
+  // The original MASTER is 675 combo / 2:03 at BPM165. LoveFes uses the full song,
+  // so reproduce its density and pattern vocabulary rather than a fixed total count.
+  const src=limitEventsToTwo(source.notes).map(n=>({...n}));
+  const first=src[0]?.timeMs||0, last=src[src.length-1]?.timeMs||first;
+  const beat=60000/165, eighth=beat/2, sixteenth=beat/4;
+  const notes=[];
   const occupied=new Map();
-  const mark=n=>{
-    if(!occupied.has(n.timeMs))occupied.set(n.timeMs,new Set());
-    occupied.get(n.timeMs).add(n.lane);
+  const add=(timeMs,lane,extra={})=>{
+    const t=Math.round(timeMs);
+    if(t<first||t>last||lane<0||lane>8)return false;
+    let lanes=occupied.get(t);
+    if(!lanes){lanes=new Set();occupied.set(t,lanes);}
+    if(lanes.size>=2||lanes.has(lane))return false;
+    lanes.add(lane);notes.push({timeMs:t,lane,...extra});return true;
   };
-  notes.forEach(mark);
 
-  // Repeat recognizable first-half phrases into matching sparse places in the second half.
-  // This intentionally allows verse 1 / verse 2 to share chart language, as requested.
-  const phrase=motif.filter(n=>n.timeMs>=first+18000&&n.timeMs<first+118000);
-  if(phrase.length&&secondStart<last-4000){
-    const span=Math.max(1,(first+118000)-(first+18000));
-    for(const src of phrase){
-      const rel=src.timeMs-(first+18000);
-      const t=Math.round(secondStart+rel);
-      if(t>=last-1500)break;
-      if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)<105)continue;
-      const lanes=occupied.get(t)||new Set();
-      if(lanes.size>=2||lanes.has(src.lane))continue;
-      const n={timeMs:t,lane:src.lane};
-      notes.push(n);mark(n);
+  // Keep the existing musical anchors first.
+  src.forEach(n=>add(n.timeMs,n.lane));
+
+  // Pattern vocabulary taken from the documented MASTER character:
+  // stairs, alternating 3-note bursts, double-note stairs, one-hand anchors,
+  // spiral direction changes and denser chorus alternation. Each phrase is short;
+  // there is deliberately no endless lane sweep.
+  const phraseStart=Math.max(first,10000);
+  const phraseEnd=Math.min(last,123000);
+  const templates=[
+    [1,2,3,5,6,7],                 // separated alternating stair
+    [7,6,5,3,2,1],                 // reverse
+    [2,4,6,3,5,7],                 // center-crossing alternation
+    [1,3,2,6,5,7],                 // 3-note trill groups
+    [0,2,4,6,8,6,4,2],             // spiral/wiper-like turn
+    [8,6,4,2,0,2,4,6],
+    [2,3,4,6,5,4],                 // inward/outward stair
+    [6,5,4,2,3,4]
+  ];
+  let phraseIndex=0;
+  for(let base=phraseStart;base<phraseEnd-2000;base+=beat*4){
+    const tpl=templates[phraseIndex%templates.length];
+    const dense=(phraseIndex%4===2||phraseIndex%4===3);
+    const step=dense?sixteenth:eighth;
+    for(let j=0;j<tpl.length;j++){
+      const t=base+j*step;
+      if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)<70)continue;
+      add(t,tpl[j]);
     }
+    // Characteristic short double-note staircase / axis pattern, used only at phrase endings.
+    if(phraseIndex%3===1){
+      const t0=base+beat*2.75;
+      [[1,7],[2,7],[3,7]].forEach((pair,k)=>{
+        const t=t0+k*eighth;
+        if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)>=70){
+          add(t,pair[0]);add(t,pair[1]);
+        }
+      });
+    }
+    phraseIndex++;
+  }
+
+  // Verse 2 may reuse verse 1: copy the finished MASTER-style first-section events
+  // into the later full-song section at the song's existing structural boundary.
+  notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+  const masterPhrase=notes.filter(n=>n.timeMs>=phraseStart&&n.timeMs<phraseEnd).map(n=>({...n}));
+  const secondStart=125225;
+  const sourceStart=phraseStart;
+  for(const n of masterPhrase){
+    const t=secondStart+(n.timeMs-sourceStart);
+    if(t>=last-1200)break;
+    if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)<70)continue;
+    add(t,n.lane);
   }
 
   notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
-  // Long notes: short restraints distributed across both halves.
-  // Never use center lane for holds (matching the original MASTER tendency), and while
-  // holding, remove same-side notes so two-thumb play never requires finger crossing.
-  const holdTargets=[.105,.145,.205,.285,.355,.435,.535,.585,.645,.725,.795,.865,.925];
-  for(let h=0;h<holdTargets.length;h++){
-    const target=first+(last-first)*holdTargets[h];
+  // Short holds are mixed into alternating passages, as in the MASTER chart.
+  // Avoid center holds and enforce the established LoveFes two-thumb ergonomics.
+  const holdFractions=[.12,.17,.235,.31,.39,.455,.54,.595,.66,.735,.81,.875,.93];
+  for(let h=0;h<holdFractions.length;h++){
+    const target=first+(last-first)*holdFractions[h];
     let best=null,bestDist=Infinity;
     for(const n of notes){
       if(n.holdEndMs||n.lane===4)continue;
@@ -232,18 +263,18 @@ function makeSpicaMasterReferenceChart(source) {
       if(d<bestDist){best=n;bestDist=d;}
     }
     if(!best)continue;
-    const len=[Math.round(beat*1.5),Math.round(beat*2),Math.round(beat*2.5)][h%3];
+    const len=[Math.round(beat),Math.round(beat*1.5),Math.round(beat*2)][h%3];
     best.holdEndMs=Math.min(last-300,best.timeMs+len);
     best.holdVisualOnly=true;
   }
 
-  // Enforce the established LoveFes hold ergonomics after holds are chosen.
+  // While one thumb is held, leave the opposite side for the free thumb.
   for(const hold of notes.filter(n=>Number.isFinite(n.holdEndMs))){
-    const left=hold.lane<4;
+    const heldLeft=hold.lane<4;
     for(let i=notes.length-1;i>=0;i--){
       const n=notes[i];
       if(n===hold||n.timeMs<=hold.timeMs||n.timeMs>=hold.holdEndMs)continue;
-      if(n.lane===hold.lane||(left?n.lane<5:n.lane>3))notes.splice(i,1);
+      if(n.lane===hold.lane||(heldLeft?n.lane<5:n.lane>3))notes.splice(i,1);
     }
   }
 
