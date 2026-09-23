@@ -216,7 +216,7 @@
     const defs=[
       {id:'stage',label:'ステージスタイル',src:ART_SETS.stage.normal},
       {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal},
-      {id:'lr',label:'LEGEND RARE',src:LR_HOME_SCENE,requiresLr:true}
+      {id:'lr',label:'メモリアルスタイル',src:LR_HOME_SCENE,requiresLr:true}
     ];
     const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'ステージスタイル';
     const refresh=()=>{
@@ -230,6 +230,16 @@
         btn.setAttribute('aria-pressed',String(!locked&&btn.dataset.art===selected));
       });
       status.textContent=`選択中：${labelFor(selected)}`;
+      if(lrBtn){
+        const current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
+        const lrSources={
+          ayumu:LR_AYUMU_HOME,kasumi:LR_KASUMI_HOME,shizuku:LR_SHIZUKU_HOME,karin:LR_KARIN_HOME,
+          ai:LR_AI_HOME,kanata:LR_KANATA_HOME,setsuna:LR_SETSUNA_HOME,emma:LR_EMMA_HOME,
+          rina:LR_RINA_HOME,shioriko:LR_HOME_SCENE,mia:LR_MIA_HOME,lanzhu:LR_LANZHU_HOME
+        };
+        const img=lrBtn.querySelector('img');
+        if(img) img.src=lrSources[current]||LR_HOME_SCENE;
+      }
     };
     defs.forEach(def=>{
       const btn=document.createElement('button');
