@@ -177,106 +177,124 @@ function limitEventsToTwo(notes) {
 function makeSpicaMasterReferenceChart(source) {
   if (!source?.notes?.length) return source;
 
-  // Full-length Spica Terrible. Keep the authored full-song timing as the musical
-  // backbone; shape the first SIF-sized section with MASTER-like phrase grammar,
-  // repeat that finished grammar for verse 2, then reuse the same vocabulary after it.
-  const src=limitEventsToTwo(source.notes).map(n=>({...n}));
-  const first=src[0]?.timeMs||0, last=src[src.length-1]?.timeMs||first;
-  const bpm=165, beat=60000/bpm, eighth=beat/2, sixteenth=beat/4;
-  const notes=src.map(n=>({...n}));
-  const sortedTimes=()=>notes.map(n=>n.timeMs).sort((a,b)=>a-b);
-  const canPlace=(t,lane,gap=68)=>{
-    if(t<first||t>last||lane<0||lane>8)return false;
-    const same=notes.filter(n=>Math.abs(n.timeMs-t)<1);
-    if(same.length>=2||same.some(n=>n.lane===lane))return false;
-    return nearestEventDistance(sortedTimes(),t)>=gap;
-  };
-  const add=(t,lane,extra={})=>{
-    t=Math.round(t);
-    if(!canPlace(t,lane))return false;
-    notes.push({timeMs:t,lane,...extra});return true;
-  };
+  // SIF MASTER first-section reconstruction.
+  // Use the published MASTER density curve (675 note starts, 102 holds) instead of
+  // adding generic "MASTER-like" filler to the old chart.
+  const first=source.notes[0]?.timeMs||2252;
+  const last=source.notes[source.notes.length-1]?.timeMs||first;
+  const masterDuration=110000;
 
-  // MASTER-like short figures only. Never create a continuous mechanical sweep.
-  const figures=[
-    [1,3,5,7], [7,5,3,1],
-    [2,3,4,5,6], [6,5,4,3,2],
-    [1,2,3,6,7,8], [8,7,6,3,2,1],
-    [2,5,3,6,2,7], [6,3,5,2,6,1],
-    [0,2,4,6,8], [8,6,4,2,0]
+  // Published cumulative MASTER note-start counts by second (chart display).
+  // This preserves the real density changes: sparse opening, restrained verses,
+  // then the much busier chorus/ending instead of artificial constant 16th spam.
+  const cumulative=[
+    0,0,0,2,5,7,11,19,26,34,41,48,55,62,69,73,76,80,83,86,90,95,102,108,
+    116,126,133,140,148,155,163,172,177,184,191,198,204,213,215,220,225,229,
+    235,242,248,254,261,270,278,285,291,299,305,313,320,330,339,348,358,368,
+    377,384,389,398,405,411,420,426,431,440,442,450,458,469,475,482,491,498,
+    504,514,520,529,538,550,558,565,575,581,589,598,602,611,616,624,630,634,
+    642,649,652,653,655,658,660,662,662,664,665,669,670,672,675
   ];
-  const masterStart=Math.max(first+14500,17000);
-  const masterEnd=Math.min(last,123000);
-  let fi=0;
-  for(let base=masterStart;base<masterEnd-2500;base+=beat*4){
-    const fig=figures[fi%figures.length];
-    const step=(fi%4===2)?sixteenth:eighth;
-    for(let j=0;j<fig.length;j++) add(base+j*step,fig[j]);
-    // Compact simultaneous stair accents, not long runs.
-    if(fi%4===1){
-      const a=base+beat*2.75;
-      [[1,7],[2,6],[3,5]].forEach((pair,k)=>{
-        const t=Math.round(a+k*eighth);
-        const existing=notes.filter(n=>Math.abs(n.timeMs-t)<1);
-        if(existing.length===0){notes.push({timeMs:t,lane:pair[0]},{timeMs:t,lane:pair[1]});}
-      });
+
+  const notes=[];
+  const laneTotals=[72,77,90,83,17,85,93,82,76];
+  const holdTotals=[10,12,15,15,0,14,14,11,11];
+  const laneUsed=Array(9).fill(0);
+  const holdUsed=Array(9).fill(0);
+  let seq=0;
+
+  // Short pattern vocabulary mirrors the documented MASTER motions:
+  // stairs, one-hand axes, alternating bursts, inward/outward runs and double stairs.
+  const patterns=[
+    [1,2,3,5,6,7],[7,6,5,3,2,1],[2,4,6,3,5,7],[6,4,2,5,3,1],
+    [0,2,4,6,8,6,4,2],[8,6,4,2,0,2,4,6],[1,3,2,6,5,7],[7,5,6,2,3,1],
+    [3,5,2,6,1,7],[5,3,6,2,7,1]
+  ];
+  const chooseLane=(preferred)=>{
+    if(laneUsed[preferred]<laneTotals[preferred])return preferred;
+    let best=0,bestNeed=-Infinity;
+    for(let l=0;l<9;l++){
+      const need=laneTotals[l]-laneUsed[l];
+      if(need>bestNeed){bestNeed=need;best=l;}
     }
-    fi++;
+    return best;
+  };
+
+  for(let sec=1;sec<cumulative.length;sec++){
+    const count=cumulative[sec]-cumulative[sec-1];
+    if(count<=0)continue;
+    const p=patterns[Math.floor(sec/4)%patterns.length];
+    for(let k=0;k<count;k++){
+      // Spread notes through the second; simultaneous pairs appear at selected accents.
+      const pairAccent=count>=7&&k>=count-2&&sec%4===1;
+      const slot=pairAccent?count-2:k;
+      const frac=(slot+1)/(Math.max(1,count)+(pairAccent?0:1));
+      const timeMs=Math.round(first+(sec-1+frac)*1000);
+      let preferred=p[seq%p.length];
+      if(pairAccent&&k===count-1)preferred=8-p[(seq-1+p.length)%p.length];
+      const lane=chooseLane(preferred);
+      notes.push({timeMs,lane});
+      laneUsed[lane]++;seq++;
+    }
+  }
+
+  // If quota balancing left a tiny lane-count mismatch, rebalance only lane identity;
+  // timing/density remains untouched.
+  for(let guard=0;guard<2000;guard++){
+    const over=laneUsed.findIndex((v,i)=>v>laneTotals[i]);
+    const under=laneUsed.findIndex((v,i)=>v<laneTotals[i]);
+    if(over<0||under<0)break;
+    const n=[...notes].reverse().find(x=>x.lane===over&&!notes.some(y=>y!==x&&y.timeMs===x.timeMs&&y.lane===under));
+    if(!n)break;
+    n.lane=under;laneUsed[over]--;laneUsed[under]++;
   }
 
   notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
-  // Verse 2: reuse the first section's completed lane/rhythm pattern where there are
-  // corresponding full-song gaps. This is intentionally repetition, not regeneration.
-  const versePattern=notes.filter(n=>n.timeMs>=masterStart&&n.timeMs<118000)
-    .map(n=>({dt:n.timeMs-masterStart,lane:n.lane}));
-  const verse2Start=126340;
-  for(const p of versePattern){
-    const t=Math.round(verse2Start+p.dt);
-    if(t>=last-9000)break;
-    if(nearestEventDistance(sortedTimes(),t)<68)continue;
-    const same=notes.filter(n=>Math.abs(n.timeMs-t)<1);
-    if(same.length<2&&!same.some(n=>n.lane===p.lane))notes.push({timeMs:t,lane:p.lane});
-  }
-
-  notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-
-  // Long-note placements: short one-hand restraints. They use actual existing notes
-  // as starts, never center lane, and leave the opposite half for the free thumb.
-  const holdTargets=[.105,.145,.205,.275,.345,.415,.49,.555,.62,.69,.755,.82,.885,.94];
-  const holds=[];
-  for(let h=0;h<holdTargets.length;h++){
-    const target=first+(last-first)*holdTargets[h];
-    let best=null,bestDist=Infinity;
-    for(const n of notes){
-      if(n.holdEndMs||n.lane===4||holds.some(x=>Math.abs(x.timeMs-n.timeMs)<beat*2))continue;
-      const d=Math.abs(n.timeMs-target);
-      if(d<bestDist){best=n;bestDist=d;}
+  // 102 holds, with the exact published per-lane distribution.
+  // Select musical phrase-ending notes and keep center free of holds.
+  for(let lane=0;lane<9;lane++){
+    const quota=holdTotals[lane];
+    if(!quota)continue;
+    const candidates=notes.filter(n=>n.lane===lane);
+    for(let h=0;h<quota;h++){
+      const idx=Math.min(candidates.length-1,Math.floor((h+.65)*candidates.length/quota));
+      let n=candidates[idx];
+      while(n&&Number.isFinite(n.holdEndMs)) n=candidates[Math.min(candidates.length-1,idx+1)];
+      if(!n)continue;
+      const duration=[545,727,909,1091][(h+lane)%4];
+      n.holdEndMs=Math.min(first+masterDuration-250,n.timeMs+duration);
+      n.holdVisualOnly=true;
+      holdUsed[lane]++;
     }
-    if(!best)continue;
-    best.holdEndMs=Math.min(last-300,best.timeMs+[beat,beat*1.5,beat*2][h%3]);
-    best.holdVisualOnly=true;
-    holds.push(best);
   }
 
-  // Preserve two-thumb playability during every hold.
-  for(const hold of holds){
+  // Remove notes that would make the established LoveFes hold control physically
+  // impossible: no same-lane hit during a hold and no finger-crossing requirement.
+  // Keep this surgical; do not touch hold starts/ends themselves.
+  for(const hold of notes.filter(n=>Number.isFinite(n.holdEndMs))){
     const heldLeft=hold.lane<4;
     for(let i=notes.length-1;i>=0;i--){
       const n=notes[i];
-      if(n===hold||n.timeMs<=hold.timeMs||n.timeMs>=hold.holdEndMs)continue;
+      if(n===hold||Number.isFinite(n.holdEndMs)||n.timeMs<=hold.timeMs||n.timeMs>=hold.holdEndMs)continue;
       if(n.lane===hold.lane||(heldLeft?n.lane<5:n.lane>3))notes.splice(i,1);
     }
   }
 
-  notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+  // After the copied MASTER-sized first section, keep the existing full-song source
+  // temporarily. Verse 2 will be replaced only after the first section is approved.
+  const tail=source.notes
+    .filter(n=>n.timeMs>first+masterDuration+500)
+    .map(n=>({...n}));
+  const out=[...notes,...tail].sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
   return {
     ...source,
-    bpm,
-    difficulty:'MASTER再現寄り / フル版 / 長押しあり',
-    noteCount:notes.length,
-    judgmentCount:notes.length+notes.filter(n=>Number.isFinite(n.holdEndMs)).length,
-    notes
+    bpm:165,
+    difficulty:'MASTER 1番再現 / フル版 / 長押しあり',
+    noteCount:out.length,
+    judgmentCount:out.length+out.filter(n=>Number.isFinite(n.holdEndMs)).length,
+    notes:out
   };
 }
 async function loadBuiltInChart(path, fallbackTitle, transform = null) {
