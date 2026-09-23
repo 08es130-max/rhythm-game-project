@@ -121,14 +121,20 @@
     if(!Number.isFinite(n.holdEndMs))return;
     const a=pointForNoteTime(n.timeMs,now,leadMs,n.lane,spawn,targetPoints);
     const b=pointForNoteTime(n.holdEndMs,now,leadMs,n.lane,spawn,targetPoints);
+    // Hold ribbon: same apparent width as the circular note, soft white only.
+    // Clamp the far end to the common center spawn so the ribbon visibly emerges from that circle.
+    const endProgress=Math.max(0,Math.min(1,b.progress));
+    const ex=spawn.x+(targetPoints[n.lane].x-spawn.x)*endProgress;
+    const ey=spawn.y+(targetPoints[n.lane].y-spawn.y)*endProgress;
+    const startScale=a.progress<=1?.45+.55*a.progress:1;
+    const ribbonWidth=76*startScale;
     ctx.save();ctx.lineCap='round';
-    ctx.shadowColor='rgba(96,165,250,.65)';ctx.shadowBlur=8;
-    ctx.strokeStyle='rgba(191,219,254,.42)';ctx.lineWidth=22;
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-    ctx.shadowBlur=0;ctx.strokeStyle='rgba(96,165,250,.9)';ctx.lineWidth=8;
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.restore();
-    const endScale=b.progress<=1?.45+.55*b.progress:1;
-    drawNote(b.x,b.y,endScale,false,false);
+    ctx.shadowColor='rgba(255,255,255,.20)';ctx.shadowBlur=5;
+    ctx.strokeStyle='rgba(255,255,255,.24)';ctx.lineWidth=ribbonWidth;
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(ex,ey);ctx.stroke();
+    ctx.restore();
+    const endScale=endProgress<=1?.45+.55*endProgress:1;
+    drawNote(ex,ey,endScale,false,false);
   }
 
   function drawNote(x,y,scale,missed,simultaneous){
