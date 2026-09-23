@@ -265,6 +265,35 @@ function makeSpicaMasterReferenceChart(source) {
     }
   }
 
+  // First-verse burst safety. "Two simultaneous notes" is not enough if another
+  // ordinary note sits immediately before/after the chord. Enforce a rolling
+  // 115ms capacity of two starts across the approved MASTER transcription itself.
+  // This specifically removes effective 3-finger bursts such as chord + tap.
+  const safeFirstPart=[];
+  for(const n of firstPart){
+    const recent=safeFirstPart.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+    if(recent.length>=2)continue;
+
+    const active=safeFirstPart.find(x=>
+      Number.isFinite(x.holdEndMs)&&
+      n.timeMs>x.timeMs&&n.timeMs<x.holdEndMs
+    );
+    if(active){
+      const extraTap=safeFirstPart.some(x=>
+        x!==active&&!x.holdVisualOnly&&
+        Math.abs(x.timeMs-n.timeMs)<115
+      );
+      if(extraTap)continue;
+      const heldLeft=active.lane<4;
+      const heldRight=active.lane>4;
+      if(heldLeft&&n.lane<5)continue;
+      if(heldRight&&n.lane>3)continue;
+      if(n.lane===active.lane)continue;
+    }
+
+    safeFirstPart.push(n);
+  }
+
   // Full-song continuation.
   // Do not reuse the sparse tail of the video transcription. The useful dense MASTER
   // material is the opening through the first chorus (~72.8s); reuse that structure
@@ -276,7 +305,7 @@ function makeSpicaMasterReferenceChart(source) {
 
   function shiftedSection(fromMs,toMs,targetStartMs){
     const shift=targetStartMs-fromMs;
-    return firstPart
+    return safeFirstPart
       .filter(n=>n.timeMs>=fromMs&&n.timeMs<=toMs)
       .map(n=>({
         ...n,
@@ -304,7 +333,7 @@ function makeSpicaMasterReferenceChart(source) {
     })
     .map(n=>({...n}));
 
-  const candidates=[...firstPart,...secondVerse,...finalBuild,...finalChorus,...accents]
+  const candidates=[...safeFirstPart,...secondVerse,...finalBuild,...finalChorus,...accents]
     .sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
   // Physical two-thumb density guard:
