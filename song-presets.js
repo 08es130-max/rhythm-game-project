@@ -1,7 +1,7 @@
 const PRESET_AUDIO_DB = 'rhythmGamePresetAudio';
 const PRESET_AUDIO_STORE = 'audio';
 const SPICA_AUDIO_KEY = 'spica-terrible';
-const SPICA_TARGET_NOTE_COUNT = 1350;
+const SPICA_TARGET_JUDGMENT_COUNT = 675;
 let awaitingPresetAudioKey = null;
 let presetAudioObjectUrl = null;
 
@@ -175,74 +175,95 @@ function limitEventsToTwo(notes) {
   return out.sort((a,b) => a.timeMs - b.timeMs || a.lane - b.lane);
 }
 
-function makeSpicaHighDensityChart(source) {
+function makeSpicaMasterReferenceChart(source) {
   if (!source?.notes?.length) return source;
 
-  // Two-thumb play only: no hold notes and never more than two notes at one instant.
-  const notes = limitEventsToTwo(source.notes);
-  const lanesByTime = new Map();
-  notes.forEach(n => {
-    if (!lanesByTime.has(n.timeMs)) lanesByTime.set(n.timeMs, new Set());
-    lanesByTime.get(n.timeMs).add(n.lane);
-  });
+  // Rebuild Spica Terrible around the SIF MASTER reference:
+  // stairs / alternating bursts / one-hand restraint with holds / denser chorus.
+  // A hold is one chart object but two combo judgments (start + release).
+  const base = limitEventsToTwo(source.notes);
+  const notes = base.map(n=>({...n}));
+  const first = notes[0]?.timeMs || 0;
+  const last = notes[notes.length-1]?.timeMs || first;
+  const duration = Math.max(1,last-first);
 
-  const eventTimes = [...lanesByTime.keys()].sort((a,b) => a-b);
-  const start = eventTimes.find(t => t >= 10000) ?? eventTimes[0];
-  const end = eventTimes[eventTimes.length - 1];
-  const step = 186;
-  const candidates = [];
+  // Convert selected musical accents into holds. Keep them short enough for two-thumb play,
+  // and reserve only one side for ordinary notes while a thumb is fixed.
+  const holdFractions=[.16,.205,.255,.39,.445,.505,.615,.675,.735,.82,.875,.925];
+  const usedHoldStarts=new Set();
+  for(let h=0;h<holdFractions.length;h++){
+    const target=first+duration*holdFractions[h];
+    let bestIndex=-1,bestDist=Infinity;
+    for(let i=0;i<notes.length;i++){
+      const n=notes[i];
+      if(n.holdEndMs||usedHoldStarts.has(n.timeMs))continue;
+      const d=Math.abs(n.timeMs-target);
+      if(d<bestDist){bestDist=d;bestIndex=i;}
+    }
+    if(bestIndex<0)continue;
+    const hold=notes[bestIndex];
+    const holdLen=h%3===0?1115:h%3===1?743:929;
+    hold.holdEndMs=Math.min(last-200,hold.timeMs+holdLen);
+    hold.holdVisualOnly=true;
+    usedHoldStarts.add(hold.timeMs);
 
-  for (let t = start; t <= end; t += step) {
-    const d = nearestEventDistance(eventTimes, t);
-    if (d >= 95 && d <= 900 && !lanesByTime.has(t)) candidates.push(t);
-  }
-
-  let need = Math.max(0, SPICA_TARGET_NOTE_COUNT - notes.length);
-  const take = Math.min(need, candidates.length);
-  for (let i = 0; i < take; i++) {
-    const idx = Math.min(candidates.length - 1, Math.floor((i + 0.5) * candidates.length / take));
-    const t = candidates[idx];
-    if (lanesByTime.has(t)) continue;
-    const phase = Math.floor((t - start) / step) % 16;
-    const lane = phase <= 8 ? phase : 16 - phase;
-    lanesByTime.set(t, new Set([lane]));
-    notes.push({timeMs:t, lane});
-    need--;
-  }
-
-  // If single-note additions are not enough, turn selected single events into two-note chords.
-  // Existing two-note chords stay untouched, so three-finger input is never required.
-  if (need > 0) {
-    const singles = [...lanesByTime.entries()]
-      .filter(([t, lanes]) => t >= start && lanes.size === 1)
-      .map(([t]) => t)
-      .sort((a,b) => a-b);
-    const selected = Math.min(need, singles.length);
-    for (let i = 0; i < selected; i++) {
-      const idx = Math.min(singles.length - 1, Math.floor((i + 0.5) * singles.length / selected));
-      const t = singles[idx];
-      const used = lanesByTime.get(t);
-      if (!used || used.size !== 1) continue;
-      const first = [...used][0];
-      let lane = 8 - first;
-      if (lane === first || used.has(lane)) lane = first < 4 ? 8 : 0;
-      if (used.has(lane)) continue;
-      used.add(lane);
-      notes.push({timeMs:t, lane});
-      need--;
-      if (need <= 0) break;
+    const holdOnLeft=hold.lane<=4;
+    for(let i=notes.length-1;i>=0;i--){
+      const n=notes[i];
+      if(n===hold||n.timeMs<=hold.timeMs||n.timeMs>=hold.holdEndMs)continue;
+      // Never put a normal note on the held lane. While holding, keep free-hand notes
+      // on the opposite side so the player is never asked to cross fingers.
+      const wrongSide=n.lane===hold.lane||(holdOnLeft?n.lane<5:n.lane>3);
+      if(wrongSide)notes.splice(i,1);
     }
   }
 
-  notes.sort((a,b) => a.timeMs - b.timeMs || a.lane - b.lane);
+  // MASTER reference has 675 combo. Since every hold contributes two judgments,
+  // fill ordinary notes only until the total judgment count approaches 675.
+  const judgmentCount=()=>notes.length+notes.filter(n=>Number.isFinite(n.holdEndMs)).length;
+  const occupied=new Map();
+  notes.forEach(n=>{
+    if(!occupied.has(n.timeMs))occupied.set(n.timeMs,new Set());
+    occupied.get(n.timeMs).add(n.lane);
+  });
+  const beat=60000/165;
+  const half=beat/2;
+  const quarter=beat/4;
+  const candidates=[];
+  for(let t=first+beat*4;t<last-beat*2;t+=quarter){
+    const time=Math.round(t);
+    if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),time)<82)continue;
+    candidates.push(time);
+  }
+
+  let ci=0;
+  while(judgmentCount()<SPICA_TARGET_JUDGMENT_COUNT&&ci<candidates.length){
+    const t=candidates[ci++];
+    // Do not add a note that violates an active hold's one-side rule.
+    const activeHold=notes.find(n=>Number.isFinite(n.holdEndMs)&&t>n.timeMs&&t<n.holdEndMs);
+    let phase=Math.floor((t-first)/half)%16;
+    let lane=phase<=8?phase:16-phase;
+    if(activeHold){
+      if(activeHold.lane<=4) lane=Math.max(5,lane);
+      else lane=Math.min(3,lane);
+      if(lane===activeHold.lane)continue;
+    }
+    const lanes=occupied.get(t)||new Set();
+    if(lanes.size>=2||lanes.has(lane))continue;
+    lanes.add(lane);occupied.set(t,lanes);
+    notes.push({timeMs:t,lane});
+  }
+
+  notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
   return {
     ...source,
-    difficulty:'EXPERT 二本指向け',
+    bpm:165,
+    difficulty:'MASTER参考 / 二本指向け / 長押しあり',
     noteCount:notes.length,
+    judgmentCount:judgmentCount(),
     notes
   };
 }
-
 async function loadBuiltInChart(path, fallbackTitle, transform = null) {
   try {
     const response = await fetch(`${path}?v=${window.APP_VERSION}&t=${Date.now()}`, {cache:'no-store'});
@@ -262,7 +283,7 @@ async function loadBuiltInChart(path, fallbackTitle, transform = null) {
 }
 
 async function prepareSpicaSong() {
-  const parsed = await loadBuiltInChart('charts/spica-terrible.json', 'スピカテリブル', makeSpicaHighDensityChart);
+  const parsed = await loadBuiltInChart('charts/spica-terrible.json', 'スピカテリブル', makeSpicaMasterReferenceChart);
   if (!parsed) return;
   parsed.audioKey = SPICA_AUDIO_KEY;
   if (typeof window.setActiveRhythmChart === 'function') {
