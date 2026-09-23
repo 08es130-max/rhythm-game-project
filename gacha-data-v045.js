@@ -83,7 +83,14 @@
     card:`assets/lr/lr-mia-card.webp?v=${version}`,
     home:`assets/lr/lr-mia-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma,lrMia];
+  const lrRina={
+    id:'lr-rina-pink-garden',baseId:'rina',name:'天王寺璃奈【桃花にほどける素顔】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-rina-live.webp?v=${version}`,
+    card:`assets/lr/lr-rina-card.webp?v=${version}`,
+    home:`assets/lr/lr-rina-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma,lrMia,lrRina];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -126,6 +133,7 @@
   window.GACHA_LR_AI_ID=lrAi.id;
   window.GACHA_LR_EMMA_ID=lrEmma.id;
   window.GACHA_LR_MIA_ID=lrMia.id;
+  window.GACHA_LR_RINA_ID=lrRina.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
