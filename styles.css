@@ -20,4 +20,6 @@ body:has(#songLibraryScreen:not([hidden])) .app-shell{
 }
 
 /* Simultaneous-note cue: visual only. */
-.note.simultaneous-note::before{content:"";position:absolute;left:12px;right:12px;top:50%;height:8px;transform:translateY(-50%);border-radius:999px;background:rgba(255,255,255,.98);box-shadow:0 0 5px rgba(30,64,175,.9);z-index:2;pointer-events:none}
+.note.simultaneous-note{background:rgba(29,78,216,.20);border:5px solid rgba(191,219,254,.98);box-shadow:0 0 18px rgba(96,165,250,.9);}
+.note.simultaneous-note::after{inset:7px;border:2px solid rgba(96,165,250,.88)}
+.note.simultaneous-note::before{content:"";position:absolute;left:8px;right:8px;top:50%;height:9px;transform:translateY(-50%);border-radius:999px;background:rgba(255,255,255,.98);box-shadow:0 0 5px rgba(30,64,175,.9);z-index:2;pointer-events:none}
