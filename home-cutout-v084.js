@@ -261,17 +261,17 @@
 
       const refreshLrChoices=()=>{
         const owned=[];
-        if(isOwned(LR_ID)) owned.push({id:'shioriko',label:'栞子',src:LR_HOME_SCENE});
         if(isOwned(LR_AYUMU_ID)) owned.push({id:'ayumu',label:'歩夢',src:LR_AYUMU_HOME});
         if(isOwned(LR_KASUMI_ID)) owned.push({id:'kasumi',label:'かすみ',src:LR_KASUMI_HOME});
         if(isOwned(LR_SHIZUKU_ID)) owned.push({id:'shizuku',label:'しずく',src:LR_SHIZUKU_HOME});
         if(isOwned(LR_KARIN_ID)) owned.push({id:'karin',label:'果林',src:LR_KARIN_HOME});
+        if(isOwned(LR_AI_ID)) owned.push({id:'ai',label:'愛',src:LR_AI_HOME});
         if(isOwned(LR_KANATA_ID)) owned.push({id:'kanata',label:'彼方',src:LR_KANATA_HOME});
         if(isOwned(LR_SETSUNA_ID)) owned.push({id:'setsuna',label:'せつ菜',src:LR_SETSUNA_HOME});
-        if(isOwned(LR_AI_ID)) owned.push({id:'ai',label:'愛',src:LR_AI_HOME});
         if(isOwned(LR_EMMA_ID)) owned.push({id:'emma',label:'エマ',src:LR_EMMA_HOME});
-        if(isOwned(LR_MIA_ID)) owned.push({id:'mia',label:'ミア',src:LR_MIA_HOME});
         if(isOwned(LR_RINA_ID)) owned.push({id:'rina',label:'璃奈',src:LR_RINA_HOME});
+        if(isOwned(LR_ID)) owned.push({id:'shioriko',label:'栞子',src:LR_HOME_SCENE});
+        if(isOwned(LR_MIA_ID)) owned.push({id:'mia',label:'ミア',src:LR_MIA_HOME});
         if(isOwned(LR_LANZHU_ID)) owned.push({id:'lanzhu',label:'嵐珠',src:LR_LANZHU_HOME});
         let current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||owned[0]?.id||'shioriko';
         if(owned.length&&!owned.some(x=>x.id===current)){
@@ -299,18 +299,18 @@
       };
       lrBtn.addEventListener('click',()=>{
         const owned=[];
-        if(isOwned(LR_ID)) owned.push('shioriko');
         if(isOwned(LR_AYUMU_ID)) owned.push('ayumu');
         if(isOwned(LR_KASUMI_ID)) owned.push('kasumi');
         if(isOwned(LR_SHIZUKU_ID)) owned.push('shizuku');
         if(isOwned(LR_KARIN_ID)) owned.push('karin');
+        if(isOwned(LR_AI_ID)) owned.push('ai');
         if(isOwned(LR_KANATA_ID)) owned.push('kanata');
         if(isOwned(LR_SETSUNA_ID)) owned.push('setsuna');
-      if(isOwned(LR_AI_ID)) owned.push('ai');
-      if(isOwned(LR_EMMA_ID)) owned.push('emma');
-      if(isOwned(LR_MIA_ID)) owned.push('mia');
-      if(isOwned(LR_RINA_ID)) owned.push('rina');
-      if(isOwned(LR_LANZHU_ID)) owned.push('lanzhu');
+        if(isOwned(LR_EMMA_ID)) owned.push('emma');
+        if(isOwned(LR_RINA_ID)) owned.push('rina');
+        if(isOwned(LR_ID)) owned.push('shioriko');
+        if(isOwned(LR_MIA_ID)) owned.push('mia');
+        if(isOwned(LR_LANZHU_ID)) owned.push('lanzhu');
         if(owned.length===1) localStorage.setItem(LR_HOME_CHARACTER_KEY,owned[0]);
         setTimeout(refreshLrChoices,0);
       });
