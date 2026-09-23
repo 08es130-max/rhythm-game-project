@@ -1,7 +1,8 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.160';
+  const VERSION='0.8.161';
+  const BUILTIN_SKIP_SECONDS=0.020;
   const MAX_VOICES=12;
   let ctx=null;
   let buffer=null;
@@ -81,7 +82,8 @@
       voices.push(source);
       // The pointer handler already fires at touch-down. Start immediately; do not
       // add a software delay. WebAudio interactive context keeps device latency minimal.
-      source.start(c.currentTime);
+      const skip=Math.min(BUILTIN_SKIP_SECONDS,Math.max(0,buffer.duration-0.02));
+      source.start(c.currentTime,skip);
       return true;
     }catch(_){
       return false;
