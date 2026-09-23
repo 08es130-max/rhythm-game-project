@@ -422,6 +422,44 @@ function makeSpicaMasterReferenceChart(source) {
     }
   }
 
+  // Gap smoother: remove visible "nothing falls for a moment" pockets without
+  // touching already-busy phrases. Repeatedly split only gaps wider than 520ms.
+  // Inserted notes sit in the middle of an empty interval, so they cannot create
+  // chord+tap bursts or three-finger requirements.
+  full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+  let gapPass=0;
+  while(gapPass++<6){
+    let changed=false;
+    for(let i=1;i<full.length;i++){
+      const prev=full[i-1],next=full[i];
+      if(prev.timeMs<120000||next.timeMs>240300)continue;
+      const gap=next.timeMs-prev.timeMs;
+      if(gap<=520)continue;
+
+      const timeMs=Math.round((prev.timeMs+next.timeMs)/2);
+      const active=full.find(n=>
+        Number.isFinite(n.holdEndMs)&&
+        timeMs>n.timeMs&&timeMs<n.holdEndMs
+      );
+      let lane=(i+gapPass)%2?2:6;
+      if(active){
+        const heldLeft=active.lane<4;
+        const heldRight=active.lane>4;
+        if(heldLeft)lane=7;
+        else if(heldRight)lane=1;
+        else lane=(i%2)?1:7;
+      }
+
+      const local=full.filter(n=>Math.abs(n.timeMs-timeMs)<115);
+      if(local.length>=2)continue;
+      full.push({timeMs,lane});
+      full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      changed=true;
+      break;
+    }
+    if(!changed)break;
+  }
+
   // Final cadence: a short deliberate pattern, still within two-thumb capacity.
   const ending=[
     [240768,7],
