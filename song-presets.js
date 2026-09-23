@@ -177,99 +177,90 @@ function limitEventsToTwo(notes) {
 function makeSpicaMasterReferenceChart(source) {
   if (!source?.notes?.length) return source;
 
-  // Spica Terrible MASTER-inspired full chart.
-  // The original MASTER is 675 combo / 2:03 at BPM165. LoveFes uses the full song,
-  // so reproduce its density and pattern vocabulary rather than a fixed total count.
+  // Full-length Spica Terrible. Keep the authored full-song timing as the musical
+  // backbone; shape the first SIF-sized section with MASTER-like phrase grammar,
+  // repeat that finished grammar for verse 2, then reuse the same vocabulary after it.
   const src=limitEventsToTwo(source.notes).map(n=>({...n}));
   const first=src[0]?.timeMs||0, last=src[src.length-1]?.timeMs||first;
-  const beat=60000/165, eighth=beat/2, sixteenth=beat/4;
-  const notes=[];
-  const occupied=new Map();
-  const add=(timeMs,lane,extra={})=>{
-    const t=Math.round(timeMs);
+  const bpm=165, beat=60000/bpm, eighth=beat/2, sixteenth=beat/4;
+  const notes=src.map(n=>({...n}));
+  const sortedTimes=()=>notes.map(n=>n.timeMs).sort((a,b)=>a-b);
+  const canPlace=(t,lane,gap=68)=>{
     if(t<first||t>last||lane<0||lane>8)return false;
-    let lanes=occupied.get(t);
-    if(!lanes){lanes=new Set();occupied.set(t,lanes);}
-    if(lanes.size>=2||lanes.has(lane))return false;
-    lanes.add(lane);notes.push({timeMs:t,lane,...extra});return true;
+    const same=notes.filter(n=>Math.abs(n.timeMs-t)<1);
+    if(same.length>=2||same.some(n=>n.lane===lane))return false;
+    return nearestEventDistance(sortedTimes(),t)>=gap;
+  };
+  const add=(t,lane,extra={})=>{
+    t=Math.round(t);
+    if(!canPlace(t,lane))return false;
+    notes.push({timeMs:t,lane,...extra});return true;
   };
 
-  // Keep the existing musical anchors first.
-  src.forEach(n=>add(n.timeMs,n.lane));
-
-  // Pattern vocabulary taken from the documented MASTER character:
-  // stairs, alternating 3-note bursts, double-note stairs, one-hand anchors,
-  // spiral direction changes and denser chorus alternation. Each phrase is short;
-  // there is deliberately no endless lane sweep.
-  const phraseStart=Math.max(first,10000);
-  const phraseEnd=Math.min(last,123000);
-  const templates=[
-    [1,2,3,5,6,7],                 // separated alternating stair
-    [7,6,5,3,2,1],                 // reverse
-    [2,4,6,3,5,7],                 // center-crossing alternation
-    [1,3,2,6,5,7],                 // 3-note trill groups
-    [0,2,4,6,8,6,4,2],             // spiral/wiper-like turn
-    [8,6,4,2,0,2,4,6],
-    [2,3,4,6,5,4],                 // inward/outward stair
-    [6,5,4,2,3,4]
+  // MASTER-like short figures only. Never create a continuous mechanical sweep.
+  const figures=[
+    [1,3,5,7], [7,5,3,1],
+    [2,3,4,5,6], [6,5,4,3,2],
+    [1,2,3,6,7,8], [8,7,6,3,2,1],
+    [2,5,3,6,2,7], [6,3,5,2,6,1],
+    [0,2,4,6,8], [8,6,4,2,0]
   ];
-  let phraseIndex=0;
-  for(let base=phraseStart;base<phraseEnd-2000;base+=beat*4){
-    const tpl=templates[phraseIndex%templates.length];
-    const dense=(phraseIndex%4===2||phraseIndex%4===3);
-    const step=dense?sixteenth:eighth;
-    for(let j=0;j<tpl.length;j++){
-      const t=base+j*step;
-      if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)<70)continue;
-      add(t,tpl[j]);
-    }
-    // Characteristic short double-note staircase / axis pattern, used only at phrase endings.
-    if(phraseIndex%3===1){
-      const t0=base+beat*2.75;
-      [[1,7],[2,7],[3,7]].forEach((pair,k)=>{
-        const t=t0+k*eighth;
-        if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)>=70){
-          add(t,pair[0]);add(t,pair[1]);
-        }
+  const masterStart=Math.max(first+14500,17000);
+  const masterEnd=Math.min(last,123000);
+  let fi=0;
+  for(let base=masterStart;base<masterEnd-2500;base+=beat*4){
+    const fig=figures[fi%figures.length];
+    const step=(fi%4===2)?sixteenth:eighth;
+    for(let j=0;j<fig.length;j++) add(base+j*step,fig[j]);
+    // Compact simultaneous stair accents, not long runs.
+    if(fi%4===1){
+      const a=base+beat*2.75;
+      [[1,7],[2,6],[3,5]].forEach((pair,k)=>{
+        const t=Math.round(a+k*eighth);
+        const existing=notes.filter(n=>Math.abs(n.timeMs-t)<1);
+        if(existing.length===0){notes.push({timeMs:t,lane:pair[0]},{timeMs:t,lane:pair[1]});}
       });
     }
-    phraseIndex++;
-  }
-
-  // Verse 2 may reuse verse 1: copy the finished MASTER-style first-section events
-  // into the later full-song section at the song's existing structural boundary.
-  notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-  const masterPhrase=notes.filter(n=>n.timeMs>=phraseStart&&n.timeMs<phraseEnd).map(n=>({...n}));
-  const secondStart=125225;
-  const sourceStart=phraseStart;
-  for(const n of masterPhrase){
-    const t=secondStart+(n.timeMs-sourceStart);
-    if(t>=last-1200)break;
-    if(nearestEventDistance([...occupied.keys()].sort((a,b)=>a-b),t)<70)continue;
-    add(t,n.lane);
+    fi++;
   }
 
   notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
-  // Short holds are mixed into alternating passages, as in the MASTER chart.
-  // Avoid center holds and enforce the established LoveFes two-thumb ergonomics.
-  const holdFractions=[.12,.17,.235,.31,.39,.455,.54,.595,.66,.735,.81,.875,.93];
-  for(let h=0;h<holdFractions.length;h++){
-    const target=first+(last-first)*holdFractions[h];
+  // Verse 2: reuse the first section's completed lane/rhythm pattern where there are
+  // corresponding full-song gaps. This is intentionally repetition, not regeneration.
+  const versePattern=notes.filter(n=>n.timeMs>=masterStart&&n.timeMs<118000)
+    .map(n=>({dt:n.timeMs-masterStart,lane:n.lane}));
+  const verse2Start=126340;
+  for(const p of versePattern){
+    const t=Math.round(verse2Start+p.dt);
+    if(t>=last-9000)break;
+    if(nearestEventDistance(sortedTimes(),t)<68)continue;
+    const same=notes.filter(n=>Math.abs(n.timeMs-t)<1);
+    if(same.length<2&&!same.some(n=>n.lane===p.lane))notes.push({timeMs:t,lane:p.lane});
+  }
+
+  notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+  // Long-note placements: short one-hand restraints. They use actual existing notes
+  // as starts, never center lane, and leave the opposite half for the free thumb.
+  const holdTargets=[.105,.145,.205,.275,.345,.415,.49,.555,.62,.69,.755,.82,.885,.94];
+  const holds=[];
+  for(let h=0;h<holdTargets.length;h++){
+    const target=first+(last-first)*holdTargets[h];
     let best=null,bestDist=Infinity;
     for(const n of notes){
-      if(n.holdEndMs||n.lane===4)continue;
+      if(n.holdEndMs||n.lane===4||holds.some(x=>Math.abs(x.timeMs-n.timeMs)<beat*2))continue;
       const d=Math.abs(n.timeMs-target);
       if(d<bestDist){best=n;bestDist=d;}
     }
     if(!best)continue;
-    const len=[Math.round(beat),Math.round(beat*1.5),Math.round(beat*2)][h%3];
-    best.holdEndMs=Math.min(last-300,best.timeMs+len);
+    best.holdEndMs=Math.min(last-300,best.timeMs+[beat,beat*1.5,beat*2][h%3]);
     best.holdVisualOnly=true;
+    holds.push(best);
   }
 
-  // While one thumb is held, leave the opposite side for the free thumb.
-  for(const hold of notes.filter(n=>Number.isFinite(n.holdEndMs))){
+  // Preserve two-thumb playability during every hold.
+  for(const hold of holds){
     const heldLeft=hold.lane<4;
     for(let i=notes.length-1;i>=0;i--){
       const n=notes[i];
@@ -281,8 +272,8 @@ function makeSpicaMasterReferenceChart(source) {
   notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
   return {
     ...source,
-    bpm:165,
-    difficulty:'MASTER参考 / フル版 / 長押しあり',
+    bpm,
+    difficulty:'MASTER再現寄り / フル版 / 長押しあり',
     noteCount:notes.length,
     judgmentCount:notes.length+notes.filter(n=>Number.isFinite(n.holdEndMs)).length,
     notes
