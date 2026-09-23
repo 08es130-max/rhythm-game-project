@@ -1,7 +1,7 @@
-// Final version guard for Ver.0.8.176. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.177. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.176';
+  const VERSION='0.8.177';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
