@@ -1,12 +1,13 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.37';
+  const VERSION='0.8.160';
   const MAX_VOICES=12;
   let ctx=null;
   let buffer=null;
   let loading=null;
   let master=null;
+  let outputLatencySec=0;
   const voices=[];
 
   function ensureContext(){
@@ -17,6 +18,7 @@
       master=ctx.createGain();
       master.gain.value=0.9;
       master.connect(ctx.destination);
+      outputLatencySec=Math.max(0,Number(ctx.outputLatency||ctx.baseLatency||0));
     }
     if(ctx.state==='suspended')ctx.resume().catch(()=>{});
     return ctx;
@@ -77,7 +79,9 @@
       source.connect(master);
       source.onended=()=>dropVoice(source);
       voices.push(source);
-      source.start(0);
+      // The pointer handler already fires at touch-down. Start immediately; do not
+      // add a software delay. WebAudio interactive context keeps device latency minimal.
+      source.start(c.currentTime);
       return true;
     }catch(_){
       return false;
@@ -111,6 +115,7 @@
     version:VERSION,
     ready:()=>!!buffer,
     voices:()=>voices.length,
-    maxVoices:MAX_VOICES
+    maxVoices:MAX_VOICES,
+    outputLatencyMs:()=>Math.round(outputLatencySec*1000)
   };
 })();
