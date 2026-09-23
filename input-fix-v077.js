@@ -127,6 +127,27 @@
     return Number.isInteger(lane)&&lane>=0&&lane<9?lane:-1;
   }
 
+  function laneFromPoint(x,y){
+    const rect=targets?.getBoundingClientRect?.();
+    if(!rect||!Number.isFinite(x)||!Number.isFinite(y))return -1;
+    let best=-1,bestD=Infinity;
+    for(let lane=0;lane<9;lane++){
+      const el=targets.children[lane];
+      if(!el)continue;
+      const r=el.getBoundingClientRect();
+      const cx=r.left+r.width/2,cy=r.top+r.height/2;
+      const d=Math.hypot(x-cx,y-cy);
+      if(d<bestD){bestD=d;best=lane;}
+    }
+    // While another thumb is held, iOS can retarget the second pointer to the game
+    // surface instead of the target element. Accept a generous target-radius here;
+    // normal pointer handling remains unchanged when closest('.target') succeeds.
+    const target=best>=0?targets.children[best]:null;
+    const tr=target?.getBoundingClientRect?.();
+    const radius=tr?Math.max(tr.width,tr.height)*1.15:0;
+    return bestD<=radius?best:-1;
+  }
+
   function handlePointerDown(e){
     if(!playing||gamePaused)return;
     const target=e.target;
@@ -135,7 +156,8 @@
       return;
     }
     if(!game.contains(target))return;
-    const lane=laneFromTarget(target);
+    let lane=laneFromTarget(target);
+    if(lane<0&&holdPointers.size>0)lane=laneFromPoint(e.clientX,e.clientY);
     if(lane<0)return;
     if(activePointers.has(e.pointerId))return;
     activePointers.add(e.pointerId);
