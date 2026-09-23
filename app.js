@@ -355,9 +355,12 @@ audio.addEventListener('ended', () => {
 function resetGame() {
   cancelAnimationFrame(rafId);
   notesLayer.innerHTML = '';
+  const simultaneousTimes = new Map();
+  chart.notes.forEach(n => simultaneousTimes.set(n.timeMs,(simultaneousTimes.get(n.timeMs)||0)+1));
   activeNotes = chart.notes.map((n, idx) => ({
     ...n,
     idx,
+    simultaneous:(simultaneousTimes.get(n.timeMs)||0)>1,
     el:null,
     hit:false,
     missRegistered:false,
@@ -448,7 +451,7 @@ function loop() {
     }
 
     if (dt <= leadMs && dt >= -TRAIL_MS) {
-      if (!n.el) n.el = createNoteEl();
+      if (!n.el) n.el = createNoteEl(n.simultaneous);
       const progress = getNoteProgress(dt, leadMs);
       const p = targetPoints[n.lane];
       const x = spawn.x + (p.x - spawn.x) * progress;
@@ -472,9 +475,9 @@ function loop() {
   rafId = requestAnimationFrame(loop);
 }
 
-function createNoteEl() {
+function createNoteEl(simultaneous=false) {
   const el = document.createElement('div');
-  el.className = 'note';
+  el.className = simultaneous ? 'note simultaneous-note' : 'note';
   notesLayer.appendChild(el);
   return el;
 }
