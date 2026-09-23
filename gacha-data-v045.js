@@ -97,7 +97,7 @@
     card:`assets/lr/lr-lanzhu-card.webp?v=${version}`,
     home:`assets/lr/lr-lanzhu-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi,lrEmma,lrMia,lrRina,lrLanzhu];
+  const lrPool=[lrAyumu,lrKasumi,lrShizuku,lrKarin,lrAi,lrKanata,lrSetsuna,lrEmma,lrRina,lrShioriko,lrMia,lrLanzhu];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -116,6 +116,12 @@
     syncOwnedToLibrary(set);
     window.dispatchEvent(new CustomEvent('rhythmGameGachaOwnedChanged',{detail:{owned:[...set]}}));
   }
+  const NIJIGASAKI_ORDER=['ayumu','kasumi','shizuku','karin','ai','kanata','setsuna','emma','rina','shioriko','mia','lanzhu'];
+  const nijigasakiOrderOf=(c)=>{
+    const baseId=String(c?.baseId||c?.id||'').replace(/^monthly-/,'').replace(/^lr-/,'').split('-')[0];
+    const i=NIJIGASAKI_ORDER.indexOf(baseId);
+    return i<0?999:i;
+  };
   function getRoomCharacters(){
     syncOwnedToLibrary();
     const owned=loadOwned();
@@ -123,7 +129,7 @@
       const id=String(c?.id||'');
       if(id.startsWith('monthly-')||id.startsWith('lr-')) return owned.has(id);
       return true;
-    });
+    }).map((c,i)=>({c,i})).sort((a,b)=>nijigasakiOrderOf(a.c)-nijigasakiOrderOf(b.c)||a.i-b.i).map(x=>x.c);
   }
 
   syncOwnedToLibrary();
