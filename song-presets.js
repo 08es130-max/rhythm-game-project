@@ -265,55 +265,98 @@ function makeSpicaMasterReferenceChart(source) {
     }
   }
 
-  // Full-song continuation:
-  // The user approved reusing the first-verse MASTER pattern for verse 2. Keep the
-  // proven SIF-derived timings/lanes/holds instead of inventing a generic MASTER.
-  // Verse 1 gameplay ends around 72.8s; align its opening (2.252s) to the full-song
-  // second-verse block that begins at 120.395s in the existing full-song skeleton.
-  const verse1End=72826;
+  // Full-song continuation.
+  // Reuse the proven MASTER pattern through verse 2 / chorus, then merge the original
+  // full-song rhythm skeleton so the latter half does not suddenly become sparse.
   const verse2Shift=120395-2252;
-  const secondVerse=firstPart
-    .filter(n=>n.timeMs>=2252&&n.timeMs<=verse1End)
+  const secondMaster=firstPart
     .map(n=>({
       ...n,
       timeMs:n.timeMs+verse2Shift,
       ...(Number.isFinite(n.holdEndMs)?{holdEndMs:n.holdEndMs+verse2Shift}:{})
-    }));
+    }))
+    .filter(n=>n.timeMs<=243900);
 
-  // After the repeated second verse, retain the existing full-song finale timing
-  // skeleton. Normalize it to the same two-thumb chord rules used by the MASTER part.
-  const finaleStart=191200;
-  const finale=source.notes.filter(n=>n.timeMs>=finaleStart).map(n=>({...n}));
-  const finaleGroups=[];
-  for(const n of finale){
-    let g=finaleGroups.find(x=>Math.abs(x.timeMs-n.timeMs)<=18);
-    if(!g){g={timeMs:n.timeMs,notes:[]};finaleGroups.push(g);}
-    g.notes.push(n);
-  }
-  for(const g of finaleGroups){
-    if(g.notes.length>2)g.notes.splice(2);
-    if(g.notes.length!==2)continue;
-    const [a,b]=g.notes;
-    const side=l=>l<4?-1:l>4?1:0;
-    const sa=side(a.lane),sb=side(b.lane);
-    if(sa!==0&&sa===sb){
-      const keep=Math.abs(a.lane-4)>=Math.abs(b.lane-4)?a:b;
-      const move=keep===a?b:a;
-      move.lane=keep.lane<4?Math.max(5,8-keep.lane):Math.min(3,8-keep.lane);
-    }
-  }
-  const finaleSafe=finaleGroups.flatMap(g=>g.notes);
+  const fullSongTail=source.notes
+    .filter(n=>n.timeMs>=120000)
+    .map(n=>({...n}));
 
-  const notes=[...firstPart,...secondVerse,...finaleSafe]
+  // Merge repeated MASTER + full-song-specific rhythm. Avoid duplicate circles and
+  // never create more than two simultaneous starts.
+  const merged=[...firstPart,...secondMaster,...fullSongTail]
     .sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+  const full=[];
+  for(const n of merged){
+    if(full.some(x=>Math.abs(x.timeMs-n.timeMs)<=45&&x.lane===n.lane))continue;
+    const same=full.filter(x=>Math.abs(x.timeMs-n.timeMs)<=18);
+    if(same.length>=2)continue;
+    full.push({...n});
+  }
+
+  // The repeated MASTER plus the legacy full-song skeleton lands around 1,270 starts.
+  // Fill only empty rhythmic slots on an eighth-note grid (165 BPM) so the second half
+  // keeps MASTER density without becoming random. Existing chart notes always win.
+  const eighthMs=60000/165/2;
+  const fillLanePattern=[0,2,4,6,8,7,5,3,1,3,5,7];
+  for(let k=0,t=120395;t<=240300&&full.length<1530;k++,t=120395+k*eighthMs){
+    const timeMs=Math.round(t);
+    if(full.some(n=>Math.abs(n.timeMs-timeMs)<58))continue;
+
+    const active=full.find(n=>
+      Number.isFinite(n.holdEndMs)&&
+      timeMs>n.timeMs&&timeMs<n.holdEndMs
+    );
+    // During a hold there is already one fixed thumb. Do not add an extra fill near
+    // another ordinary tap because that would require three fingers.
+    if(active&&full.some(n=>!n.holdVisualOnly&&Math.abs(n.timeMs-timeMs)<100))continue;
+
+    let lane=fillLanePattern[k%fillLanePattern.length];
+    if(active){
+      const heldLeft=active.lane<4;
+      const heldRight=active.lane>4;
+      if(heldLeft&&lane<5)lane=5+(k%4);
+      else if(heldRight&&lane>3)lane=k%4;
+      else if(active.lane===4)lane=k%2?1:7;
+      if(lane===active.lane)continue;
+    }
+    full.push({timeMs,lane});
+  }
+
+  // Final phrase: deliberate closing accents instead of a mechanical fill.
+  // Mirror pairs are two-thumb friendly; center + side accents give the last cadence
+  // a clear rise and finish.
+  const ending=[
+    [240768,7],
+    [241325,8],
+    [241688,2],
+    [241870,6],
+    [242052,3],
+    [242234,5],
+    [242416,4],
+    [242625,3],
+    [242997,1],
+    [243183,6],
+    [243562,4],
+    [243744,0],
+    [243744,8],
+    [243926,2]
+  ];
+  for(const [timeMs,lane] of ending){
+    if(full.some(n=>Math.abs(n.timeMs-timeMs)<=35&&n.lane===lane))continue;
+    const same=full.filter(n=>Math.abs(n.timeMs-timeMs)<=18);
+    if(same.length>=2)continue;
+    full.push({timeMs,lane});
+  }
+
+  full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
   return {
     ...source,
     bpm:165,
-    difficulty:'MASTER動画転記 / 2番リピート / 全曲2本指最適化 / 長押しあり',
-    noteCount:notes.length,
-    judgmentCount:notes.length+notes.filter(n=>Number.isFinite(n.holdEndMs)).length,
-    notes
+    difficulty:'MASTER動画転記 / 全曲高密度 / 2本指最適化 / 長押しあり',
+    noteCount:full.length,
+    judgmentCount:full.length+full.filter(n=>Number.isFinite(n.holdEndMs)).length,
+    notes:full
   };
 }
 async function loadBuiltInChart(path, fallbackTitle, transform = null) {
