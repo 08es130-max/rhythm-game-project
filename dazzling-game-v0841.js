@@ -72,9 +72,21 @@
       chord(at(b,15),0,8);
     });
 
-    // Ver.0.8.171 visual-only hold-note prototype. It is ignored by hit logic for now.
-    // Place one clearly visible hold in the early section for safe rendering verification.
-    notes.push({timeMs:Math.round(at(8,0)),lane:4,holdEndMs:Math.round(at(9,0)),holdVisualOnly:true});
+    // Hold prototype. Keep the held lane empty for the full hold, and while one thumb is
+    // fixed, keep intervening notes on one side only so the other thumb never has to cross it.
+    const holdStart=Math.round(at(8,0)),holdEnd=Math.round(at(9,0)),holdLane=4;
+    for(let i=notes.length-1;i>=0;i--){
+      const n=notes[i];
+      if(n.timeMs<holdStart||n.timeMs>holdEnd)continue;
+      // Never place another note on the held lane.
+      // During this center-lane prototype, reserve the left half for the free thumb.
+      if(n.lane===holdLane||n.lane>holdLane){
+        seen.delete(n.timeMs+':'+n.lane);
+        count.set(n.timeMs,Math.max(0,(count.get(n.timeMs)||1)-1));
+        notes.splice(i,1);
+      }
+    }
+    notes.push({timeMs:holdStart,lane:holdLane,holdEndMs:holdEnd,holdVisualOnly:true});
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     if(notes.length>TARGET){
       const groups=new Map();notes.forEach((n,i)=>{if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);groups.get(n.timeMs).push(i);});
