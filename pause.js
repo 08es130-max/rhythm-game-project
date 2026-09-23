@@ -16,12 +16,14 @@ pauseMenu.innerHTML = `
     <div class="pause-actions">
       <button id="pauseResumeBtn" class="pause-resume" type="button">再開</button>
       <button id="pauseQuitBtn" class="pause-quit" type="button">ライブをやめる</button>
+      <button id="pauseDiagQuitBtn" class="pause-quit" type="button">診断をコピーして終了</button>
     </div>
   </div>`;
 document.body.appendChild(pauseMenu);
 
 const pauseResumeBtn = document.getElementById('pauseResumeBtn');
 const pauseQuitBtn = document.getElementById('pauseQuitBtn');
+const pauseDiagQuitBtn = document.getElementById('pauseDiagQuitBtn');
 let gamePaused = false;
 let pauseStartedAt = 0;
 let resumeInProgress = false;
@@ -99,6 +101,23 @@ function quitFromPause() {
 
 pauseResumeBtn.addEventListener('click', resumeFromPause);
 pauseQuitBtn.addEventListener('click', quitFromPause);
+pauseDiagQuitBtn?.addEventListener('click', async () => {
+  const api=window.LOVEFES_INPUT_DEBUG;
+  let out=null;
+  if(api?.copyDiagnostics) out=await api.copyDiagnostics();
+  if(out===true){
+    pauseDiagQuitBtn.textContent='診断をコピーしました';
+  }else if(typeof out==='string'){
+    // Clipboard may be unavailable in an iOS PWA. Show the log so it can still be copied manually.
+    const box=document.createElement('textarea');
+    box.value=out;
+    box.readOnly=true;
+    box.style.cssText='position:fixed;inset:8%;z-index:100000;width:84%;height:70%;font-size:11px;';
+    document.body.appendChild(box);
+    box.focus();box.select();
+  }
+  setTimeout(quitFromPause,250);
+});
 
 pauseMenu.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
