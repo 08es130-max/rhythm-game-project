@@ -308,6 +308,7 @@
             refresh();
             refreshLrChoices();
             applyMode(getMode());
+            if(typeof window.refreshLoveFesHomeDialogue==='function') window.refreshLoveFesHomeDialogue();
           });
           lrChoices.appendChild(choice);
         });
