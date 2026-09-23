@@ -101,7 +101,7 @@ window.location.replace(url.toString());
 </section>
 <section class="panel result" id="resultPanel" hidden>
 <h2>RESULT</h2><div class="result-grid"><div>PERFECT <strong id="rPerfect">0</strong></div><div>GREAT <strong id="rGreat">0</strong></div><div>GOOD <strong id="rGood">0</strong></div><div>MISS <strong id="rMiss">0</strong></div><div>MAX COMBO <strong id="rMaxCombo">0</strong></div><div>SCORE <strong id="rScore">0</strong></div></div>
-<div class="result-actions"><button id="retryBtn">もう一度</button><button id="backBtn">ライブ選択に戻る</button><button id="resultHomeBtn" class="result-home-btn" type="button">ホームに戻る</button></div>
+<div class="result-actions"><button id="retryBtn">もう一度</button><button id="backBtn">ライブ選択に戻る</button><button id="resultHomeBtn" class="result-home-btn" type="button">ホームに戻る</button><button id="copyInputDiagBtn" type="button">入力診断をコピー</button></div>
 </section>
 </section>
 <section id="settingsScreen" class="app-screen" hidden>
@@ -203,5 +203,14 @@ window.location.replace(url.toString());
 <script src="story-icon-v0827.js?v=0.8.37-story-icon6"></script>
 <script src="home-menu-unified-v0854.js?v=0.8.140-domfix1"></script>
 <script src="version-final-v0845.js?v=0.8.197-final122"></script>
+<script>
+document.addEventListener('click',async(e)=>{
+  if(e.target?.id!=='copyInputDiagBtn')return;
+  const api=window.LOVEFES_INPUT_DEBUG;
+  if(!api?.copyDiagnostics)return;
+  const out=await api.copyDiagnostics();
+  e.target.textContent=out===true?'診断をコピーしました':'コピーできませんでした';
+});
+</script>
 </body>
 </html>
