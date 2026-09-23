@@ -1,7 +1,7 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.163';
+  const VERSION='0.8.164';
   const BUILTIN_SKIP_SECONDS=0.020;
   const MAX_VOICES=12;
   let ctx=null;
@@ -9,6 +9,8 @@
   let loading=null;
   let master=null;
   let outputLatencySec=0;
+  let lastPointerPerf=0;
+  let lastDiag=null;
   const voices=[];
 
   function ensureContext(){
@@ -63,6 +65,16 @@
     if(i>=0)voices.splice(i,1);
   }
 
+  function playDiagnosticClick(c){
+    try{
+      const osc=c.createOscillator(),gain=c.createGain(),now=c.currentTime;
+      osc.type='square';osc.frequency.value=1800;
+      gain.gain.setValueAtTime(0.10,now);gain.gain.exponentialRampToValueAtTime(0.0001,now+0.018);
+      osc.connect(gain).connect(c.destination);osc.start(now);osc.stop(now+0.02);
+      return true;
+    }catch(_){return false;}
+  }
+
   function playBuffered(){
     const c=ensureContext();
     if(!c||!buffer||!master)return false;
@@ -83,7 +95,16 @@
       // The pointer handler already fires at touch-down. Start immediately; do not
       // add a software delay. WebAudio interactive context keeps device latency minimal.
       const skip=Math.min(BUILTIN_SKIP_SECONDS,Math.max(0,buffer.duration-0.02));
+      const startPerf=performance.now();
       source.start(c.currentTime,skip);
+      lastDiag={
+        pointerToPlayMs:lastPointerPerf?Math.max(0,startPerf-lastPointerPerf):null,
+        state:c.state,
+        baseLatencyMs:Math.round(Number(c.baseLatency||0)*1000),
+        outputLatencyMs:Math.round(Number(c.outputLatency||0)*1000),
+        bufferDurationMs:Math.round(buffer.duration*1000),
+        skipMs:Math.round(skip*1000)
+      };
       return true;
     }catch(_){
       return false;
@@ -102,9 +123,10 @@
   const prime=()=>{ensureContext();preload();};
   document.getElementById('startBtn')?.addEventListener('pointerdown',prime,{passive:true});
   document.getElementById('retryBtn')?.addEventListener('pointerdown',prime,{passive:true});
-  document.addEventListener('pointerdown',()=>{
+  document.addEventListener('pointerdown',(e)=>{
+    lastPointerPerf=performance.now();
     if(ctx?.state==='suspended')ctx.resume().catch(()=>{});
-  },{passive:true});
+  },{capture:true,passive:true});
 
   // Decode opportunistically after initial page work. This does not play audio.
   if('requestIdleCallback' in window){
@@ -118,6 +140,9 @@
     ready:()=>!!buffer,
     voices:()=>voices.length,
     maxVoices:MAX_VOICES,
-    outputLatencyMs:()=>Math.round(outputLatencySec*1000)
+    outputLatencyMs:()=>Math.round(outputLatencySec*1000),
+    last:()=>lastDiag,
+    context:()=>{const c=ensureContext();return c?{state:c.state,baseLatencyMs:Math.round(Number(c.baseLatency||0)*1000),outputLatencyMs:Math.round(Number(c.outputLatency||0)*1000),sampleRate:c.sampleRate}:null;},
+    testClick:()=>{const c=ensureContext();return !!c&&playDiagnosticClick(c);}
   };
 })();
