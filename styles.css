@@ -18,3 +18,6 @@ body:has(#songLibraryScreen:not([hidden])) .app-shell{
   max-height:100dvh;
   overflow:hidden!important;
 }
+
+/* Simultaneous-note cue: visual only. */
+.note.simultaneous-note::before{content:"";position:absolute;left:12px;right:12px;top:50%;height:8px;transform:translateY(-50%);border-radius:999px;background:rgba(255,255,255,.98);box-shadow:0 0 5px rgba(30,64,175,.9);z-index:2;pointer-events:none}
