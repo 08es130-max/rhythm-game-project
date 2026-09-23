@@ -105,6 +105,11 @@
     while(firstLiveIndex<activeNotes.length){
       const n=activeNotes[firstLiveIndex];
       if(n.holdVisualOnly&&Number.isFinite(n.holdEndMs)){
+        // If the start circle was missed, fail the whole hold immediately and remove its ribbon/end circle.
+        if(!n.holdStarted&&!n.holdResolved&&now>n.timeMs+MISS_WINDOW){
+          n.holdFailed=true;n.holdResolved=true;n.missRegistered=true;n.finished=true;
+          counts.miss++;combo=0;judgeEl.textContent='MISS';updateHud();
+        }
         // Started holds remain active until release judgment. If the player keeps holding
         // past the GOOD window, resolve it as MISS without touching normal-note timing.
         if(n.holdStarted&&!n.holdResolved&&now>n.holdEndMs+HIT_WINDOWS.good){
