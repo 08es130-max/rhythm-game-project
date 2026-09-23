@@ -38,16 +38,24 @@
 
   function buildSimultaneousSprite(){
     if(simultaneousSprite)return simultaneousSprite;
-    const base=buildSprite();
     const s=document.createElement('canvas');s.width=96;s.height=96;
-    const d=s.getContext('2d');d.drawImage(base,0,0);
-    // Thick white bar through the center: visual-only cue for simultaneous notes.
-    d.save();d.translate(48,48);d.lineCap='round';
-    d.shadowColor='rgba(30,64,175,.85)';d.shadowBlur=5;
-    d.strokeStyle='rgba(255,255,255,.98)';d.lineWidth=10;
-    d.beginPath();d.moveTo(-24,0);d.lineTo(24,0);d.stroke();
-    d.shadowBlur=0;d.strokeStyle='rgba(191,219,254,.95)';d.lineWidth=2;
-    d.beginPath();d.moveTo(-24,0);d.lineTo(24,0);d.stroke();d.restore();
+    const d=s.getContext('2d'),cx=48,cy=48,r=40;
+    // SIF-style simultaneous note: transparent center + strong outer ring + thick center bar.
+    d.save();
+    d.shadowColor='rgba(96,165,250,.82)';d.shadowBlur=9;
+    d.beginPath();d.arc(cx,cy,r,0,Math.PI*2);
+    d.fillStyle='rgba(29,78,216,.20)';d.fill();
+    d.shadowBlur=0;
+    d.lineWidth=7;d.strokeStyle='rgba(191,219,254,.98)';d.stroke();
+    d.beginPath();d.arc(cx,cy,31,0,Math.PI*2);
+    d.lineWidth=3;d.strokeStyle='rgba(96,165,250,.88)';d.stroke();
+    d.translate(cx,cy);d.lineCap='round';
+    d.shadowColor='rgba(30,64,175,.9)';d.shadowBlur=5;
+    d.strokeStyle='rgba(255,255,255,.98)';d.lineWidth=11;
+    d.beginPath();d.moveTo(-27,0);d.lineTo(27,0);d.stroke();
+    d.shadowBlur=0;d.strokeStyle='rgba(96,165,250,.95)';d.lineWidth=2;
+    d.beginPath();d.moveTo(-27,0);d.lineTo(27,0);d.stroke();
+    d.restore();
     simultaneousSprite=s;return simultaneousSprite;
   }
 
