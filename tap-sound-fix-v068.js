@@ -1,10 +1,8 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.162';
-  // The bundled MP3 has encoder padding / a soft leading attack. Starting farther
-  // into the decoded buffer changes only SFX onset, never gameplay timing.
-  const BUILTIN_SKIP_SECONDS=0.045;
+  const VERSION='0.8.163';
+  const BUILTIN_SKIP_SECONDS=0.020;
   const MAX_VOICES=12;
   let ctx=null;
   let buffer=null;
