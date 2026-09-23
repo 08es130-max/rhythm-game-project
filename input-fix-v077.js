@@ -70,6 +70,12 @@
     n.holdResolved=false;
     n.holdFailed=false;
     holdPointers.set(pointerId,n);
+    // Capture the hold pointer on the game surface. Once a hold starts, movement
+    // outside the judgment circle must not hand the pointer to another element or
+    // cancel the hold; only pointerup/pointercancel resolves it.
+    try{
+      if(game?.setPointerCapture&&Number.isFinite(pointerId))game.setPointerCapture(pointerId);
+    }catch(_){}
     // A hold counts as two judgments: start + release. Award the start immediately.
     counts[grade]++;
     combo++;
@@ -209,9 +215,17 @@
     if(n){
       resolveHoldRelease(n,songTimeForEvent(e.timeStamp));
       holdPointers.delete(e.pointerId);
+      try{
+        if(game?.hasPointerCapture?.(e.pointerId))game.releasePointerCapture(e.pointerId);
+      }catch(_){}
     }
   }
   function resetPointers(){
+    for(const pointerId of holdPointers.keys()){
+      try{
+        if(game?.hasPointerCapture?.(pointerId))game.releasePointerCapture(pointerId);
+      }catch(_){}
+    }
     activePointers.clear();
     holdPointers.clear();
   }
