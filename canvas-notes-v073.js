@@ -104,6 +104,10 @@
   function advanceOldNotes(now){
     while(firstLiveIndex<activeNotes.length){
       const n=activeNotes[firstLiveIndex];
+      if(n.holdVisualOnly&&Number.isFinite(n.holdEndMs)){
+        if(now>n.holdEndMs+TRAIL_MS){n.finished=true;firstLiveIndex++;continue;}
+        break;
+      }
       if(n.finished||n.hit){firstLiveIndex++;continue;}
       const dt=n.timeMs-now;
       if(!n.missRegistered&&dt<-MISS_WINDOW)registerMiss(n);
@@ -173,12 +177,29 @@
 
     for(let i=firstLiveIndex;i<activeNotes.length;i++){
       const n=activeNotes[i];
-      if(n.finished||n.hit)continue;
       const dt=n.timeMs-now;
       if(dt>leadMs)break;
+
+      // Visual-only hold prototype must remain visible after its start circle is tapped.
+      // Keep the ribbon and release circle alive until the hold end reaches/passes judgment.
+      if(n.holdVisualOnly&&Number.isFinite(n.holdEndMs)){
+        if(now<=n.holdEndMs+TRAIL_MS){
+          drawHoldBody(n,now,leadMs,spawn,targetPoints);
+          if(!n.hit){
+            const progress=getNoteProgress(dt,leadMs);
+            const p=targetPoints[n.lane];
+            const x=spawn.x+(p.x-spawn.x)*progress;
+            const y=spawn.y+(p.y-spawn.y)*progress;
+            const scale=progress<=1?.45+.55*progress:1;
+            drawNote(x,y,scale,n.missRegistered,n.simultaneous);
+          }
+        }
+        continue;
+      }
+
+      if(n.finished||n.hit)continue;
       if(!n.missRegistered&&dt<-MISS_WINDOW)registerMiss(n);
       if(dt<-TRAIL_MS){n.finished=true;continue;}
-      if(n.holdVisualOnly&&Number.isFinite(n.holdEndMs))drawHoldBody(n,now,leadMs,spawn,targetPoints);
       const progress=getNoteProgress(dt,leadMs);
       const p=targetPoints[n.lane];
       const x=spawn.x+(p.x-spawn.x)*progress;
