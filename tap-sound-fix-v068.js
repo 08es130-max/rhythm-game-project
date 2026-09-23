@@ -1,8 +1,7 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.168';
-  const LIVE_MODE_KEY='rhythmGame.tapSoundTestMode.v1';
+  const VERSION='0.8.169';
   const BUILTIN_SKIP_SECONDS=0.020;
   const MAX_VOICES=12;
   let ctx=null;
@@ -144,14 +143,9 @@
     }
   }
 
-  function getLiveMode(){const v=localStorage.getItem(LIVE_MODE_KEY);return ['current','low','instant'].includes(v)?v:'current';}
-  function setLiveMode(v){if(['current','low','instant'].includes(v))localStorage.setItem(LIVE_MODE_KEY,v);}
-
   window.playTapSound=function(){
-    const mode=getLiveMode();
-    if(mode==='low'&&playLowLatencyShan())return;
-    if(mode==='instant'&&playInstantShan())return;
-    if(playBuffered())return;
+    // Official tap SFX: immediate transient + original shan.
+    if(playInstantShan())return;
     // Do not fall back to HTMLAudio or oscillator creation during live play.
     // If preloading is still in progress, simply skip this one tap sound.
     preload();
@@ -185,23 +179,16 @@
     testClick:()=>{const c=ensureContext();return !!c&&playDiagnosticClick(c);},
     testShan:()=>playBuffered(),
     testLowLatencyShan:()=>playLowLatencyShan(),
-    testInstantShan:()=>playInstantShan(),
-    liveMode:()=>getLiveMode(),
-    setLiveMode
+    testInstantShan:()=>playInstantShan()
   };
 
   function installDiagnosticPanel(){
     const host=document.querySelector('#settingsScreen .settings-grid');
     if(!host||document.getElementById('tapLatencyDiag'))return;
     const card=document.createElement('div');card.className='setting-card';card.id='tapLatencyDiag';
-    card.innerHTML='<div><strong>ライブ用タップ音テスト</strong></div><small>下の3種類から選ぶと、ライブ中のタップ音だけが切り替わります。判定・譜面・入力タイミングは変わりません。</small><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="timing-adjust-btn tap-live-mode" data-mode="current" type="button">現在</button><button class="timing-adjust-btn tap-live-mode" data-mode="low" type="button">低遅延</button><button class="timing-adjust-btn tap-live-mode" data-mode="instant" type="button">瞬発</button></div><div id="tapLiveModeStatus" style="margin-top:8px;font-size:12px"></div><hr style="opacity:.2;margin:12px 0"><div><strong>タップ音診断</strong></div><small>ライブ判定には影響しません。同じ指・同じ感覚で4つを押し比べてください。</small><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="tapDiagShan" class="timing-adjust-btn" type="button">現在のシャン</button><button id="tapDiagFastShan" class="timing-adjust-btn" type="button">低遅延シャン</button><button id="tapDiagInstantShan" class="timing-adjust-btn" type="button">瞬発シャン</button><button id="tapDiagClick" class="timing-adjust-btn" type="button">診断クリック音</button></div><div id="tapDiagInfo" style="margin-top:10px;font-size:12px;line-height:1.55;white-space:pre-line">準備中…</div>';
+    card.innerHTML='<div><strong>タップ音診断</strong></div><small>ライブ判定には影響しません。同じ指・同じ感覚で4つを押し比べてください。</small><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="tapDiagShan" class="timing-adjust-btn" type="button">現在のシャン</button><button id="tapDiagFastShan" class="timing-adjust-btn" type="button">低遅延シャン</button><button id="tapDiagInstantShan" class="timing-adjust-btn" type="button">瞬発シャン</button><button id="tapDiagClick" class="timing-adjust-btn" type="button">診断クリック音</button></div><div id="tapDiagInfo" style="margin-top:10px;font-size:12px;line-height:1.55;white-space:pre-line">準備中…</div>';
     host.appendChild(card);
     const info=card.querySelector('#tapDiagInfo');
-    const modeStatus=card.querySelector('#tapLiveModeStatus');
-    const modeLabel={current:'現在のシャン',low:'低遅延シャン',instant:'瞬発シャン'};
-    const refreshMode=()=>{const m=getLiveMode();modeStatus.textContent=`ライブ中: ${modeLabel[m]}`;card.querySelectorAll('.tap-live-mode').forEach(b=>{b.disabled=b.dataset.mode===m;});};
-    card.querySelectorAll('.tap-live-mode').forEach(b=>b.addEventListener('click',()=>{setLiveMode(b.dataset.mode);refreshMode();}));
-    refreshMode();
     const show=()=>{const x=window.LOVEFES_TAP_SFX_DEBUG.context();const d=window.LOVEFES_TAP_SFX_DEBUG.last();info.textContent=`AudioContext: ${x?.state||'-'}\nタップ→再生命令: ${d?.pointerToPlayMs==null?'-':d.pointerToPlayMs.toFixed(1)} ms\nbaseLatency: ${x?.baseLatencyMs??'-'} ms\noutputLatency: ${x?.outputLatencyMs??'-'} ms\nsampleRate: ${x?.sampleRate??'-'} Hz`};
     card.querySelector('#tapDiagShan').addEventListener('pointerdown',()=>{playBuffered();setTimeout(show,0)},{passive:true});
     card.querySelector('#tapDiagFastShan').addEventListener('pointerdown',()=>{playLowLatencyShan();setTimeout(show,0)},{passive:true});
