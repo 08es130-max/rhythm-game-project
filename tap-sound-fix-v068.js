@@ -1,7 +1,7 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.166';
+  const VERSION='0.8.167';
   const BUILTIN_SKIP_SECONDS=0.020;
   const MAX_VOICES=12;
   let ctx=null;
@@ -77,6 +77,23 @@
       gain.gain.setValueAtTime(1.75,now);
       gain.gain.exponentialRampToValueAtTime(1.0,now+0.035);
       source.start(now,skip);return true;
+    }catch(_){return false;}
+  }
+
+  function playInstantShan(){
+    const c=ensureContext();
+    if(!c||!buffer||!master)return false;
+    try{
+      const now=c.currentTime;
+      // Keep the current shan intact; layer only a tiny high-frequency transient
+      // at touch-down so the ear detects the attack sooner.
+      const osc=c.createOscillator(),tg=c.createGain();
+      osc.type='sine';osc.frequency.setValueAtTime(3200,now);osc.frequency.exponentialRampToValueAtTime(2200,now+0.012);
+      tg.gain.setValueAtTime(0.055,now);tg.gain.exponentialRampToValueAtTime(0.0001,now+0.014);
+      osc.connect(tg).connect(master);osc.start(now);osc.stop(now+0.015);
+      const source=c.createBufferSource();source.buffer=buffer;source.connect(master);
+      const skip=Math.min(BUILTIN_SKIP_SECONDS,Math.max(0,buffer.duration-0.02));source.start(now,skip);
+      return true;
     }catch(_){return false;}
   }
 
@@ -160,19 +177,21 @@
     context:()=>{const c=ensureContext();return c?{state:c.state,baseLatencyMs:Math.round(Number(c.baseLatency||0)*1000),outputLatencyMs:Math.round(Number(c.outputLatency||0)*1000),sampleRate:c.sampleRate}:null;},
     testClick:()=>{const c=ensureContext();return !!c&&playDiagnosticClick(c);},
     testShan:()=>playBuffered(),
-    testLowLatencyShan:()=>playLowLatencyShan()
+    testLowLatencyShan:()=>playLowLatencyShan(),
+    testInstantShan:()=>playInstantShan()
   };
 
   function installDiagnosticPanel(){
     const host=document.querySelector('#settingsScreen .settings-grid');
     if(!host||document.getElementById('tapLatencyDiag'))return;
     const card=document.createElement('div');card.className='setting-card';card.id='tapLatencyDiag';
-    card.innerHTML='<div><strong>タップ音診断</strong></div><small>ライブ判定には影響しません。同じ指・同じ感覚で3つを押し比べてください。</small><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="tapDiagShan" class="timing-adjust-btn" type="button">現在のシャン</button><button id="tapDiagFastShan" class="timing-adjust-btn" type="button">低遅延シャン</button><button id="tapDiagClick" class="timing-adjust-btn" type="button">診断クリック音</button></div><div id="tapDiagInfo" style="margin-top:10px;font-size:12px;line-height:1.55;white-space:pre-line">準備中…</div>';
+    card.innerHTML='<div><strong>タップ音診断</strong></div><small>ライブ判定には影響しません。同じ指・同じ感覚で4つを押し比べてください。</small><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="tapDiagShan" class="timing-adjust-btn" type="button">現在のシャン</button><button id="tapDiagFastShan" class="timing-adjust-btn" type="button">低遅延シャン</button><button id="tapDiagInstantShan" class="timing-adjust-btn" type="button">瞬発シャン</button><button id="tapDiagClick" class="timing-adjust-btn" type="button">診断クリック音</button></div><div id="tapDiagInfo" style="margin-top:10px;font-size:12px;line-height:1.55;white-space:pre-line">準備中…</div>';
     host.appendChild(card);
     const info=card.querySelector('#tapDiagInfo');
     const show=()=>{const x=window.LOVEFES_TAP_SFX_DEBUG.context();const d=window.LOVEFES_TAP_SFX_DEBUG.last();info.textContent=`AudioContext: ${x?.state||'-'}\nタップ→再生命令: ${d?.pointerToPlayMs==null?'-':d.pointerToPlayMs.toFixed(1)} ms\nbaseLatency: ${x?.baseLatencyMs??'-'} ms\noutputLatency: ${x?.outputLatencyMs??'-'} ms\nsampleRate: ${x?.sampleRate??'-'} Hz`};
     card.querySelector('#tapDiagShan').addEventListener('pointerdown',()=>{playBuffered();setTimeout(show,0)},{passive:true});
     card.querySelector('#tapDiagFastShan').addEventListener('pointerdown',()=>{playLowLatencyShan();setTimeout(show,0)},{passive:true});
+    card.querySelector('#tapDiagInstantShan').addEventListener('pointerdown',()=>{playInstantShan();setTimeout(show,0)},{passive:true});
     card.querySelector('#tapDiagClick').addEventListener('pointerdown',()=>{const x=ensureContext();if(x)playDiagnosticClick(x);setTimeout(show,0)},{passive:true});
     preload().finally(show);
   }
