@@ -39,6 +39,27 @@
   try{flashTarget=lightFlash;}catch(_){window.flashTarget=lightFlash;}
 
   const holdPointers=new Map();
+  const recentPointerDowns=[];
+  const pendingTouchFallbacks=new Map();
+  const touchFallbackPointers=new Map();
+  function rememberPointerDown(e){
+    const now=performance.now();
+    recentPointerDowns.push({t:now,x:e.clientX,y:e.clientY,pointerId:e.pointerId});
+    while(recentPointerDowns.length&&now-recentPointerDowns[0].t>180)recentPointerDowns.shift();
+    // If TouchEvent arrived first on iOS, cancel its pending fallback as soon as the
+    // matching PointerEvent appears.
+    for(const [id,p] of pendingTouchFallbacks){
+      if(now-p.t<=80&&Math.hypot((e.clientX??0)-p.x,(e.clientY??0)-p.y)<=42){
+        clearTimeout(p.timer);
+        pendingTouchFallbacks.delete(id);
+        break;
+      }
+    }
+  }
+  function hasRecentPointerForTouch(touch){
+    const now=performance.now();
+    return recentPointerDowns.some(p=>now-p.t<=80&&Math.hypot((touch.clientX??0)-p.x,(touch.clientY??0)-p.y)<=42);
+  }
 
   // Temporary live input diagnostics. Kept in memory only; no personal/device data.
   const inputDiag=[];
@@ -231,9 +252,16 @@
     const whenMs=songTimeForEvent(e.timeStamp);
     diag('pointerdown',{pointerId:e.pointerId,lane,holdCount:holdPointers.size,x:Math.round(e.clientX),y:Math.round(e.clientY),...diagCandidate(lane,whenMs)});
     if(startHoldIfPresent(lane,whenMs,e.pointerId))return;
+    let hitWhenMs=whenMs;
     if(holdPointers.size>0){
       ensure();
       const win=HIT_WINDOWS.good;
+      // iOS/PWA can report a PointerEvent timeStamp about 100-150ms behind the
+      // actual game clock during multi-touch. That made valid free-thumb taps fall
+      // outside GOOD even though pointerdown itself reached the game. For hold-free
+      // taps only, use the live game clock; normal taps keep the proven timestamp path.
+      const holdTapWhenMs=currentMs();
+      hitWhenMs=holdTapWhenMs;
       const held=[...holdPointers.values()][0];
       const heldLeft=held&&held.lane<4;
       const heldRight=held&&held.lane>4;
@@ -248,7 +276,7 @@
         if(heldLeft&&n.lane<5)continue;
         if(heldRight&&n.lane>3)continue;
         if(held&&n.lane===held.lane)continue;
-        const d=Math.abs(n.timeMs-whenMs);
+        const d=Math.abs(n.timeMs-holdTapWhenMs);
         if(d<=win&&d<bestAbs){bestNote=n;bestAbs=d;}
       }
       if(bestNote){
@@ -258,14 +286,14 @@
           touchLane:lane,
           selectedLane:bestNote.lane,
           noteTime:Math.round(bestNote.timeMs),
-          delta:Math.round(whenMs-bestNote.timeMs)
+          delta:Math.round(holdTapWhenMs-bestNote.timeMs)
         });
         lane=bestNote.lane;
       }else{
         diag('hold-free-no-note',{pointerId:e.pointerId,heldLane:held?.lane??null,touchLane:lane});
       }
     }
-    fastHitLaneAt(lane,whenMs);
+    fastHitLaneAt(lane,hitWhenMs);
   }
 
   function resolveHoldRelease(n,whenMs){
@@ -321,6 +349,10 @@
         if(game?.hasPointerCapture?.(pointerId))game.releasePointerCapture(pointerId);
       }catch(_){}
     }
+    for(const p of pendingTouchFallbacks.values())clearTimeout(p.timer);
+    pendingTouchFallbacks.clear();
+    touchFallbackPointers.clear();
+    recentPointerDowns.length=0;
     activePointers.clear();
     holdPointers.clear();
   }
@@ -328,6 +360,7 @@
   // Live gameplay must own multi-touch. preventDefault suppresses iOS long-press
   // magnifier/callout/gesture handling that otherwise steals or delays the second thumb.
   function livePointerDown(e){
+    if(playing&&!gamePaused&&game.contains(e.target))rememberPointerDown(e);
     if(playing&&!gamePaused&&game.contains(e.target)){
       if(e.cancelable)e.preventDefault();
     }
@@ -345,6 +378,46 @@
     const t=e.target;
     if(!t||!game.contains(t))return;
     if(t.closest?.('#pauseBtn'))return;
+
+    // Pointer Events remain primary. A small number of iOS/PWA contacts produce
+    // touchstart + pointerup but no pointerdown. Queue a zero-delay fallback only
+    // when no matching pointerdown was seen, then cancel it if PointerEvent arrives.
+    if(e.type==='touchstart'&&e.changedTouches){
+      for(const touchItem of e.changedTouches){
+        const id=touchItem.identifier;
+        if(hasRecentPointerForTouch(touchItem)||pendingTouchFallbacks.has(id))continue;
+        const pending={t:performance.now(),x:touchItem.clientX,y:touchItem.clientY,timer:0};
+        pending.timer=setTimeout(()=>{
+          pendingTouchFallbacks.delete(id);
+          if(!playing||gamePaused)return;
+          const syntheticId='touch-fallback-'+id;
+          touchFallbackPointers.set(id,syntheticId);
+          diag('touch-fallback-down',{touchId:id,x:Math.round(touchItem.clientX),y:Math.round(touchItem.clientY),holdCount:holdPointers.size});
+          handlePointerDown({
+            target:t,
+            pointerId:syntheticId,
+            clientX:touchItem.clientX,
+            clientY:touchItem.clientY,
+            timeStamp:performance.now()
+          });
+        },0);
+        pendingTouchFallbacks.set(id,pending);
+      }
+    }
+    if((e.type==='touchend'||e.type==='touchcancel')&&e.changedTouches){
+      for(const touchItem of e.changedTouches){
+        const id=touchItem.identifier;
+        const p=pendingTouchFallbacks.get(id);
+        if(p){clearTimeout(p.timer);pendingTouchFallbacks.delete(id);}
+        const syntheticId=touchFallbackPointers.get(id);
+        if(syntheticId){
+          touchFallbackPointers.delete(id);
+          diag('touch-fallback-up',{touchId:id,pointerId:syntheticId});
+          releasePointer({type:e.type==='touchcancel'?'pointercancel':'pointerup',pointerId:syntheticId,timeStamp:performance.now()});
+        }
+      }
+    }
+
     const touch=e.changedTouches?.[0];
     diag(e.type,{
       touches:e.touches?.length??0,
