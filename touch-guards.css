@@ -1,3 +1,11 @@
 html,body{overscroll-behavior:none}
 body.playing-mode,body.playing-mode .game-wrap,body.playing-mode .game,body.playing-mode .targets,body.playing-mode .target{touch-action:none!important;overscroll-behavior:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
 body.playing-mode{position:fixed;inset:0;width:100%;height:100dvh}
+
+/* Live multi-touch guard: keep iOS/PWA magnifier, selection and browser gestures from stealing hold + tap input. */
+#game, #game *, #targets, #targets * {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
