@@ -121,20 +121,36 @@
     if(!Number.isFinite(n.holdEndMs))return;
     const a=pointForNoteTime(n.timeMs,now,leadMs,n.lane,spawn,targetPoints);
     const b=pointForNoteTime(n.holdEndMs,now,leadMs,n.lane,spawn,targetPoints);
-    // Hold ribbon: same apparent width as the circular note, soft white only.
-    // Clamp the far end to the common center spawn so the ribbon visibly emerges from that circle.
+    // Perspective ribbon: width follows the same scale curve as normal notes.
+    // The far edge is clamped to the common center spawn so it never extends above the origin.
     const endProgress=Math.max(0,Math.min(1,b.progress));
     const ex=spawn.x+(targetPoints[n.lane].x-spawn.x)*endProgress;
     const ey=spawn.y+(targetPoints[n.lane].y-spawn.y)*endProgress;
-    const startScale=a.progress<=1?.45+.55*a.progress:1;
-    const ribbonWidth=76*startScale;
-    ctx.save();ctx.lineCap='round';
-    ctx.shadowColor='rgba(255,255,255,.20)';ctx.shadowBlur=5;
-    ctx.strokeStyle='rgba(255,255,255,.24)';ctx.lineWidth=ribbonWidth;
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(ex,ey);ctx.stroke();
+    const startScale=Math.max(.45,a.progress<=1?.45+.55*a.progress:1);
+    const endScale=Math.max(.45,endProgress<=1?.45+.55*endProgress:1);
+    const halfA=38*startScale,halfB=38*endScale;
+    const dx=ex-a.x,dy=ey-a.y,len=Math.hypot(dx,dy)||1;
+    const nx=-dy/len,ny=dx/len;
+    ctx.save();
+    ctx.shadowColor='rgba(255,255,255,.18)';ctx.shadowBlur=5;
+    ctx.fillStyle='rgba(255,255,255,.23)';
+    ctx.beginPath();
+    ctx.moveTo(a.x+nx*halfA,a.y+ny*halfA);
+    ctx.lineTo(ex+nx*halfB,ey+ny*halfB);
+    ctx.lineTo(ex-nx*halfB,ey-ny*halfB);
+    ctx.lineTo(a.x-nx*halfA,a.y-ny*halfA);
+    ctx.closePath();ctx.fill();
     ctx.restore();
-    const endScale=endProgress<=1?.45+.55*endProgress:1;
+
+    // Make the release/end note clearly distinguishable with a bright outer frame.
     drawNote(ex,ey,endScale,false,false);
+    const endRadius=38*endScale;
+    ctx.save();
+    ctx.shadowColor='rgba(255,255,255,.78)';ctx.shadowBlur=8;
+    ctx.lineWidth=Math.max(3,5*endScale);
+    ctx.strokeStyle='rgba(255,255,255,.98)';
+    ctx.beginPath();ctx.arc(ex,ey,endRadius,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
   }
 
   function drawNote(x,y,scale,missed,simultaneous){
