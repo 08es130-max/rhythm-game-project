@@ -40,6 +40,26 @@
 
   const holdPointers=new Map();
 
+  // Temporary live input diagnostics. Kept in memory only; no personal/device data.
+  const inputDiag=[];
+  const DIAG_MAX=900;
+  function diag(type,data={}){
+    const row={t:Math.round(performance.now()),song:playing?Math.round(currentMs()):-1,type,...data};
+    inputDiag.push(row);
+    if(inputDiag.length>DIAG_MAX)inputDiag.splice(0,inputDiag.length-DIAG_MAX);
+  }
+  function diagCandidate(lane,whenMs){
+    ensure();
+    const win=HIT_WINDOWS.good;
+    let best=null,bestDelta=null;
+    for(const n of (lanes[lane]||[])){
+      if(!n||n.finished||n.hit||n.missRegistered||n.holdStarted)continue;
+      const delta=Math.round(whenMs-n.timeMs);
+      if(bestDelta===null||Math.abs(delta)<Math.abs(bestDelta)){best=n;bestDelta=delta;}
+    }
+    return {candidate:!!best,delta:bestDelta,inGood:bestDelta!==null&&Math.abs(bestDelta)<=win};
+  }
+
   function findHoldStart(lane,now){
     ensure();
     const list=lanes[lane];
@@ -58,6 +78,7 @@
     const now=Number.isFinite(whenMs)?whenMs:currentMs();
     const found=findHoldStart(lane,now);
     if(!found)return false;
+    diag('hold-start',{lane,delta:Math.round(now-found.note.timeMs),pointerId});
     const n=found.note;
     let grade='good';
     if(found.abs<=getPerfectWindow())grade='perfect';
@@ -110,7 +131,12 @@
       const d=Math.abs(now-n.timeMs);
       if(d<best){best=d;candidate=n;bestIndex=j;}
     }
-    if(!candidate)return;
+    if(!candidate){
+      const d=diagCandidate(lane,now);
+      diag('no-candidate',{lane,pointerId:null,...d});
+      return;
+    }
+    diag('tap-hit',{lane,delta:Math.round(now-candidate.timeMs),grade:best<=getPerfectWindow()?'perfect':best<=HIT_WINDOWS.great?'great':'good'});
     let grade='good';
     if(best<=getPerfectWindow())grade='perfect';
     else if(best<=HIT_WINDOWS.great)grade='great';
@@ -183,6 +209,7 @@
       if(game?.setPointerCapture&&Number.isFinite(e.pointerId))game.setPointerCapture(e.pointerId);
     }catch(_){}
     const whenMs=songTimeForEvent(e.timeStamp);
+    diag('pointerdown',{pointerId:e.pointerId,lane,holdCount:holdPointers.size,x:Math.round(e.clientX),y:Math.round(e.clientY),...diagCandidate(lane,whenMs)});
     if(startHoldIfPresent(lane,whenMs,e.pointerId))return;
     if(holdPointers.size>0){
       ensure();
@@ -244,6 +271,7 @@
   }
 
   function releasePointer(e){
+    diag(e.type,{pointerId:e.pointerId,wasHold:holdPointers.has(e.pointerId),activeCount:activePointers.size});
     activePointers.delete(e.pointerId);
     const n=holdPointers.get(e.pointerId);
     if(n){
@@ -284,6 +312,8 @@
     const t=e.target;
     if(!t||!game.contains(t))return;
     if(t.closest?.('#pauseBtn'))return;
+    const touch=e.changedTouches?.[0];
+    diag(e.type,{touches:e.touches?.length??0,x:touch?Math.round(touch.clientX):null,y:touch?Math.round(touch.clientY):null,cancelable:!!e.cancelable});
     if(e.cancelable)e.preventDefault();
   }
   game.addEventListener('touchstart',suppressNativeLiveTouch,{capture:true,passive:false});
@@ -307,6 +337,12 @@
     activePointerCount:()=>activePointers.size,
     activeHoldCount:()=>holdPointers.size,
     activeHolds:()=>[...holdPointers.values()].map(n=>({lane:n.lane,start:n.timeMs,end:n.holdEndMs,grade:n.holdStartGrade})),
+    diagnostics:()=>inputDiag.slice(),
+    clearDiagnostics:()=>{inputDiag.length=0;},
+    copyDiagnostics:async()=>{
+      const payload=JSON.stringify({version:window.APP_VERSION,createdAt:new Date().toISOString(),events:inputDiag},null,2);
+      try{await navigator.clipboard.writeText(payload);return true;}catch(_){return payload;}
+    },
     reset:resetPointers
   };
 })();
