@@ -1,7 +1,7 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.169';
+  const VERSION='0.8.170';
   const BUILTIN_SKIP_SECONDS=0.020;
   const MAX_VOICES=12;
   let ctx=null;
@@ -196,5 +196,6 @@
     card.querySelector('#tapDiagClick').addEventListener('pointerdown',()=>{const x=ensureContext();if(x)playDiagnosticClick(x);setTimeout(show,0)},{passive:true});
     preload().finally(show);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installDiagnosticPanel,{once:true});else installDiagnosticPanel();
+  // Diagnostic functions remain available internally via LOVEFES_TAP_SFX_DEBUG,
+  // but the diagnostic panel is intentionally hidden from the normal settings UI.
 })();
