@@ -42,11 +42,31 @@
 
   // Temporary live input diagnostics. Kept in memory only; no personal/device data.
   const inputDiag=[];
-  const DIAG_MAX=900;
-  function diag(type,data={}){
+  const DIAG_MAX=1400;
+  const diagnosedMisses=new WeakSet();
+  function pushDiag(type,data={}){
     const row={t:Math.round(performance.now()),song:playing?Math.round(currentMs()):-1,type,...data};
     inputDiag.push(row);
     if(inputDiag.length>DIAG_MAX)inputDiag.splice(0,inputDiag.length-DIAG_MAX);
+  }
+  function scanMisses(){
+    try{
+      for(const n of activeNotes||[]){
+        if(!n||!n.missRegistered||diagnosedMisses.has(n))continue;
+        diagnosedMisses.add(n);
+        pushDiag('note-miss',{
+          lane:n.lane,
+          noteTime:Math.round(n.timeMs),
+          hold:!!n.holdVisualOnly,
+          holdStarted:!!n.holdStarted,
+          holdEnd:Number.isFinite(n.holdEndMs)?Math.round(n.holdEndMs):null
+        });
+      }
+    }catch(_){}
+  }
+  function diag(type,data={}){
+    scanMisses();
+    pushDiag(type,data);
   }
   function diagCandidate(lane,whenMs){
     ensure();
@@ -231,7 +251,19 @@
         const d=Math.abs(n.timeMs-whenMs);
         if(d<=win&&d<bestAbs){bestNote=n;bestAbs=d;}
       }
-      if(bestNote)lane=bestNote.lane;
+      if(bestNote){
+        diag('hold-free-select',{
+          pointerId:e.pointerId,
+          heldLane:held?.lane??null,
+          touchLane:lane,
+          selectedLane:bestNote.lane,
+          noteTime:Math.round(bestNote.timeMs),
+          delta:Math.round(whenMs-bestNote.timeMs)
+        });
+        lane=bestNote.lane;
+      }else{
+        diag('hold-free-no-note',{pointerId:e.pointerId,heldLane:held?.lane??null,touchLane:lane});
+      }
     }
     fastHitLaneAt(lane,whenMs);
   }
@@ -240,6 +272,7 @@
     if(!n||n.holdResolved)return;
     n.holdReleasedAt=whenMs;
     const delta=whenMs-n.holdEndMs;
+    diag('hold-release',{lane:n.lane,delta:Math.round(delta),start:n.timeMs,end:n.holdEndMs,pointerId:n.holdPointerId});
     const abs=Math.abs(delta);
     if(abs<=HIT_WINDOWS.good){
       let grade='good';
@@ -313,7 +346,14 @@
     if(!t||!game.contains(t))return;
     if(t.closest?.('#pauseBtn'))return;
     const touch=e.changedTouches?.[0];
-    diag(e.type,{touches:e.touches?.length??0,x:touch?Math.round(touch.clientX):null,y:touch?Math.round(touch.clientY):null,cancelable:!!e.cancelable});
+    diag(e.type,{
+      touches:e.touches?.length??0,
+      x:touch?Math.round(touch.clientX):null,
+      y:touch?Math.round(touch.clientY):null,
+      cancelable:!!e.cancelable,
+      holdCount:holdPointers.size,
+      heldLanes:[...holdPointers.values()].map(n=>n.lane)
+    });
     if(e.cancelable)e.preventDefault();
   }
   game.addEventListener('touchstart',suppressNativeLiveTouch,{capture:true,passive:false});
@@ -327,8 +367,8 @@
   window.addEventListener('blur',resetPointers,{passive:true});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)resetPointers();},{passive:true});
 
-  document.getElementById('startBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);resetPointers();});
-  document.getElementById('retryBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);resetPointers();});
+  document.getElementById('startBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);resetPointers();inputDiag.length=0;});
+  document.getElementById('retryBtn')?.addEventListener('click',()=>{ref=null;cursors.fill(0);resetPointers();inputDiag.length=0;});
   document.getElementById('stopBtn')?.addEventListener('click',resetPointers);
 
   window.LOVEFES_INPUT_DEBUG={
@@ -340,7 +380,14 @@
     diagnostics:()=>inputDiag.slice(),
     clearDiagnostics:()=>{inputDiag.length=0;},
     copyDiagnostics:async()=>{
-      const payload=JSON.stringify({version:window.APP_VERSION,createdAt:new Date().toISOString(),events:inputDiag},null,2);
+      scanMisses();
+      const payload=JSON.stringify({
+        version:window.APP_VERSION,
+        createdAt:new Date().toISOString(),
+        songTime:playing?Math.round(currentMs()):null,
+        activeHolds:[...holdPointers.values()].map(n=>({lane:n.lane,start:n.timeMs,end:n.holdEndMs,startedAt:n.holdStartAt})),
+        events:inputDiag
+      },null,2);
       try{await navigator.clipboard.writeText(payload);return true;}catch(_){return payload;}
     },
     reset:resetPointers
