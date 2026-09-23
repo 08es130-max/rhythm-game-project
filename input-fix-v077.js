@@ -134,8 +134,18 @@
   }
 
   function laneFromPoint(x,y){
-    const rect=targets?.getBoundingClientRect?.();
+    const rect=game?.getBoundingClientRect?.();
     if(!rect||!Number.isFinite(x)||!Number.isFinite(y))return -1;
+
+    // While holding, treat the full playable width as nine continuous lane sectors.
+    // The free thumb can land above/below or between the visible circular targets;
+    // horizontal position is the stable cue for which lane was intended.
+    if(holdPointers.size>0){
+      const rel=(x-rect.left)/Math.max(1,rect.width);
+      if(rel<0||rel>1)return -1;
+      return Math.max(0,Math.min(8,Math.floor(rel*9)));
+    }
+
     let best=-1,bestD=Infinity;
     for(let lane=0;lane<9;lane++){
       const el=targets.children[lane];
@@ -145,22 +155,10 @@
       const d=Math.hypot(x-cx,y-cy);
       if(d<bestD){bestD=d;best=lane;}
     }
-    // While another thumb is held, iOS can retarget the second pointer to the game
-    // surface instead of the target element. Accept a generous target-radius here;
-    // normal pointer handling remains unchanged when closest('.target') succeeds.
     const target=best>=0?targets.children[best]:null;
     const tr=target?.getBoundingClientRect?.();
-    // During a hold the free thumb often lands slightly inside/outside the visible
-    // judgment circle. Choose the nearest lane from the whole lower play area rather
-    // than requiring the touch to remain inside a small radius around the icon.
-    // The nearest-center mapping still gives exactly one lane, so adjacent lanes do
-    // not fire together.
-    const gameRect=game?.getBoundingClientRect?.();
-    if(!tr||!gameRect)return -1;
-    const pad=Math.max(tr.width,tr.height)*1.75;
-    const inPlayArea=x>=gameRect.left-pad&&x<=gameRect.right+pad&&
-      y>=gameRect.top+gameRect.height*0.30-pad&&y<=gameRect.bottom+pad;
-    return inPlayArea?best:-1;
+    const radius=tr?Math.max(tr.width,tr.height)*1.15:0;
+    return bestD<=radius?best:-1;
   }
 
   function handlePointerDown(e){
@@ -186,6 +184,21 @@
     }catch(_){}
     const whenMs=songTimeForEvent(e.timeStamp);
     if(startHoldIfPresent(lane,whenMs,e.pointerId))return;
+    if(holdPointers.size>0){
+      ensure();
+      const win=HIT_WINDOWS.good;
+      const hasCandidate=l=>{
+        const list=lanes[l]||[];
+        return list.some(n=>!n.finished&&!n.hit&&!n.missRegistered&&!n.holdStarted&&Math.abs(n.timeMs-whenMs)<=win);
+      };
+      if(!hasCandidate(lane)){
+        for(let d=1;d<=2;d++){
+          const near=[lane-d,lane+d].filter(l=>l>=0&&l<9);
+          const alt=near.find(hasCandidate);
+          if(Number.isInteger(alt)){lane=alt;break;}
+        }
+      }
+    }
     fastHitLaneAt(lane,whenMs);
   }
 
