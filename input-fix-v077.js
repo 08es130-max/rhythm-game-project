@@ -67,6 +67,8 @@
     n.holdPointerId=pointerId;
     n.holdStartGrade=grade;
     n.holdStartAt=now;
+    n.holdResolved=false;
+    n.holdFailed=false;
     holdPointers.set(pointerId,n);
     judgeEl.textContent=grade.toUpperCase();
     playTapSound(grade);
@@ -136,11 +138,47 @@
     fastHitLaneAt(lane,whenMs);
   }
 
+  function resolveHoldRelease(n,whenMs){
+    if(!n||n.holdResolved)return;
+    n.holdReleasedAt=whenMs;
+    const delta=whenMs-n.holdEndMs;
+    const abs=Math.abs(delta);
+    if(abs<=HIT_WINDOWS.good){
+      let grade='good';
+      if(abs<=getPerfectWindow())grade='perfect';
+      else if(abs<=HIT_WINDOWS.great)grade='great';
+      n.holdEndGrade=grade;
+      n.holdResolved=true;
+      n.hit=true;
+      n.finished=true;
+      counts[grade]++;
+      combo++;
+      maxCombo=Math.max(maxCombo,combo);
+      score+=grade==='perfect'?1000:grade==='great'?700:400;
+      judgeEl.textContent=grade.toUpperCase();
+      updateHud();
+      playTapSound(grade);
+      return;
+    }
+    // Any release before the GOOD end window is an interrupted hold.
+    // A late release outside the window is also a miss.
+    n.holdFailed=true;
+    n.holdResolved=true;
+    n.missRegistered=true;
+    n.finished=true;
+    counts.miss++;
+    combo=0;
+    judgeEl.textContent='MISS';
+    updateHud();
+  }
+
   function releasePointer(e){
     activePointers.delete(e.pointerId);
-    // Keep release bookkeeping separate; release/end judgment comes in the next stage.
     const n=holdPointers.get(e.pointerId);
-    if(n){n.holdReleasedAt=songTimeForEvent(e.timeStamp);holdPointers.delete(e.pointerId);}
+    if(n){
+      resolveHoldRelease(n,songTimeForEvent(e.timeStamp));
+      holdPointers.delete(e.pointerId);
+    }
   }
   function resetPointers(){
     activePointers.clear();
