@@ -1,7 +1,7 @@
 // Ver.0.8.37: lightweight AudioBuffer tap SFX for iPhone/PWA.
 (function(){
   'use strict';
-  const VERSION='0.8.164';
+  const VERSION='0.8.165';
   const BUILTIN_SKIP_SECONDS=0.020;
   const MAX_VOICES=12;
   let ctx=null;
@@ -143,6 +143,21 @@
     outputLatencyMs:()=>Math.round(outputLatencySec*1000),
     last:()=>lastDiag,
     context:()=>{const c=ensureContext();return c?{state:c.state,baseLatencyMs:Math.round(Number(c.baseLatency||0)*1000),outputLatencyMs:Math.round(Number(c.outputLatency||0)*1000),sampleRate:c.sampleRate}:null;},
-    testClick:()=>{const c=ensureContext();return !!c&&playDiagnosticClick(c);}
+    testClick:()=>{const c=ensureContext();return !!c&&playDiagnosticClick(c);},
+    testShan:()=>playBuffered()
   };
+
+  function installDiagnosticPanel(){
+    const host=document.querySelector('#settingsScreen .settings-grid');
+    if(!host||document.getElementById('tapLatencyDiag'))return;
+    const card=document.createElement('div');card.className='setting-card';card.id='tapLatencyDiag';
+    card.innerHTML='<div><strong>タップ音診断</strong></div><small>ライブ判定には影響しません。同じ指・同じ感覚で2つを押し比べてください。</small><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button id="tapDiagShan" class="timing-adjust-btn" type="button">シャン音</button><button id="tapDiagClick" class="timing-adjust-btn" type="button">診断クリック音</button></div><div id="tapDiagInfo" style="margin-top:10px;font-size:12px;line-height:1.55;white-space:pre-line">準備中…</div>';
+    host.appendChild(card);
+    const info=card.querySelector('#tapDiagInfo');
+    const show=()=>{const x=window.LOVEFES_TAP_SFX_DEBUG.context();const d=window.LOVEFES_TAP_SFX_DEBUG.last();info.textContent=`AudioContext: ${x?.state||'-'}\nタップ→再生命令: ${d?.pointerToPlayMs==null?'-':d.pointerToPlayMs.toFixed(1)} ms\nbaseLatency: ${x?.baseLatencyMs??'-'} ms\noutputLatency: ${x?.outputLatencyMs??'-'} ms\nsampleRate: ${x?.sampleRate??'-'} Hz`};
+    card.querySelector('#tapDiagShan').addEventListener('pointerdown',()=>{playBuffered();setTimeout(show,0)},{passive:true});
+    card.querySelector('#tapDiagClick').addEventListener('pointerdown',()=>{const x=ensureContext();if(x)playDiagnosticClick(x);setTimeout(show,0)},{passive:true});
+    preload().finally(show);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installDiagnosticPanel,{once:true});else installDiagnosticPanel();
 })();
