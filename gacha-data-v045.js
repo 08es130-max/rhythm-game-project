@@ -62,7 +62,14 @@
     card:`assets/lr/lr-setsuna-card.webp?v=${version}`,
     home:`assets/lr/lr-setsuna-home.webp?v=${version}`
   };
-  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna];
+  const lrAi={
+    id:'lr-ai-sunflower-garden',baseId:'ai',name:'宮下愛【陽花に弾けるスマイル】',
+    rarity:'LR',series:'LEGEND RARE',
+    icon:`assets/lr/lr-ai-live.webp?v=${version}`,
+    card:`assets/lr/lr-ai-card.webp?v=${version}`,
+    home:`assets/lr/lr-ai-home.webp?v=${version}`
+  };
+  const lrPool=[lrShioriko,lrAyumu,lrKasumi,lrShizuku,lrKarin,lrKanata,lrSetsuna,lrAi];
   const unlockable=[...monthly,...lrPool];
 
   const OWNED_KEY='rhythmGame.unlockedCharacters.v1';
@@ -102,6 +109,7 @@
   window.GACHA_LR_KARIN_ID=lrKarin.id;
   window.GACHA_LR_KANATA_ID=lrKanata.id;
   window.GACHA_LR_SETSUNA_ID=lrSetsuna.id;
+  window.GACHA_LR_AI_ID=lrAi.id;
   window.GACHA_OWNED_KEY=OWNED_KEY;
   window.loadGachaOwned=loadOwned;
   window.saveGachaOwned=saveOwned;
