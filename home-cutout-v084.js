@@ -15,6 +15,7 @@
   const LR_EMMA_ID='lr-emma-flower-garden';
   const LR_MIA_ID='lr-mia-silver-garden';
   const LR_RINA_ID='lr-rina-pink-garden';
+  const LR_LANZHU_ID='lr-lanzhu-rose-palace';
   const LR_AYUMU_HOME=`assets/lr/lr-ayumu-home.webp?v=${VERSION}-lrhome1`;
   const LR_KASUMI_HOME=`assets/lr/lr-kasumi-home.webp?v=${VERSION}-lrhome1`;
   const LR_SHIZUKU_HOME=`assets/lr/lr-shizuku-home.webp?v=${VERSION}-lrhome1`;
@@ -25,6 +26,7 @@
   const LR_EMMA_HOME=`assets/lr/lr-emma-home.webp?v=${VERSION}-lrhome1`;
   const LR_MIA_HOME=`assets/lr/lr-mia-home.webp?v=${VERSION}-lrhome1`;
   const LR_RINA_HOME=`assets/lr/lr-rina-home.webp?v=${VERSION}-lrhome1`;
+  const LR_LANZHU_HOME=`assets/lr/lr-lanzhu-home.webp?v=${VERSION}-lrhome1`;
   const VALID=['normal','dere','yandere','scold','drunk','clumsy','casual'];
   const PREVIOUS_ART={
     normal:`assets/home-characters/shioriko/normal.png?v=${VERSION}-homeart4`,
@@ -111,7 +113,7 @@
       return Array.isArray(parsed)&&parsed.includes(id);
     }catch(_){return false;}
   };
-  const isLrOwned=()=>isOwned(LR_ID)||isOwned(LR_AYUMU_ID)||isOwned(LR_KASUMI_ID)||isOwned(LR_SHIZUKU_ID)||isOwned(LR_KARIN_ID)||isOwned(LR_KANATA_ID)||isOwned(LR_SETSUNA_ID)||isOwned(LR_AI_ID)||isOwned(LR_EMMA_ID)||isOwned(LR_MIA_ID)||isOwned(LR_RINA_ID);
+  const isLrOwned=()=>isOwned(LR_ID)||isOwned(LR_AYUMU_ID)||isOwned(LR_KASUMI_ID)||isOwned(LR_SHIZUKU_ID)||isOwned(LR_KARIN_ID)||isOwned(LR_KANATA_ID)||isOwned(LR_SETSUNA_ID)||isOwned(LR_AI_ID)||isOwned(LR_EMMA_ID)||isOwned(LR_MIA_ID)||isOwned(LR_RINA_ID)||isOwned(LR_LANZHU_ID);
   const normalizeHomeArt=(value)=>{
     const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic',lr:'lr',legend:'lr'};
     const normalized=Object.prototype.hasOwnProperty.call(aliases,value)?aliases[value]:'stage';
@@ -130,7 +132,7 @@
     const art=getHomeArt();
     const useLrScene=art==='lr';
     const lrCharacter=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
-    const lrSceneSrc=lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:lrCharacter==='kasumi'&&isOwned(LR_KASUMI_ID)?LR_KASUMI_HOME:lrCharacter==='shizuku'&&isOwned(LR_SHIZUKU_ID)?LR_SHIZUKU_HOME:lrCharacter==='karin'&&isOwned(LR_KARIN_ID)?LR_KARIN_HOME:lrCharacter==='kanata'&&isOwned(LR_KANATA_ID)?LR_KANATA_HOME:lrCharacter==='setsuna'&&isOwned(LR_SETSUNA_ID)?LR_SETSUNA_HOME:lrCharacter==='ai'&&isOwned(LR_AI_ID)?LR_AI_HOME:lrCharacter==='emma'&&isOwned(LR_EMMA_ID)?LR_EMMA_HOME:lrCharacter==='mia'&&isOwned(LR_MIA_ID)?LR_MIA_HOME:lrCharacter==='rina'&&isOwned(LR_RINA_ID)?LR_RINA_HOME:LR_HOME_SCENE;
+    const lrSceneSrc=lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:lrCharacter==='kasumi'&&isOwned(LR_KASUMI_ID)?LR_KASUMI_HOME:lrCharacter==='shizuku'&&isOwned(LR_SHIZUKU_ID)?LR_SHIZUKU_HOME:lrCharacter==='karin'&&isOwned(LR_KARIN_ID)?LR_KARIN_HOME:lrCharacter==='kanata'&&isOwned(LR_KANATA_ID)?LR_KANATA_HOME:lrCharacter==='setsuna'&&isOwned(LR_SETSUNA_ID)?LR_SETSUNA_HOME:lrCharacter==='ai'&&isOwned(LR_AI_ID)?LR_AI_HOME:lrCharacter==='emma'&&isOwned(LR_EMMA_ID)?LR_EMMA_HOME:lrCharacter==='mia'&&isOwned(LR_MIA_ID)?LR_MIA_HOME:lrCharacter==='rina'&&isOwned(LR_RINA_ID)?LR_RINA_HOME:lrCharacter==='lanzhu'&&isOwned(LR_LANZHU_ID)?LR_LANZHU_HOME:LR_HOME_SCENE;
     document.documentElement.dataset.shioMode=m;
     home.classList.toggle('is-lr-home-scene-v096',useLrScene);
     home.dataset.lrHomeCharacter=useLrScene?lrCharacter:'';
@@ -270,6 +272,7 @@
         if(isOwned(LR_EMMA_ID)) owned.push({id:'emma',label:'エマ',src:LR_EMMA_HOME});
         if(isOwned(LR_MIA_ID)) owned.push({id:'mia',label:'ミア',src:LR_MIA_HOME});
         if(isOwned(LR_RINA_ID)) owned.push({id:'rina',label:'璃奈',src:LR_RINA_HOME});
+        if(isOwned(LR_LANZHU_ID)) owned.push({id:'lanzhu',label:'嵐珠',src:LR_LANZHU_HOME});
         let current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||owned[0]?.id||'shioriko';
         if(owned.length&&!owned.some(x=>x.id===current)){
           current=owned[0].id;
@@ -307,6 +310,7 @@
       if(isOwned(LR_EMMA_ID)) owned.push('emma');
       if(isOwned(LR_MIA_ID)) owned.push('mia');
       if(isOwned(LR_RINA_ID)) owned.push('rina');
+      if(isOwned(LR_LANZHU_ID)) owned.push('lanzhu');
         if(owned.length===1) localStorage.setItem(LR_HOME_CHARACTER_KEY,owned[0]);
         setTimeout(refreshLrChoices,0);
       });
