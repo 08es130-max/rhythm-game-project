@@ -81,7 +81,7 @@
       const removable=[];notes.forEach((n,i)=>{if(groups.get(n.timeMs).length===1)removable.push(i);});
       const excess=Math.min(notes.length-TARGET,removable.length),drop=new Set();
       for(let k=0;k<excess;k++)drop.add(removable[Math.min(removable.length-1,Math.floor((k+.5)*removable.length/excess))]);
-      const out=notes.filter((_,i)=>!drop.has(i));
+      const out=notes.filter((n,i)=>n.holdVisualOnly||!drop.has(i));
       return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:out.length,notes:out};
     }
     return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,notes};
