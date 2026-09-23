@@ -237,6 +237,30 @@ function makeSpicaMasterReferenceChart(source) {
     }
   }
 
+  // Two-thumb simultaneous-note ergonomics:
+  // normal pairs must be one from each side. A center note may pair with either side.
+  // Never keep same-side pairs such as lanes 0+1 / 1+2 / 6+7 / 7+8.
+  const simultaneousGroups=[];
+  for(const n of firstPart){
+    let g=simultaneousGroups.find(x=>Math.abs(x.timeMs-n.timeMs)<=18);
+    if(!g){g={timeMs:n.timeMs,notes:[]};simultaneousGroups.push(g);}
+    g.notes.push(n);
+  }
+  for(const g of simultaneousGroups){
+    if(g.notes.length!==2)continue;
+    const [a,b]=g.notes;
+    const side=l=>l<4?-1:l>4?1:0;
+    const sa=side(a.lane),sb=side(b.lane);
+    if(sa!==0&&sa===sb){
+      // Keep the note farther from center and move the partner to the opposite side.
+      // This preserves the simultaneous rhythm while making the chord reachable by
+      // left + right thumbs.
+      const keep=Math.abs(a.lane-4)>=Math.abs(b.lane-4)?a:b;
+      const move=keep===a?b:a;
+      move.lane=keep.lane<4?Math.max(5,8-keep.lane):Math.min(3,8-keep.lane);
+    }
+  }
+
   const firstEnd=119500;
   const tail=source.notes.filter(n=>n.timeMs>firstEnd+700).map(n=>({...n}));
   const notes=[...firstPart,...tail].sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
