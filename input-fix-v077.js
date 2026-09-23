@@ -187,17 +187,24 @@
     if(holdPointers.size>0){
       ensure();
       const win=HIT_WINDOWS.good;
-      const hasCandidate=l=>{
-        const list=lanes[l]||[];
-        return list.some(n=>!n.finished&&!n.hit&&!n.missRegistered&&!n.holdStarted&&Math.abs(n.timeMs-whenMs)<=win);
-      };
-      if(!hasCandidate(lane)){
-        for(let d=1;d<=2;d++){
-          const near=[lane-d,lane+d].filter(l=>l>=0&&l<9);
-          const alt=near.find(hasCandidate);
-          if(Number.isInteger(alt)){lane=alt;break;}
-        }
+      const held=[...holdPointers.values()][0];
+      const heldLeft=held&&held.lane<4;
+      const heldRight=held&&held.lane>4;
+      let bestNote=null,bestAbs=Infinity;
+      // While one thumb is holding, the chart intentionally supplies at most one
+      // ordinary tap at a time on the free side. Select that note primarily by timing;
+      // the touch x-position is only a hint. This removes misses caused by radial
+      // target geometry, thumb drift, or iOS retargeting during multi-touch.
+      for(const n of activeNotes){
+        if(!n||n.holdVisualOnly||n.finished||n.hit||n.missRegistered)continue;
+        if(!Number.isInteger(n.lane)||n.lane<0||n.lane>8)continue;
+        if(heldLeft&&n.lane<5)continue;
+        if(heldRight&&n.lane>3)continue;
+        if(held&&n.lane===held.lane)continue;
+        const d=Math.abs(n.timeMs-whenMs);
+        if(d<=win&&d<bestAbs){bestNote=n;bestAbs=d;}
       }
+      if(bestNote)lane=bestNote.lane;
     }
     fastHitLaneAt(lane,whenMs);
   }
