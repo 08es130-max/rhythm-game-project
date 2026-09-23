@@ -38,6 +38,41 @@
   }
   try{flashTarget=lightFlash;}catch(_){window.flashTarget=lightFlash;}
 
+  const holdPointers=new Map();
+
+  function findHoldStart(lane,now){
+    ensure();
+    const list=lanes[lane];
+    if(!list)return null;
+    const win=HIT_WINDOWS.good;
+    let best=null,bestAbs=Infinity;
+    for(const n of list){
+      if(!n.holdVisualOnly||!Number.isFinite(n.holdEndMs)||n.holdStarted||n.missRegistered)continue;
+      const d=Math.abs(now-n.timeMs);
+      if(d<=win&&d<bestAbs){best=n;bestAbs=d;}
+    }
+    return best?{note:best,abs:bestAbs}:null;
+  }
+
+  function startHoldIfPresent(lane,whenMs,pointerId){
+    const now=Number.isFinite(whenMs)?whenMs:currentMs();
+    const found=findHoldStart(lane,now);
+    if(!found)return false;
+    const n=found.note;
+    let grade='good';
+    if(found.abs<=getPerfectWindow())grade='perfect';
+    else if(found.abs<=HIT_WINDOWS.great)grade='great';
+    // Stage 1: record hold state only. End/release judgment and extra scoring are intentionally not added yet.
+    n.holdStarted=true;
+    n.holdPointerId=pointerId;
+    n.holdStartGrade=grade;
+    n.holdStartAt=now;
+    holdPointers.set(pointerId,n);
+    judgeEl.textContent=grade.toUpperCase();
+    playTapSound(grade);
+    return true;
+  }
+
   function fastHitLaneAt(lane,whenMs){
     lightFlash(lane);
     if(!playing||gamePaused)return;
@@ -96,11 +131,21 @@
     if(lane<0)return;
     if(activePointers.has(e.pointerId))return;
     activePointers.add(e.pointerId);
-    fastHitLaneAt(lane,songTimeForEvent(e.timeStamp));
+    const whenMs=songTimeForEvent(e.timeStamp);
+    if(startHoldIfPresent(lane,whenMs,e.pointerId))return;
+    fastHitLaneAt(lane,whenMs);
   }
 
-  function releasePointer(e){activePointers.delete(e.pointerId);}
-  function resetPointers(){activePointers.clear();}
+  function releasePointer(e){
+    activePointers.delete(e.pointerId);
+    // Keep release bookkeeping separate; release/end judgment comes in the next stage.
+    const n=holdPointers.get(e.pointerId);
+    if(n){n.holdReleasedAt=songTimeForEvent(e.timeStamp);holdPointers.delete(e.pointerId);}
+  }
+  function resetPointers(){
+    activePointers.clear();
+    holdPointers.clear();
+  }
 
   document.addEventListener('pointerdown',handlePointerDown,{capture:true,passive:true});
   document.addEventListener('pointerup',releasePointer,{capture:true,passive:true});
@@ -116,6 +161,8 @@
     version:VERSION,
     tapSfxDuringLive:true,
     activePointerCount:()=>activePointers.size,
+    activeHoldCount:()=>holdPointers.size,
+    activeHolds:()=>[...holdPointers.values()].map(n=>({lane:n.lane,start:n.timeMs,end:n.holdEndMs,grade:n.holdStartGrade})),
     reset:resetPointers
   };
 })();
