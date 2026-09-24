@@ -739,13 +739,164 @@ function makeSpicaMasterReferenceChart(source) {
 
   finalChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
+  // POST-SAFETY DENSITY REPAIR.
+  // Previous versions could reintroduce blank pockets because the final hold/two-thumb
+  // guard removed some filler notes. Repair the already-safe chart itself, using only
+  // single taps and the same absolute hold-side rules.
+  const repairedChart=finalChart.map(n=>({...n}));
+
+  function safeLaneForRepair(timeMs,indexSeed=0){
+    const active=repairedChart.find(h=>
+      Number.isFinite(h.holdEndMs)&&
+      timeMs>h.timeMs&&timeMs<h.holdEndMs
+    );
+
+    if(active){
+      // During a hold, only the opposite side is legal.
+      const lane=active.lane<4 ? (indexSeed&1?7:6) :
+                 active.lane>4 ? (indexSeed&1?1:2) :
+                 (indexSeed&1?1:7);
+
+      if(repairedChart.some(n=>
+        n!==active&&!n.holdVisualOnly&&
+        n.timeMs>active.timeMs&&n.timeMs<active.holdEndMs&&
+        Math.abs(n.timeMs-timeMs)<125
+      ))return null;
+      return lane;
+    }
+
+    // Outside holds, alternate left/right so added density stays balanced.
+    return (indexSeed&1)?2:6;
+  }
+
+  function canRepairAt(timeMs){
+    const local=repairedChart.filter(n=>Math.abs(n.timeMs-timeMs)<115);
+    return local.length<2;
+  }
+
+  // A) Eliminate visible blank pockets AFTER every safety filter has run.
+  // Keep max second-half gap around 300ms.
+  let repairPass=0;
+  let repairChanged=true;
+  while(repairChanged&&repairPass++<220){
+    repairChanged=false;
+    repairedChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+    for(let i=1;i<repairedChart.length;i++){
+      const prev=repairedChart[i-1],next=repairedChart[i];
+      if(prev.timeMs<120000||next.timeMs>243926)continue;
+      if(next.timeMs===prev.timeMs)continue;
+      if(next.timeMs-prev.timeMs<=300)continue;
+
+      let timeMs=Math.round((prev.timeMs+next.timeMs)/2);
+      const eighth=60000/165/2;
+      const grid=Math.round((timeMs-120395)/eighth);
+      const snapped=Math.round(120395+grid*eighth);
+      if(snapped>prev.timeMs+115&&snapped<next.timeMs-115)timeMs=snapped;
+
+      if(!canRepairAt(timeMs))continue;
+      const lane=safeLaneForRepair(timeMs,i+repairPass);
+      if(lane===null)continue;
+
+      repairedChart.push({timeMs,lane});
+      repairChanged=true;
+      break;
+    }
+  }
+
+  // B) Raise locally thin stretches too, not just literal gaps.
+  // Inspect overlapping 1.5s windows and bring them to at least 6 starts when safe.
+  const repairWindowMs=1500;
+  const repairStepMs=750;
+  const repairMinStarts=6;
+  const repairGridMs=60000/165/2;
+
+  for(let windowStart=120000;windowStart<243926;windowStart+=repairStepMs){
+    const windowEnd=Math.min(243926,windowStart+repairWindowMs);
+    let count=repairedChart.filter(n=>n.timeMs>=windowStart&&n.timeMs<windowEnd).length;
+    if(count>=repairMinStarts)continue;
+
+    const firstGrid=Math.ceil((windowStart-120395)/repairGridMs);
+    for(let g=firstGrid;count<repairMinStarts;g++){
+      const timeMs=Math.round(120395+g*repairGridMs);
+      if(timeMs<windowStart||timeMs>=windowEnd)continue;
+      if(!canRepairAt(timeMs))continue;
+
+      const lane=safeLaneForRepair(timeMs,g);
+      if(lane===null)continue;
+
+      repairedChart.push({timeMs,lane});
+      count++;
+    }
+  }
+
+  repairedChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+  // FINAL ABSOLUTE VALIDATION after repair:
+  // - no overlapping holds
+  // - hold body gets opposite-side single taps only
+  // - max two starts within 115ms
+  // - true simultaneous pairs must be left+right
+  const outputChart=[];
+  for(const n of repairedChart){
+    const active=outputChart.find(h=>
+      Number.isFinite(h.holdEndMs)&&
+      n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs
+    );
+
+    if(active){
+      if(Number.isFinite(n.holdEndMs))continue;
+      const allowed=
+        active.lane===4 ? n.lane!==4 :
+        active.lane<4 ? n.lane>=5 :
+        n.lane<=3;
+      if(!allowed)continue;
+
+      const nearbyTap=outputChart.some(x=>
+        x!==active&&!x.holdVisualOnly&&
+        x.timeMs>active.timeMs&&x.timeMs<active.holdEndMs&&
+        Math.abs(x.timeMs-n.timeMs)<115
+      );
+      if(nearbyTap)continue;
+    }
+
+    const recent=outputChart.filter(x=>
+      n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115
+    );
+    if(recent.length>=2)continue;
+
+    outputChart.push(n);
+  }
+
+  outputChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+  const outputGroups=[];
+  for(const n of outputChart){
+    let g=outputGroups.find(x=>Math.abs(x.timeMs-n.timeMs)<=18);
+    if(!g){g={timeMs:n.timeMs,notes:[]};outputGroups.push(g);}
+    g.notes.push(n);
+  }
+  for(const g of outputGroups){
+    if(g.notes.length!==2)continue;
+    const [a,b]=g.notes;
+    const sa=sideOf(a.lane),sb=sideOf(b.lane);
+    if(sa===0||sb===0||sa!==sb)continue;
+    if(activeHoldAt(g.timeMs,outputChart))continue;
+
+    const keep=Math.abs(a.lane-4)>=Math.abs(b.lane-4)?a:b;
+    const move=keep===a?b:a;
+    move.lane=keep.lane<4?8:0;
+  }
+
+  outputChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
   return {
     ...source,
     bpm:165,
     difficulty:'MASTER動画転記 / 全曲2本指密度制御 / 長押しあり',
-    noteCount:finalChart.length,
-    judgmentCount:finalChart.length+finalChart.filter(n=>Number.isFinite(n.holdEndMs)).length,
-    notes:finalChart
+    noteCount:outputChart.length,
+    judgmentCount:outputChart.length+outputChart.filter(n=>Number.isFinite(n.holdEndMs)).length,
+    notes:outputChart
   };
 }
 async function loadBuiltInChart(path, fallbackTitle, transform = null) {
