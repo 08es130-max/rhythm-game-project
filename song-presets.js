@@ -590,13 +590,127 @@ function makeSpicaMasterReferenceChart(source) {
 
   protectedChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
+  // SECOND-HALF DENSITY FLOOR.
+  // Check the chart in short 2.5s windows instead of only looking for single long gaps.
+  // If a window is clearly thinner than the established MASTER feel, add only enough
+  // eighth-note taps to bring it up to a modest floor. Existing notes always win.
+  const densityChart=protectedChart.map(n=>({...n}));
+  const densityWindowMs=2500;
+  const densityMinStarts=7;
+  const densityGridMs=60000/165/2;
+  for(let windowStart=120000;windowStart<243926;windowStart+=densityWindowMs){
+    const windowEnd=Math.min(243926,windowStart+densityWindowMs);
+    let count=densityChart.filter(n=>n.timeMs>=windowStart&&n.timeMs<windowEnd).length;
+    if(count>=densityMinStarts)continue;
+
+    const firstGrid=Math.ceil((windowStart-120395)/densityGridMs);
+    for(let g=firstGrid;count<densityMinStarts;g++){
+      const timeMs=Math.round(120395+g*densityGridMs);
+      if(timeMs>=windowEnd)break;
+      if(densityChart.some(n=>Math.abs(n.timeMs-timeMs)<115))continue;
+
+      const active=densityChart.find(h=>
+        Number.isFinite(h.holdEndMs)&&
+        timeMs>h.timeMs&&timeMs<h.holdEndMs
+      );
+
+      let lane=(g&1)?2:6;
+      if(active){
+        const heldLeft=active.lane<4;
+        const heldRight=active.lane>4;
+        if(heldLeft)lane=7;
+        else if(heldRight)lane=1;
+        else lane=(g&1)?1:7;
+
+        // One held thumb + one free-thumb tap only.
+        if(densityChart.some(n=>
+          n!==active&&!n.holdVisualOnly&&
+          n.timeMs>active.timeMs&&n.timeMs<active.holdEndMs&&
+          Math.abs(n.timeMs-timeMs)<125
+        ))continue;
+      }
+
+      densityChart.push({timeMs,lane});
+      count++;
+    }
+  }
+
+  densityChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+  // FINAL SIMULTANEOUS-PAIR RULE.
+  // Run across the entire completed chart, including notes added in the second half.
+  // Every true simultaneous pair must be left+right (center may pair with one side).
+  const finalGroups=[];
+  for(const n of densityChart){
+    let g=finalGroups.find(x=>Math.abs(x.timeMs-n.timeMs)<=18);
+    if(!g){g={timeMs:n.timeMs,notes:[]};finalGroups.push(g);}
+    g.notes.push(n);
+  }
+  for(const g of finalGroups){
+    if(g.notes.length!==2)continue;
+    const [a,b]=g.notes;
+    const sa=sideOf(a.lane),sb=sideOf(b.lane);
+    if(sa===0||sb===0||sa!==sb)continue;
+
+    // Simultaneous ordinary taps are never rewritten inside a running hold.
+    if(activeHoldAt(g.timeMs,densityChart))continue;
+
+    const keep=Math.abs(a.lane-4)>=Math.abs(b.lane-4)?a:b;
+    const move=keep===a?b:a;
+    const candidatesOpp=keep.lane<4?[8,7,6,5]:[0,1,2,3];
+    const freeLane=candidatesOpp.find(lane=>
+      !g.notes.some(n=>n!==move&&n.lane===lane)
+    );
+    if(Number.isFinite(freeLane))move.lane=freeLane;
+  }
+
+  densityChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+  // Re-run the absolute hold/two-thumb guard AFTER density and chord corrections.
+  const finalChart=[];
+  for(const n of densityChart){
+    const active=finalChart.find(h=>
+      Number.isFinite(h.holdEndMs)&&
+      n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs
+    );
+
+    if(active){
+      if(Number.isFinite(n.holdEndMs))continue;
+      const heldLeft=active.lane<4;
+      const heldRight=active.lane>4;
+      const allowed=
+        active.lane===4 ? n.lane!==4 :
+        heldLeft ? n.lane>=5 :
+        heldRight ? n.lane<=3 :
+        false;
+      if(!allowed)continue;
+
+      const nearbyTap=finalChart.some(x=>
+        x!==active&&!x.holdVisualOnly&&
+        x.timeMs>active.timeMs&&x.timeMs<active.holdEndMs&&
+        Math.abs(x.timeMs-n.timeMs)<115
+      );
+      if(nearbyTap)continue;
+    }
+
+    const recent=finalChart.filter(x=>
+      n.timeMs-x.timeMs>=0&&
+      n.timeMs-x.timeMs<115
+    );
+    if(recent.length>=2)continue;
+
+    finalChart.push(n);
+  }
+
+  finalChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
   return {
     ...source,
     bpm:165,
     difficulty:'MASTER動画転記 / 全曲2本指密度制御 / 長押しあり',
-    noteCount:protectedChart.length,
-    judgmentCount:protectedChart.length+protectedChart.filter(n=>Number.isFinite(n.holdEndMs)).length,
-    notes:protectedChart
+    noteCount:finalChart.length,
+    judgmentCount:finalChart.length+finalChart.filter(n=>Number.isFinite(n.holdEndMs)).length,
+    notes:finalChart
   };
 }
 async function loadBuiltInChart(path, fallbackTitle, transform = null) {
