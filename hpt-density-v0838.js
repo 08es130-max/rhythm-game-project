@@ -2,6 +2,7 @@
 (function(){
   const TARGET=1220;
   const AUDIO_KEY='happy-party-train';
+  const SIF_FIRST_END_MS=102353;
 
   function makeChart(){
     const source=window.makeHappyPartyTrainChartV0838?.();
@@ -17,7 +18,7 @@
     // which keeps the characteristic simultaneous hits and avoids creating odd half-chords.
     const removable=[];
     source.notes.forEach((n,i)=>{
-      if(groups.get(n.timeMs)?.length===1)removable.push(i);
+      if(n.timeMs>SIF_FIRST_END_MS&&groups.get(n.timeMs)?.length===1)removable.push(i);
     });
     const excess=Math.min(source.notes.length-TARGET,removable.length);
     const remove=new Set();
@@ -35,7 +36,7 @@
     }
 
     const notes=source.notes.filter((_,i)=>!remove.has(i));
-    return {...source,difficulty:'EXPERT / SIF参考・二本指向け',noteCount:notes.length,notes};
+    return {...source,difficulty:'EXPERT / SIF本家1番再現・二本指向け',noteCount:notes.length,notes};
   }
 
   async function prepare(){
