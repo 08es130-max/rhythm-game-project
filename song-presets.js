@@ -314,6 +314,16 @@ function makeSpicaMasterReferenceChart(source) {
       }));
   }
 
+  // Replace the sparse detector tail immediately after the first chorus.
+  // The detector becomes very thin after ~72.8s (including an ~8.8s blank around
+  // 109.8-118.6s). Reuse proven dense MASTER material here instead of preserving that
+  // sparse tail. This is the section the actual song progression reaches before 120s.
+  const midContinuation=shiftedSection(
+    denseVerseStart,
+    49787,
+    denseVerseEnd+180
+  ).filter(n=>n.timeMs<120300);
+
   // Verse 2 through its chorus: same proven MASTER flow as verse 1.
   const secondVerse=shiftedSection(denseVerseStart,denseVerseEnd,120395);
 
@@ -333,7 +343,10 @@ function makeSpicaMasterReferenceChart(source) {
     })
     .map(n=>({...n}));
 
-  const candidates=[...safeFirstPart,...secondVerse,...finalBuild,...finalChorus,...accents]
+  // Keep only the verified dense portion of the original transcription before the
+  // mid-song continuation. Do NOT carry the sparse 72.8-119s detector tail forward.
+  const denseOriginal=safeFirstPart.filter(n=>n.timeMs<=denseVerseEnd);
+  const candidates=[...denseOriginal,...midContinuation,...secondVerse,...finalBuild,...finalChorus,...accents]
     .sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
   // Physical two-thumb density guard:
@@ -434,7 +447,7 @@ function makeSpicaMasterReferenceChart(source) {
     keepScanning=false;
     for(let i=1;i<full.length;i++){
       const prev=full[i-1],next=full[i];
-      if(prev.timeMs<120000||next.timeMs>243926)continue;
+      if(prev.timeMs<72800||next.timeMs>243926)continue;
       if(next.timeMs===prev.timeMs)continue;
       const gap=next.timeMs-prev.timeMs;
       if(gap<=420)continue;
@@ -625,7 +638,7 @@ function makeSpicaMasterReferenceChart(source) {
     return lane;
   }
 
-  for(let windowStart=120000;windowStart<243926;windowStart+=densityStepMs){
+  for(let windowStart=72800;windowStart<243926;windowStart+=densityStepMs){
     const windowEnd=Math.min(243926,windowStart+densityWindowMs);
     let count=densityChart.filter(n=>n.timeMs>=windowStart&&n.timeMs<windowEnd).length;
     if(count>=densityMinStarts)continue;
@@ -651,7 +664,7 @@ function makeSpicaMasterReferenceChart(source) {
     densityGapChanged=false;
     for(let i=1;i<densityChart.length;i++){
       const prev=densityChart[i-1],next=densityChart[i];
-      if(prev.timeMs<120000||next.timeMs>243926)continue;
+      if(prev.timeMs<72800||next.timeMs>243926)continue;
       if(next.timeMs===prev.timeMs)continue;
       if(next.timeMs-prev.timeMs<=330)continue;
 
@@ -784,7 +797,7 @@ function makeSpicaMasterReferenceChart(source) {
 
     for(let i=1;i<repairedChart.length;i++){
       const prev=repairedChart[i-1],next=repairedChart[i];
-      if(prev.timeMs<120000||next.timeMs>243926)continue;
+      if(prev.timeMs<72800||next.timeMs>243926)continue;
       if(next.timeMs===prev.timeMs)continue;
       if(next.timeMs-prev.timeMs<=300)continue;
 
@@ -811,7 +824,7 @@ function makeSpicaMasterReferenceChart(source) {
   const repairMinStarts=6;
   const repairGridMs=60000/165/2;
 
-  for(let windowStart=120000;windowStart<243926;windowStart+=repairStepMs){
+  for(let windowStart=72800;windowStart<243926;windowStart+=repairStepMs){
     const windowEnd=Math.min(243926,windowStart+repairWindowMs);
     let count=repairedChart.filter(n=>n.timeMs>=windowStart&&n.timeMs<windowEnd).length;
     if(count>=repairMinStarts)continue;
