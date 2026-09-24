@@ -1,4 +1,4 @@
-// Ver.0.8.55: unified high-resolution six-button home menu.
+// Ver.0.8.215: unified high-resolution six-button home menu; story/lounge visual cohesion.
 (function(){
   'use strict';
 
@@ -62,6 +62,18 @@
         filter:drop-shadow(0 7px 13px rgba(0,0,0,.23))!important;
         image-rendering:auto!important;
         pointer-events:none!important;
+      }
+      /* Ver.0.8.215: visually integrate the two labels that sat slightly low in their PNGs.
+         Keep the artwork itself unchanged; only normalize perceived scale/vertical balance. */
+      #homeScreen #homeStoryBtn>.home-menu-art{
+        transform:translateY(-3.5%) scale(1.04)!important;
+        transform-origin:center center!important;
+        filter:drop-shadow(0 6px 11px rgba(0,0,0,.21))!important;
+      }
+      #homeScreen #homeInteractionBtn>.home-menu-art{
+        transform:translateY(-4%) scale(1.045)!important;
+        transform-origin:center center!important;
+        filter:drop-shadow(0 6px 11px rgba(0,0,0,.21))!important;
       }
       #homeScreen .home-menu-interaction{
         padding:0!important;
