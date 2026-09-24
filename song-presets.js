@@ -591,47 +591,82 @@ function makeSpicaMasterReferenceChart(source) {
   protectedChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
   // SECOND-HALF DENSITY FLOOR.
-  // Check the chart in short 2.5s windows instead of only looking for single long gaps.
-  // If a window is clearly thinner than the established MASTER feel, add only enough
-  // eighth-note taps to bring it up to a modest floor. Existing notes always win.
+  // 0.8.208 used only 7 starts / 2.5s, which was still visibly sparse.
+  // Match the established first-half feel with overlapping 2.0s windows stepped
+  // every 1.0s, targeting at least 8 starts whenever two-thumb safety allows.
   const densityChart=protectedChart.map(n=>({...n}));
-  const densityWindowMs=2500;
-  const densityMinStarts=7;
+  const densityWindowMs=2000;
+  const densityStepMs=1000;
+  const densityMinStarts=8;
   const densityGridMs=60000/165/2;
-  for(let windowStart=120000;windowStart<243926;windowStart+=densityWindowMs){
+
+  function canPlaceDensityTap(timeMs){
+    if(densityChart.some(n=>Math.abs(n.timeMs-timeMs)<115))return null;
+
+    const active=densityChart.find(h=>
+      Number.isFinite(h.holdEndMs)&&
+      timeMs>h.timeMs&&timeMs<h.holdEndMs
+    );
+
+    let lane=Math.round((timeMs-120395)/densityGridMs)&1?2:6;
+    if(active){
+      const heldLeft=active.lane<4;
+      const heldRight=active.lane>4;
+      if(heldLeft)lane=7;
+      else if(heldRight)lane=1;
+      else lane=(Math.round((timeMs-120395)/densityGridMs)&1)?1:7;
+
+      if(densityChart.some(n=>
+        n!==active&&!n.holdVisualOnly&&
+        n.timeMs>active.timeMs&&n.timeMs<active.holdEndMs&&
+        Math.abs(n.timeMs-timeMs)<125
+      ))return null;
+    }
+    return lane;
+  }
+
+  for(let windowStart=120000;windowStart<243926;windowStart+=densityStepMs){
     const windowEnd=Math.min(243926,windowStart+densityWindowMs);
     let count=densityChart.filter(n=>n.timeMs>=windowStart&&n.timeMs<windowEnd).length;
     if(count>=densityMinStarts)continue;
 
     const firstGrid=Math.ceil((windowStart-120395)/densityGridMs);
-    for(let g=firstGrid;count<densityMinStarts;g++){
+    const lastGrid=Math.floor((windowEnd-120395)/densityGridMs);
+    for(let g=firstGrid;g<=lastGrid&&count<densityMinStarts;g++){
       const timeMs=Math.round(120395+g*densityGridMs);
-      if(timeMs>=windowEnd)break;
-      if(densityChart.some(n=>Math.abs(n.timeMs-timeMs)<115))continue;
-
-      const active=densityChart.find(h=>
-        Number.isFinite(h.holdEndMs)&&
-        timeMs>h.timeMs&&timeMs<h.holdEndMs
-      );
-
-      let lane=(g&1)?2:6;
-      if(active){
-        const heldLeft=active.lane<4;
-        const heldRight=active.lane>4;
-        if(heldLeft)lane=7;
-        else if(heldRight)lane=1;
-        else lane=(g&1)?1:7;
-
-        // One held thumb + one free-thumb tap only.
-        if(densityChart.some(n=>
-          n!==active&&!n.holdVisualOnly&&
-          n.timeMs>active.timeMs&&n.timeMs<active.holdEndMs&&
-          Math.abs(n.timeMs-timeMs)<125
-        ))continue;
-      }
-
+      if(timeMs<windowStart||timeMs>=windowEnd)continue;
+      const lane=canPlaceDensityTap(timeMs);
+      if(lane===null)continue;
       densityChart.push({timeMs,lane});
       count++;
+    }
+  }
+
+  // Also remove visible blank pockets directly. Any second-half gap over 330ms is
+  // repeatedly split, but only through the same two-thumb-safe placement helper.
+  densityChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+  let densityGapFixes=0;
+  let densityGapChanged=true;
+  while(densityGapChanged&&densityGapFixes<180){
+    densityGapChanged=false;
+    for(let i=1;i<densityChart.length;i++){
+      const prev=densityChart[i-1],next=densityChart[i];
+      if(prev.timeMs<120000||next.timeMs>243926)continue;
+      if(next.timeMs===prev.timeMs)continue;
+      if(next.timeMs-prev.timeMs<=330)continue;
+
+      const middle=(prev.timeMs+next.timeMs)/2;
+      const grid=Math.round((middle-120395)/densityGridMs);
+      let timeMs=Math.round(120395+grid*densityGridMs);
+      if(timeMs<=prev.timeMs+115||timeMs>=next.timeMs-115)timeMs=Math.round(middle);
+
+      const lane=canPlaceDensityTap(timeMs);
+      if(lane===null)continue;
+      densityChart.push({timeMs,lane});
+      densityChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      densityGapFixes++;
+      densityGapChanged=true;
+      break;
     }
   }
 
