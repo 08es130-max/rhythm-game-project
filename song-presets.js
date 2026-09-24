@@ -422,42 +422,58 @@ function makeSpicaMasterReferenceChart(source) {
     }
   }
 
-  // Gap smoother: remove visible "nothing falls for a moment" pockets without
-  // touching already-busy phrases. Repeatedly split only gaps wider than 520ms.
-  // Inserted notes sit in the middle of an empty interval, so they cannot create
-  // chord+tap bursts or three-finger requirements.
+  // Gap smoother: scan the ENTIRE second half until no visible blank pocket remains.
+  // 0.8.204 only filled six gaps, which left several empty spots later in the song.
+  // Here every gap wider than 420ms is split at the nearest eighth-note position.
+  // The normal two-thumb/hold safety rules are rechecked for every inserted note.
   full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-  let gapPass=0;
-  while(gapPass++<6){
-    let changed=false;
+  const gapGridMs=60000/165/2;
+  let gapInsertions=0;
+  let keepScanning=true;
+  while(keepScanning&&gapInsertions<140){
+    keepScanning=false;
     for(let i=1;i<full.length;i++){
       const prev=full[i-1],next=full[i];
-      if(prev.timeMs<120000||next.timeMs>240300)continue;
+      if(prev.timeMs<120000||next.timeMs>243926)continue;
+      if(next.timeMs===prev.timeMs)continue;
       const gap=next.timeMs-prev.timeMs;
-      if(gap<=520)continue;
+      if(gap<=420)continue;
 
-      const timeMs=Math.round((prev.timeMs+next.timeMs)/2);
+      const middle=(prev.timeMs+next.timeMs)/2;
+      const gridIndex=Math.round((middle-120395)/gapGridMs);
+      let timeMs=Math.round(120395+gridIndex*gapGridMs);
+      if(timeMs<=prev.timeMs+130||timeMs>=next.timeMs-130){
+        timeMs=Math.round(middle);
+      }
+      if(timeMs<=prev.timeMs+115||timeMs>=next.timeMs-115)continue;
+
+      const local=full.filter(n=>Math.abs(n.timeMs-timeMs)<115);
+      if(local.length>=2)continue;
+
       const active=full.find(n=>
         Number.isFinite(n.holdEndMs)&&
         timeMs>n.timeMs&&timeMs<n.holdEndMs
       );
-      let lane=(i+gapPass)%2?2:6;
+
+      let lane=((gridIndex+gapInsertions)&1)?2:6;
       if(active){
         const heldLeft=active.lane<4;
         const heldRight=active.lane>4;
         if(heldLeft)lane=7;
         else if(heldRight)lane=1;
-        else lane=(i%2)?1:7;
+        else lane=((gridIndex+gapInsertions)&1)?1:7;
+
+        // A hold already consumes one thumb. Never place the filler on the held side,
+        // and never place it near another ordinary tap.
+        if(full.some(n=>n!==active&&!n.holdVisualOnly&&Math.abs(n.timeMs-timeMs)<125))continue;
       }
 
-      const local=full.filter(n=>Math.abs(n.timeMs-timeMs)<115);
-      if(local.length>=2)continue;
       full.push({timeMs,lane});
       full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-      changed=true;
+      gapInsertions++;
+      keepScanning=true;
       break;
     }
-    if(!changed)break;
   }
 
   // Final cadence: a short deliberate pattern, still within two-thumb capacity.
