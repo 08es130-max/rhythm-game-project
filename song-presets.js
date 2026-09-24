@@ -499,16 +499,22 @@ function makeSpicaMasterReferenceChart(source) {
   full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
   // Near-simultaneous ergonomic cleanup.
-  // Keep the chart shape intact and only touch ordinary-note pairs that are close
-  // enough to feel almost simultaneous (115-190ms) AND biased to the same side.
-  // Prefer mirroring the later note to the opposite hand; only add a small delay
-  // when mirroring would collide with another nearby note.
+  // IMPORTANT: never touch a note that falls inside ANY active hold interval.
+  // Hold ergonomics are a stronger invariant than near-simultaneous cleanup.
   const sideOf=lane=>lane<4?-1:lane>4?1:0;
+  const activeHoldAt=(timeMs,notes)=>notes.find(n=>
+    Number.isFinite(n.holdEndMs)&&
+    timeMs>n.timeMs&&timeMs<n.holdEndMs
+  )||null;
+
   for(let i=1;i<full.length;i++){
     const prev=full[i-1],cur=full[i];
     const dt=cur.timeMs-prev.timeMs;
     if(dt<115||dt>190)continue;
     if(prev.holdVisualOnly||cur.holdVisualOnly)continue;
+
+    // Do not alter either note if a hold is active at either timestamp.
+    if(activeHoldAt(prev.timeMs,full)||activeHoldAt(cur.timeMs,full))continue;
 
     const ps=sideOf(prev.lane),cs=sideOf(cur.lane);
     if(ps===0||cs===0||ps!==cs)continue;
@@ -525,9 +531,8 @@ function makeSpicaMasterReferenceChart(source) {
       continue;
     }
 
-    // If the opposite lane is already occupied, gently separate the later note.
-    // Keep the adjustment small enough to preserve the musical phrase.
     const shifted=cur.timeMs+55;
+    if(activeHoldAt(shifted,full))continue;
     const shiftBusy=full.some((n,j)=>
       j!==i&&
       Math.abs(n.timeMs-shifted)<95
@@ -537,13 +542,61 @@ function makeSpicaMasterReferenceChart(source) {
 
   full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
+  // FINAL HOLD INVARIANT PASS.
+  // These rules are absolute and run after every other chart edit:
+  // 1) no second hold may overlap an active hold;
+  // 2) while a hold is active, ordinary notes may appear only on the opposite side;
+  // 3) only one ordinary tap may exist in each 115ms window during a hold;
+  // 4) never place an ordinary note on the held lane / held side.
+  const protectedChart=[];
+  for(const n of full){
+    const active=protectedChart.find(h=>
+      Number.isFinite(h.holdEndMs)&&
+      n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs
+    );
+
+    if(active){
+      // A nested/overlapping hold is never allowed.
+      if(Number.isFinite(n.holdEndMs))continue;
+
+      const heldLeft=active.lane<4;
+      const heldRight=active.lane>4;
+      const allowed=
+        active.lane===4 ? n.lane!==4 :
+        heldLeft ? n.lane>=5 :
+        heldRight ? n.lane<=3 :
+        false;
+      if(!allowed)continue;
+
+      const nearbyTap=protectedChart.some(x=>
+        x!==active&&
+        !x.holdVisualOnly&&
+        x.timeMs>active.timeMs&&
+        x.timeMs<active.holdEndMs&&
+        Math.abs(x.timeMs-n.timeMs)<115
+      );
+      if(nearbyTap)continue;
+    }
+
+    // Outside holds, still preserve the global two-start / 115ms capacity.
+    const recent=protectedChart.filter(x=>
+      n.timeMs-x.timeMs>=0&&
+      n.timeMs-x.timeMs<115
+    );
+    if(recent.length>=2)continue;
+
+    protectedChart.push(n);
+  }
+
+  protectedChart.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
   return {
     ...source,
     bpm:165,
     difficulty:'MASTER動画転記 / 全曲2本指密度制御 / 長押しあり',
-    noteCount:full.length,
-    judgmentCount:full.length+full.filter(n=>Number.isFinite(n.holdEndMs)).length,
-    notes:full
+    noteCount:protectedChart.length,
+    judgmentCount:protectedChart.length+protectedChart.filter(n=>Number.isFinite(n.holdEndMs)).length,
+    notes:protectedChart
   };
 }
 async function loadBuiltInChart(path, fallbackTitle, transform = null) {
