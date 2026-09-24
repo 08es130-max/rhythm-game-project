@@ -631,7 +631,7 @@ function makeSpicaMasterReferenceChart(source) {
     if(count>=densityMinStarts)continue;
 
     const firstGrid=Math.ceil((windowStart-120395)/densityGridMs);
-    const lastGrid=Math.floor((windowEnd-120395)/densityGridMs);
+    const lastGrid=Math.floor(((windowEnd-1)-120395)/densityGridMs);
     for(let g=firstGrid;g<=lastGrid&&count<densityMinStarts;g++){
       const timeMs=Math.round(120395+g*densityGridMs);
       if(timeMs<windowStart||timeMs>=windowEnd)continue;
@@ -817,7 +817,8 @@ function makeSpicaMasterReferenceChart(source) {
     if(count>=repairMinStarts)continue;
 
     const firstGrid=Math.ceil((windowStart-120395)/repairGridMs);
-    for(let g=firstGrid;count<repairMinStarts;g++){
+    const lastGrid=Math.floor(((windowEnd-1)-120395)/repairGridMs);
+    for(let g=firstGrid;g<=lastGrid&&count<repairMinStarts;g++){
       const timeMs=Math.round(120395+g*repairGridMs);
       if(timeMs<windowStart||timeMs>=windowEnd)continue;
       if(!canRepairAt(timeMs))continue;
