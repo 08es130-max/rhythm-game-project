@@ -498,6 +498,45 @@ function makeSpicaMasterReferenceChart(source) {
 
   full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
+  // Near-simultaneous ergonomic cleanup.
+  // Keep the chart shape intact and only touch ordinary-note pairs that are close
+  // enough to feel almost simultaneous (115-190ms) AND biased to the same side.
+  // Prefer mirroring the later note to the opposite hand; only add a small delay
+  // when mirroring would collide with another nearby note.
+  const sideOf=lane=>lane<4?-1:lane>4?1:0;
+  for(let i=1;i<full.length;i++){
+    const prev=full[i-1],cur=full[i];
+    const dt=cur.timeMs-prev.timeMs;
+    if(dt<115||dt>190)continue;
+    if(prev.holdVisualOnly||cur.holdVisualOnly)continue;
+
+    const ps=sideOf(prev.lane),cs=sideOf(cur.lane);
+    if(ps===0||cs===0||ps!==cs)continue;
+
+    const mirrored=8-cur.lane;
+    const mirrorBusy=full.some((n,j)=>
+      j!==i&&
+      Math.abs(n.timeMs-cur.timeMs)<95&&
+      n.lane===mirrored
+    );
+
+    if(!mirrorBusy){
+      cur.lane=mirrored;
+      continue;
+    }
+
+    // If the opposite lane is already occupied, gently separate the later note.
+    // Keep the adjustment small enough to preserve the musical phrase.
+    const shifted=cur.timeMs+55;
+    const shiftBusy=full.some((n,j)=>
+      j!==i&&
+      Math.abs(n.timeMs-shifted)<95
+    );
+    if(!shiftBusy)cur.timeMs=shifted;
+  }
+
+  full.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
   return {
     ...source,
     bpm:165,
