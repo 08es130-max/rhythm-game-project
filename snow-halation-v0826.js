@@ -1,4 +1,4 @@
-// Ver.0.8.227: Snow halation hold density raised toward HPT level.
+// Ver.0.8.229: Snow halation rebuilt from song-section rhythm, with early/late holds and chorus density lifts.
 (function(){
   'use strict';
   const TITLE='Snow halation';
@@ -20,115 +20,242 @@
     const chord=(t,a,b)=>{add(t,a);if(a!==b)add(t,b);};
     const at=(bar,s)=>START+(bar*16+s)*q;
     const sec=(a,b,fn)=>{for(let bar=a;bar<b;bar++)fn(bar,s=>at(bar,s));};
+    const place=(t,subs,lanes)=>subs.forEach((s,i)=>add(t(s),lanes[i]));
+    const chordAt=(t,s,a,b)=>chord(t(s),a,b);
 
-    // Piano/bell intro: sparse, symmetrical sparkle.
-    sec(0,8,(bar,t)=>{
-      const k=bar%4;
-      if(k===0){add(t(0),4);add(t(6),2);add(t(12),6);}
-      if(k===1){add(t(0),1);add(t(4),3);add(t(10),5);add(t(14),7);}
-      if(k===2){chord(t(0),1,7);add(t(6),4);add(t(12),2);}
-      if(k===3){add(t(0),7);add(t(4),5);add(t(8),3);chord(t(14),0,8);}
+    // Intro 0-9: piano/bell. Sparse beginnings, held tones and small sparkling pickups.
+    sec(0,9,(bar,t)=>{
+      const k=bar;
+      if(k===0){place(t,[0,8],[4,6]);}
+      if(k===1){place(t,[0,6,12],[1,4,7]);}
+      if(k===2){place(t,[0,4,10,14],[7,5,3,1]);}
+      if(k===3){chordAt(t,0,1,7);place(t,[6,12],[4,2]);}
+      if(k===4){place(t,[0,5,11,15],[2,4,6,4]);}
+      if(k===5){place(t,[0,4,8,13],[8,6,3,1]);}
+      if(k===6){chordAt(t,0,0,8);place(t,[7,12],[4,5]);}
+      if(k===7){place(t,[0,3,9,14],[1,3,6,7]);}
+      if(k===8){place(t,[0,2,6,10,14],[2,4,6,5,3]);chordAt(t,15,1,7);}
     });
 
-    // Verse 1: melody-led, light off-beats.
-    const vSubs=[[0,4,7,11,14],[0,3,6,10,13,15],[0,2,5,9,12,15],[0,4,8,11,15],[0,1,5,8,12,14],[0,3,7,10,13,15]];
-    const vLanes=[[1,3,5,6,2],[7,5,3,1,4,6],[2,4,6,5,3,1],[6,4,2,5,7],[1,3,5,7,4,2],[7,4,1,3,6,5]];
-    sec(8,34,(bar,t)=>{
-      const k=(bar-8)%6;vSubs[k].forEach((s,i)=>add(t(s),vLanes[k][i]));
-      if(k===5)chord(t(14),1,7);
+    // Verse 1A 9-22: acoustic-guitar feel. Follow vocal syllables with gaps; no fixed pulse.
+    const aSubs=[
+      [0,4,7,11,14],[0,3,6,10,13,15],[0,2,5,9,12],[0,1,5,8,12,15],
+      [0,4,6,10,14],[0,3,7,11,15],[0,2,6,9,13],[0,1,4,8,11,15],
+      [0,5,9,12,15],[0,3,6,8,12,14],[0,2,5,10,13,15],[0,4,7,11,14]
+    ];
+    const aLane=[
+      [1,3,5,6,2],[7,5,3,1,4,6],[2,4,6,5,3],[6,4,2,5,7,3],
+      [0,3,5,7,4],[8,5,2,4,6],[1,4,7,5,2],[7,4,1,3,6,2],
+      [2,5,7,4,1],[6,3,1,4,7,2],[0,3,6,4,2,7],[8,5,3,1,4]
+    ];
+    sec(9,22,(bar,t)=>{
+      const k=(bar-9)%aSubs.length;place(t,aSubs[k],aLane[k]);
+      if(bar===15)chordAt(t,15,2,6);
+      if(bar===21)chordAt(t,14,1,7);
     });
 
-    // Pre-chorus: rising emotion and alternating hands.
-    sec(34,46,(bar,t)=>{
-      const k=(bar-34)%4,flip=k>=2;
-      if(k%2===0)[0,3,6,9,12,15].forEach((s,i)=>add(t(s),flip?[7,5,6,3,2,1][i]:[1,3,2,5,6,7][i]));
-      else {add(t(0),flip?7:1);add(t(4),4);chord(t(8),2,6);add(t(12),flip?3:5);add(t(15),4);}
+    // Verse 1B 22-31: band comes in / 4-kick. More steady quarter/eighth pulse, but still melodic.
+    sec(22,31,(bar,t)=>{
+      const k=(bar-22)%5;
+      if(k===0){place(t,[0,4,8,12,15],[1,3,5,7,4]);}
+      if(k===1){place(t,[0,2,6,8,11,14],[7,5,3,4,6,2]);}
+      if(k===2){place(t,[0,4,7,10,12,15],[2,4,7,5,3,1]);}
+      if(k===3){place(t,[0,3,6,8,12,14],[6,4,1,3,5,7]);}
+      if(k===4){chordAt(t,0,1,7);place(t,[4,7,11,15],[4,6,2,4]);}
     });
 
-    // Chorus 1: bright wide chords and flowing inner answers.
-    sec(46,70,(bar,t)=>{
-      const k=(bar-46)%8;
-      const P=[
-        ()=>{chord(t(0),0,8);[3,6,9,12,15].forEach((s,i)=>add(t(s),[2,4,6,5,3][i]));},
-        ()=>{[0,2,5,8,11,14].forEach((s,i)=>add(t(s),[1,3,5,7,4,2][i]));},
-        ()=>{chord(t(0),1,7);add(t(4),4);add(t(7),6);add(t(10),2);chord(t(14),2,6);},
-        ()=>{[0,1,4,7,10,13,15].forEach((s,i)=>add(t(s),[7,5,3,1,4,6,2][i]));},
-        ()=>{chord(t(0),2,6);[3,5,8,11,14].forEach((s,i)=>add(t(s),[4,1,5,7,3][i]));},
-        ()=>{[0,2,4,8,10,12,15].forEach((s,i)=>add(t(s),[0,2,4,6,8,5,3][i]));},
-        ()=>{chord(t(0),3,5);add(t(3),1);add(t(6),7);add(t(9),4);add(t(12),2);add(t(15),6);},
-        ()=>{[0,3,6,9,12,15].forEach((s,i)=>add(t(s),[1,4,7,5,2,4][i]));}
-      ];P[k]();
+    // Pre-chorus 31-39: half beat -> 8 beat. Fingers start getting busier toward the chorus.
+    sec(31,35,(bar,t)=>{
+      const k=bar-31;
+      const subs=[[0,6,10,14],[0,4,8,12,15],[0,5,9,13],[0,3,7,11,15]][k];
+      const lanes=[[1,4,7,3],[7,5,3,1,4],[2,4,6,3],[6,4,2,5,7]][k];
+      place(t,subs,lanes);
     });
-
-    // Bridge / instrumental: let the arrangement breathe.
-    sec(70,84,(bar,t)=>{
-      const k=(bar-70)%4;
-      [[0,6,12],[0,4,10,15],[0,8,14],[0,3,9,15]][k].forEach((s,i)=>add(t(s),[[0,4,8],[7,4,1,5],[1,4,7],[2,5,3,7]][k][i]));
-    });
-
-    // Verse 2: same melodic role, different lane/rhythm vocabulary.
-    sec(84,110,(bar,t)=>{
-      const k=(bar-84)%7;
-      const subs=[[0,3,6,10,13,15],[0,2,5,8,12,14],[0,1,4,7,11,15],[0,4,6,9,13,15],[0,2,6,10,12,15],[0,1,5,9,13,15],[0,3,7,11,14]][k];
-      const lanes=[[2,5,7,4,1,6],[6,3,1,4,7,2],[0,3,5,7,4,2],[8,5,2,4,6,1],[1,4,7,5,2,6],[7,4,1,3,6,2],[2,6,3,5,1]][k];
-      subs.forEach((s,i)=>add(t(s),lanes[i]));
-      if(k===6)chord(t(15),1,7);
-    });
-
-    // Pre-chorus 2: denser than the first.
-    sec(110,122,(bar,t)=>{
+    sec(35,39,(bar,t)=>{
       const flip=bar&1;
-      [0,2,4,6,9,11,13,15].forEach((s,i)=>add(t(s),flip?[7,5,3,1,4,6,2,4][i]:[1,3,5,7,4,2,6,4][i]));
-      if(bar%4===3)chord(t(8),0,8);
+      place(t,[0,2,4,6,9,11,13,15],flip?[7,5,3,1,4,6,2,4]:[1,3,5,7,4,2,6,4]);
+      if(bar===38)chordAt(t,15,0,8);
     });
 
-    // Chorus 2.
-    sec(122,146,(bar,t)=>{
-      const k=(bar-122)%7;
-      const subs=[[0,2,4,7,9,12,15],[0,1,3,6,8,11,14],[0,3,5,8,10,13,15],[0,2,5,7,10,12,15],[0,1,4,6,9,13,15],[0,2,4,8,10,14],[0,3,6,9,12,15]][k];
-      const lanes=[[0,2,4,6,5,3,8],[1,3,5,7,4,2,6],[8,6,4,2,3,5,1],[2,4,7,5,3,1,6],[7,5,3,1,4,6,2],[0,3,6,8,5,2],[2,6,3,5,1,7]][k];
-      subs.forEach((s,i)=>add(t(s),lanes[i]));if(k===0||k===4)chord(t(15),1,7);
+    // Chorus 1 39-59: much denser; phrase endings get chords, middles get quick cross-hand movement.
+    const c1Subs=[
+      [0,2,4,7,9,12,15],[0,1,3,6,8,11,14],[0,3,5,7,10,12,15],
+      [0,2,5,8,10,13,15],[0,1,4,6,9,11,14,15],[0,2,4,7,10,12,15],
+      [0,3,6,8,11,14],[0,1,3,5,8,10,13,15],[0,2,5,7,9,12,14],
+      [0,1,4,7,10,13,15]
+    ];
+    const c1Lane=[
+      [0,2,4,6,5,3,8],[1,3,5,7,4,2,6],[8,6,4,2,3,5,1],
+      [2,4,7,5,3,1,6],[7,5,3,1,4,6,2,4],[0,3,6,8,5,2,4],
+      [1,4,7,5,2,6],[7,4,1,3,6,2,5,4],[2,5,8,6,3,1,4],
+      [6,3,0,2,5,7,4]
+    ];
+    sec(39,59,(bar,t)=>{
+      const k=(bar-39)%10;place(t,c1Subs[k],c1Lane[k]);
+      if(k===0||k===4||k===7)chordAt(t,15,1,7);
+      if(k===2)chordAt(t,0,2,6);
     });
 
-    // Break before final chorus: sparse sustained feel.
-    sec(146,158,(bar,t)=>{
-      const k=(bar-146)%4;
-      [[0,8],[0,4,12],[0,6,14],[0,3,10,15]][k].forEach((s,i)=>add(t(s),[[1,7],[7,4,1],[0,4,8],[2,5,3,7]][k][i]));
+    // Interlude 59-67: 8-beat instrumental. Clear left-right travel with short bursts.
+    sec(59,67,(bar,t)=>{
+      const k=bar-59;
+      const S=[
+        [[0,2,4,8,12,15],[0,2,4,6,8,4]],
+        [[0,1,3,7,10,14],[8,6,4,1,3,5]],
+        [[0,4,8,12],[1,3,5,7]],
+        [[0,2,5,9,13,15],[7,5,3,1,4,6]],
+        [[0,1,2,6,10,14],[0,2,4,7,5,3]],
+        [[0,3,7,11,15],[8,5,2,4,1]],
+        [[0,2,4,6,9,12,15],[1,3,5,7,4,2,6]],
+        [[0,1,4,8,11,14],[7,5,3,1,4,6]]
+      ][k];
+      place(t,S[0],S[1]);if(k===7)chordAt(t,15,0,8);
     });
 
-    // Final chorus / Honoka solo lift: maximum energy but varied phrases.
-    sec(158,184,(bar,t)=>{
-      const k=(bar-158)%9;
-      const subs=[[0,1,3,5,7,9,11,13,15],[0,2,4,6,8,10,12,14],[0,3,5,7,10,12,15],[0,1,4,6,8,11,13,15],[0,2,5,7,9,12,14],[0,1,3,6,8,10,13,15],[0,2,4,7,9,11,14],[0,3,6,8,10,12,15],[0,1,4,7,10,13,15]][k];
-      const lanes=[[0,2,4,7,5,3,1,6,4],[8,6,4,2,0,3,5,7],[1,4,7,5,2,6,3],[7,5,3,1,4,6,2,4],[2,5,8,6,3,1,4],[6,3,0,2,5,7,4,1],[1,3,6,8,5,2,4],[7,4,1,3,6,2,5],[0,3,5,8,6,2,4]][k];
-      subs.forEach((s,i)=>add(t(s),lanes[i]));
-      if(k===0||k===3||k===6)chord(t(15),1,7);
+    // Verse 2A 67-80: filter/half beat. Deliberately lighter again.
+    const v2Subs=[
+      [0,6,10,14],[0,4,8,13],[0,5,9,12,15],[0,3,7,11],[0,6,12,15],[0,4,9,14],
+      [0,3,8,12,15],[0,5,10,14],[0,4,7,11,15],[0,6,9,13],[0,3,7,12,15],[0,5,8,14]
+    ];
+    const v2Lane=[
+      [2,4,6,3],[6,4,2,5],[1,4,7,5,2],[7,5,3,1],[0,4,8,3],[8,5,2,4],
+      [1,3,6,4,7],[7,4,1,5],[2,5,7,4,1],[6,3,1,5],[0,4,6,3,8],[8,4,2,5]
+    ];
+    sec(67,80,(bar,t)=>{const k=(bar-67)%12;place(t,v2Subs[k],v2Lane[k]);if(bar===79)chordAt(t,15,1,7);});
+
+    // Verse 2B 80-96: band back in, rising pulse.
+    sec(80,88,(bar,t)=>{
+      const k=(bar-80)%4;
+      const subs=[[0,4,8,12,15],[0,2,6,9,13,15],[0,3,7,10,14],[0,1,5,8,12,15]][k];
+      const lanes=[[1,3,5,7,4],[7,5,3,1,4,6],[2,4,7,5,3],[6,4,2,5,7,3]][k];
+      place(t,subs,lanes);
+    });
+    sec(88,96,(bar,t)=>{
+      const flip=bar&1;
+      place(t,[0,2,4,6,8,10,13,15],flip?[7,5,3,1,4,6,2,4]:[1,3,5,7,4,2,6,4]);
+      if(bar===95)chordAt(t,15,0,8);
     });
 
-    // Coda.
-    sec(184,187,(bar,t)=>{
-      [0,2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),bar&1?[8,6,4,2,0,3,5,4][i]:[0,2,4,6,8,5,3,4][i]));
-      if(bar===186)chord(t(15),0,8);
+    // Chorus 2 96-116: similar energy to chorus 1 but different rhythms/lanes.
+    const c2Subs=[
+      [0,1,3,5,8,11,14],[0,2,4,7,9,12,15],[0,3,6,8,10,13,15],
+      [0,1,4,6,9,12,14],[0,2,5,7,10,13,15],[0,1,3,6,8,11,13,15],
+      [0,2,4,8,10,12,15],[0,3,5,7,9,12,14],[0,1,4,7,10,13,15],
+      [0,2,5,8,11,14]
+    ];
+    const c2Lane=[
+      [1,3,5,7,4,2,6],[0,2,4,6,8,5,3],[8,6,4,2,3,5,1],
+      [7,5,3,1,4,6,2],[2,5,8,6,3,1,4],[6,3,0,2,5,7,4,1],
+      [1,4,7,5,2,6,3],[7,4,1,3,6,2,5],[0,3,5,8,6,2,4],
+      [2,6,3,5,1,7]
+    ];
+    sec(96,116,(bar,t)=>{
+      const k=(bar-96)%10;place(t,c2Subs[k],c2Lane[k]);
+      if(k===1||k===5||k===8)chordAt(t,15,1,7);
+      if(k===2)chordAt(t,0,2,6);
+    });
+
+    // Break / guitar solo 116-132: half-time feel. Lots of long-note room, few dense taps.
+    sec(116,132,(bar,t)=>{
+      const k=(bar-116)%8;
+      const S=[
+        [[0,8],[1,7]],[[0,6,12],[7,4,1]],[[0,4,10,15],[0,3,6,4]],[[0,8,14],[8,4,0]],
+        [[0,3,9,15],[2,5,3,7]],[[0,6,12],[6,4,2]],[[0,4,8,13],[1,4,7,3]],[[0,7,14],[7,4,1]]
+      ][k];
+      place(t,S[0],S[1]);
+    });
+
+    // Chorus 3 132-154: All In. Starts with sustained accents, then turns into 16th/eighth bursts.
+    sec(132,138,(bar,t)=>{
+      const k=bar-132;
+      if(k===0){chordAt(t,0,0,8);place(t,[6,12],[4,6]);}
+      if(k===1){place(t,[0,5,10,14],[1,4,7,3]);}
+      if(k===2){chordAt(t,0,1,7);place(t,[4,8,12,15],[4,6,2,4]);}
+      if(k===3){place(t,[0,3,6,9,12,15],[7,5,3,1,4,6]);}
+      if(k===4){chordAt(t,0,2,6);place(t,[2,5,8,11,14],[4,1,5,7,3]);}
+      if(k===5){place(t,[0,1,4,7,10,13,15],[0,2,4,6,8,5,3]);}
+    });
+    sec(138,154,(bar,t)=>{
+      const k=(bar-138)%8;
+      const subs=[
+        [0,1,3,5,7,9,11,13,15],[0,2,3,5,6,8,10,12,14],[0,1,4,6,8,10,13,15],[0,2,4,6,9,11,13,15],
+        [0,1,3,6,8,10,12,15],[0,2,5,7,9,11,14,15],[0,1,4,7,9,12,14,15],[0,2,3,6,8,11,13,15]
+      ][k];
+      const lanes=[
+        [0,2,4,7,5,3,1,6,4],[8,6,4,2,0,3,5,7,4],[1,3,5,7,4,2,6,4],[7,5,3,1,4,6,2,4],
+        [2,5,8,6,3,1,4,7],[6,3,0,2,5,7,4,1],[1,4,7,5,2,6,3,4],[7,4,1,3,6,2,5,4]
+      ][k];
+      place(t,subs,lanes);
+      if(k===0||k===3||k===6)chordAt(t,15,1,7);
+    });
+
+    // Post-chorus 154-171: "Start!!" and 8-beat instrumental drive.
+    sec(154,162,(bar,t)=>{
+      const k=bar-154;
+      const S=[
+        [[0,4,8,12,15],[1,3,5,7,4]],[[0,2,6,10,14],[7,5,3,1,4]],
+        [[0,1,4,8,12,15],[0,2,4,6,8,4]],[[0,3,7,11,15],[8,5,2,4,1]],
+        [[0,2,5,9,13,15],[1,4,7,5,2,6]],[[0,1,3,6,10,14],[7,5,3,1,4,6]],
+        [[0,2,4,7,9,12,15],[0,3,6,8,5,2,4]],[[0,1,4,7,10,13,15],[8,5,3,1,4,6,2]]
+      ][k];place(t,S[0],S[1]);
+    });
+
+    // Motown-style ending 162-187: busy bounce, then long-note-heavy outro.
+    sec(162,176,(bar,t)=>{
+      const k=(bar-162)%7;
+      const subs=[[0,2,4,6,8,10,12,14],[0,1,4,6,9,11,14,15],[0,3,5,7,10,12,15],[0,2,5,8,10,13,15],[0,1,3,6,8,11,13,15],[0,2,4,7,9,12,14],[0,1,4,7,10,13,15]][k];
+      const lanes=[[1,3,5,7,6,4,2,4],[7,5,3,1,4,6,2,4],[0,3,6,8,5,2,4],[8,5,2,4,7,1,3],[2,5,8,6,3,1,4,7],[6,3,0,2,5,7,4],[1,4,7,5,2,6,3]][k];
+      place(t,subs,lanes);if(k===0||k===4)chordAt(t,15,1,7);
+    });
+    sec(176,187,(bar,t)=>{
+      const k=bar-176;
+      if(k===0){chordAt(t,0,0,8);place(t,[4,10],[4,6]);}
+      if(k===1){place(t,[0,6,12],[1,4,7]);}
+      if(k===2){place(t,[0,3,7,11,15],[7,5,3,1,4]);}
+      if(k===3){chordAt(t,0,2,6);place(t,[5,10,14],[4,1,7]);}
+      if(k===4){place(t,[0,2,6,9,13],[0,3,6,4,8]);}
+      if(k===5){place(t,[0,4,8,12,15],[8,6,4,2,0]);}
+      if(k===6){chordAt(t,0,1,7);place(t,[6,12],[4,5]);}
+      if(k===7){place(t,[0,3,9,14],[2,5,3,7]);}
+      if(k===8){chordAt(t,0,0,8);place(t,[8,14],[4,6]);}
+      if(k===9){place(t,[0,6,12],[1,4,7]);}
+      if(k===10){chordAt(t,0,2,6);add(t(8),4);chordAt(t,15,0,8);}
     });
 
     function finalize(raw){
       let work=raw.map(n=>({...n})).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
       const side=l=>l<4?-1:l>4?1:0;
-      const holdBars=[8,10,14,18,22,26,30,34,38,42,45,47,52,57,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,151,155,159,163,167,171,175,179,183,185];
-      const lens=[8,10,6,12,8,6];
-      const lanes=[1,7,2,6];
+
+      // Long-note plan: present from the intro onward, concentrated in the half-time
+      // bridge and outro, matching the reference MASTER's long-note character.
+      const holds=[
+        [3,0,3,8,1],[7,0,7,10,7],[11,0,11,8,2],[15,0,15,10,6],
+        [19,0,19,8,1],[23,0,23,10,7],[27,0,27,8,2],[30,0,30,12,6],
+        [33,0,33,8,1],[36,0,36,10,7],[40,0,40,8,2],[43,0,43,12,6],
+        [47,0,47,8,1],[50,0,50,10,7],[54,0,54,8,2],[57,0,57,10,6],
+        [61,0,61,8,1],[65,0,65,10,7],[69,0,69,8,2],[73,0,73,12,6],
+        [77,0,77,8,1],[81,0,81,10,7],[85,0,85,8,2],[89,0,89,10,6],
+        [93,0,93,8,1],[97,0,97,10,7],[101,0,101,8,2],[105,0,105,12,6],
+        [109,0,109,8,1],[113,0,113,10,7],
+        [117,0,117,12,2],[119,0,119,12,6],[121,0,121,12,1],[123,0,123,12,7],
+        [125,0,125,12,2],[127,0,127,12,6],[129,0,129,12,1],[131,0,131,12,7],
+        [134,0,134,8,2],[137,0,137,10,6],[141,0,141,8,1],[145,0,145,10,7],
+        [149,0,149,8,2],[153,0,153,10,6],[157,0,157,8,1],[161,0,161,10,7],
+        [165,0,165,8,2],[169,0,169,10,6],[173,0,173,8,1],
+        [176,0,176,12,7],[178,0,178,12,2],[180,0,180,12,6],[182,0,182,12,1],[184,0,184,12,7]
+      ].map(([b,s,eb,es,l])=>({start:at(b,s),end:at(eb,es),lane:l}));
+
       const accepted=[];
-      for(let i=0;i<holdBars.length;i++){
-        const start=Math.round(at(holdBars[i],0));
-        const end=Math.round(at(holdBars[i],lens[i%lens.length]));
-        const lane=lanes[i%lanes.length];
-        if(end<=start+300||accepted.some(h=>start<h.end+220&&end>h.start-220))continue;
-        const hs=side(lane),kept=[],byTime=new Map();
+      for(const h of holds){
+        const start=Math.round(h.start),end=Math.round(h.end),lane=h.lane,hs=side(lane);
+        if(end<=start+300||accepted.some(x=>start<x.end+220&&end>x.start-220))continue;
+        const kept=[],byTime=new Map();
         for(const n of work){
           if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
           if(Math.abs(n.timeMs-start)<=25||Math.abs(n.timeMs-end)<=25){
             if(n.lane===lane)continue;
-            if(hs!==0&&side(n.lane)===hs)continue;
+            const ns=side(n.lane);
+            if(hs!==0&&ns===hs)continue;
             if(!byTime.has(n.timeMs))byTime.set(n.timeMs,n);
             continue;
           }
@@ -136,6 +263,7 @@
             const ns=side(n.lane);
             if(hs<0&&ns<=0)continue;
             if(hs>0&&ns>=0)continue;
+            if(hs===0&&ns===0)continue;
             if(!byTime.has(n.timeMs))byTime.set(n.timeMs,n);
           }
         }
@@ -144,7 +272,7 @@
         accepted.push({start,end});
       }
 
-      // Chord invariant: opposite sides, or center + one side.
+      // Chords: opposite sides, or center + one side only.
       const groups=new Map();
       for(const n of work){if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);groups.get(n.timeMs).push(n);}
       for(const g of groups.values()){
@@ -159,25 +287,28 @@
       }
       work=[...groups.values()].flat().sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
-      // Rolling two-thumb capacity, preserving hold starts.
+      // Two-thumb burst safety; structural hold starts win over nearby filler taps.
       const safe=[];
       for(const n of work){
         let recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
         if(recent.length>=2&&n.holdVisualOnly){
           for(let i=safe.length-1;i>=0&&recent.length>=2;i--){
-            const x=safe[i];if(n.timeMs-x.timeMs<0||n.timeMs-x.timeMs>=115||x.holdVisualOnly)continue;
-            safe.splice(i,1);recent=safe.filter(y=>n.timeMs-y.timeMs>=0&&n.timeMs-y.timeMs<115);
+            const x=safe[i];
+            if(n.timeMs-x.timeMs<0||n.timeMs-x.timeMs>=115||x.holdVisualOnly)continue;
+            safe.splice(i,1);
+            recent=safe.filter(y=>n.timeMs-y.timeMs>=0&&n.timeMs-y.timeMs<115);
           }
         }
         if(recent.length>=2)continue;
         safe.push(n);
       }
+
       const final=[];
       for(const n of safe){
         const active=safe.find(h=>h.holdVisualOnly&&h!==n&&n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs);
         if(!active){final.push(n);continue;}
         const hs=side(active.lane),ns=side(n.lane);
-        if(hs<0&&ns<=0)continue;if(hs>0&&ns>=0)continue;
+        if(hs<0&&ns<=0)continue;if(hs>0&&ns>=0)continue;if(hs===0&&ns===0)continue;
         if(final.some(x=>x.timeMs===n.timeMs&&x!==active))continue;
         final.push(n);
       }
@@ -185,7 +316,7 @@
     }
 
     const final=finalize(notes);
-    return {title:TITLE,artist:ARTIST,difficulty:'EXPERT / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,notes:final};
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,notes:final};
   }
 
   async function prepare(){
@@ -205,7 +336,7 @@
     const card=document.createElement('div');card.className='song-library-card';card.dataset.song075=AUDIO_KEY;card.dataset.series='muse';
     const h=document.createElement('h3');h.textContent=TITLE;
     const a=document.createElement('p');a.textContent=ARTIST+' / ラブライブ！';
-    const m=document.createElement('p');m.textContent=`EXPERT 二本指上級 / BPM ${BPM}`;
+    const m=document.createElement('p');m.textContent=`MASTER 二本指上級 / BPM ${BPM}`;
     const b=document.createElement('span');b.className='song-library-badge';b.textContent="μ's";
     const btn=document.createElement('button');btn.type='button';btn.textContent='この曲をプレイ';btn.addEventListener('click',prepare);
     card.append(h,a,m,b,btn);return card;
@@ -217,5 +348,5 @@
   }
   const library=document.getElementById('songLibraryScreen');
   if(library){new MutationObserver(()=>{if(!library.hidden)requestAnimationFrame(install);}).observe(library,{attributes:true,attributeFilter:['hidden']});if(!library.hidden)install();}
-  window.makeSnowHalationChartV0826=makeChart;
+  window.makeSnowHalationChartV0829=makeChart;
 })();
