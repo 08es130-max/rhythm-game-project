@@ -166,7 +166,7 @@
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     if(notes.length>TARGET){
       const grouped=new Map();notes.forEach((n,i)=>{if(!grouped.has(n.timeMs))grouped.set(n.timeMs,[]);grouped.get(n.timeMs).push(i);});
-      const removable=[];notes.forEach((n,i)=>{if(grouped.get(n.timeMs).length===1)removable.push(i);});
+      const removable=[];notes.forEach((n,i)=>{if(!n.holdVisualOnly&&grouped.get(n.timeMs).length===1)removable.push(i);});
       const excess=Math.min(notes.length-TARGET,removable.length),remove=new Set();
       for(let k=0;k<excess;k++)remove.add(removable[Math.min(removable.length-1,Math.floor((k+.5)*removable.length/excess))]);
       const trimmed=notes.filter((_,i)=>!remove.has(i));
