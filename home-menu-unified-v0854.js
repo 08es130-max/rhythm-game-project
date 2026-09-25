@@ -1,4 +1,4 @@
-// Ver.0.8.218: add shared safe area around all six redesigned home buttons.
+// Ver.0.8.219: restore full-size display; safe area is baked into regenerated icon canvases.
 (function(){
   'use strict';
 
@@ -52,10 +52,10 @@
       }
       #homeScreen .home-menu>.home-menu-btn>.home-menu-art{
         display:block!important;
-        width:91%!important;
-        height:91%!important;
-        max-width:91%!important;
-        max-height:91%!important;
+        width:100%!important;
+        height:100%!important;
+        max-width:100%!important;
+        max-height:100%!important;
         object-fit:contain!important;
         object-position:center!important;
         margin:auto!important;
