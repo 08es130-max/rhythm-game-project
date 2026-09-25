@@ -1,4 +1,4 @@
-// Ver.0.8.222: Dazzling Game rebuilt with distributed two-thumb hold phrases.
+// Ver.0.8.224: Dazzling Game fully rebuilt from HPT/Spica chart language.
 (function(){
   const TITLE='Dazzling Game';
   const ARTIST='Liella!、澁谷かのん、ウィーン・マルガレーテ、鬼塚冬毬';
@@ -10,122 +10,112 @@
       const k=t+':'+l,c=count.get(t)||0;if(seen.has(k)||c>=2)return;seen.add(k);count.set(t,c+1);notes.push({timeMs:t,lane:l});};
     const chord=(t,a,b)=>{add(t,a);if(a!==b)add(t,b);};
     const at=(bar,s)=>START+(bar*16+s)*q;
-    const run=(bar,subs,lanes)=>subs.forEach((s,i)=>add(at(bar,s),lanes[i%lanes.length]));
-    const tri=(bar,s,a,b)=>{add(at(bar,s),a);add(at(bar,s+2),b);add(at(bar,s+4),a);};
-    const sec=(a,b,fn)=>{for(let bar=a;bar<b;bar++)fn(bar);};
+    const sec=(a,b,fn)=>{for(let bar=a;bar<b;bar++)fn(bar,s=>at(bar,s));};
 
-    sec(0,20,bar=>{
-      const p=bar%4;
-      if(p===0){chord(at(bar,0),1,7);run(bar,[4,8,12],[3,5,4]);}
-      else if(p===1){run(bar,[0,3,6,8,11,14],[7,5,3,4,6,2]);}
-      else if(p===2){tri(bar,0,2,6);tri(bar,8,6,2);chord(at(bar,14),0,8);}
-      else {run(bar,[0,2,4,7,10,12,14,15],[1,3,5,7,6,4,2,4]);}
-    });
-    sec(20,52,bar=>{
-      const v=bar%8;
-      const seqs=[[1,3,4,6,7,5,2],[7,5,4,2,1,3,6],[2,4,6,3,5,7,4],[6,4,2,5,3,1,4],[0,3,5,7,4,2,6],[8,5,3,1,4,6,2],[1,4,7,5,2,4,6],[7,4,1,3,6,4,2]];
-      run(bar,v<4?[0,3,5,8,10,13,15]:[0,2,5,7,10,12,15],seqs[v]);
-      if(v===2||v===6)tri(bar,6,v===2?1:7,4);
-      if(v===3||v===7)chord(at(bar,14),2,6);
-    });
-    sec(52,68,bar=>{
-      const flip=bar%2;
-      run(bar,[0,2,4,6,8,10,12,14],[flip?7:1,flip?5:3,4,flip?3:5,flip?1:7,4,flip?6:2,flip?2:6]);
-      if(bar%4===3){chord(at(bar,0),0,8);chord(at(bar,15),1,7);}
-    });
-    const chorus=[
-      (b)=>{chord(at(b,0),0,8);run(b,[2,4,6,8,10,12,14],[2,4,6,5,3,1,4]);},
-      (b)=>{tri(b,0,7,3);run(b,[6,8,10,12,14],[5,2,6,1,4]);},
-      (b)=>{run(b,[0,1,3,5,7,9,11,13,15],[1,3,5,7,4,6,2,4,8]);},
-      (b)=>{chord(at(b,0),2,6);run(b,[2,4,5,7,9,11,13,15],[4,1,5,8,3,7,2,4]);},
-      (b)=>{tri(b,0,0,5);tri(b,6,8,3);run(b,[12,14,15],[1,7,4]);},
-      (b)=>{run(b,[0,2,3,5,6,8,10,12,14],[8,6,4,1,3,5,7,2,4]);},
-      (b)=>{chord(at(b,0),1,7);run(b,[1,3,5,7,9,11,13,15],[4,6,2,5,1,3,7,4]);},
-      (b)=>{run(b,[0,1,2,4,6,8,10,12,14,15],[0,2,4,7,5,3,1,6,8,4]);}
-    ];
-    sec(68,100,b=>chorus[b%chorus.length](b));
-    sec(100,116,b=>{
-      run(b,[0,1,2,4,6,8,10,12,14,15],b%2?[8,7,5,3,1,2,4,6,7,4]:[0,1,3,5,7,6,4,2,1,4]);
-      if(b%4===2)chord(at(b,7),2,6);
-    });
-    sec(116,144,b=>{
-      const p=b%6,seq=[[2,5,7,4,1,6,3],[6,3,1,4,7,2,5],[0,4,7,5,2,6,3],[8,4,1,3,6,2,5],[1,5,3,7,4,0,6],[7,3,5,1,4,8,2]][p];
-      run(b,p%2?[0,2,4,7,9,12,15]:[0,3,5,8,10,13,15],seq);
-      if(p===1||p===4)tri(b,6,p===1?7:1,4);
-    });
-    sec(144,156,b=>{
-      run(b,[0,2,4,6,8,9,11,13,15],b%2?[7,5,3,1,4,6,2,5,4]:[1,3,5,7,4,2,6,3,4]);
-      if(b%3===2)chord(at(b,14),0,8);
-    });
-    sec(156,184,b=>chorus[(b+3)%chorus.length](b));
-    sec(184,198,b=>{
-      if(b<191) run(b,[0,1,2,3,5,7,9,11,13,15],b%2?[8,6,4,2,0,3,5,7,6,4]:[0,2,4,6,8,5,3,1,2,4]);
-      else {chord(at(b,0),b%2?1:0,b%2?7:8);tri(b,4,b%2?7:1,4);run(b,[10,12,14,15],[2,6,3,5]);}
-    });
-    sec(198,212,b=>{
-      chorus[(b*3+1)%chorus.length](b);
-      if(b%4===0)chord(at(b,8),0,8);
-      if(b%4===3)chord(at(b,15),1,7);
-    });
-    sec(212,214,b=>{
-      run(b,[0,2,4,6,8,10,12,14],[b%2?8:0,6,4,2,b%2?0:8,3,5,4]);
-      chord(at(b,15),0,8);
+    // HPT-like intro/verse language: inner lanes, off-beats and phrase-ending doubles.
+    sec(0,18,(bar,t)=>{
+      const flip=bar&1;
+      chord(t(0),flip?2:1,flip?6:7);
+      [3,6,10,13].forEach((s,i)=>add(t(s),flip?[6,5,3,2][i]:[2,3,5,6][i]));
+      if(bar%4===3)chord(t(15),3,5); else add(t(15),flip?6:2);
     });
 
-    // Long-hold phrases distributed across the song. Each hold reserves one hand;
-    // intervening taps are reduced to one note on the free side.
-    function applyHolds(specs){
-      const accepted=[];
-      for(const spec of specs){
-        const start=Math.round(at(spec.bar,spec.sub||0));
-        const end=Math.round(at(spec.bar,spec.endSub));
-        if(end<=start+260||accepted.some(h=>start<h.end+180&&end>h.start-180))continue;
-        const freeSide=spec.freeSide||(spec.lane<4?'right':spec.lane>4?'left':'right');
-        const kept=[],byTime=new Map();
-        for(const n of notes){
-          if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
-          if(n.holdVisualOnly)continue;
-          if(Math.abs(n.timeMs-start)<=25||Math.abs(n.timeMs-end)<=25)continue;
-          if(n.lane===spec.lane)continue;
-          const ok=freeSide==='left'?n.lane<=3:n.lane>=5;
-          if(!ok)continue;
-          const prev=byTime.get(n.timeMs);
-          if(!prev||Math.abs(n.lane-spec.lane)>Math.abs(prev.lane-spec.lane))byTime.set(n.timeMs,n);
-        }
-        kept.push(...byTime.values(),{timeMs:start,lane:spec.lane,holdEndMs:end,holdVisualOnly:true});
-        notes.length=0;notes.push(...kept);
-        accepted.push({start,end});
-      }
-      return accepted.length;
-    }
-    const holdCount=applyHolds([
-      {bar:8,endSub:8,lane:4,freeSide:'left'},
-      {bar:24,endSub:8,lane:1,freeSide:'right'},
-      {bar:40,endSub:6,lane:7,freeSide:'left'},
-      {bar:58,endSub:8,lane:2,freeSide:'right'},
-      {bar:72,endSub:6,lane:6,freeSide:'left'},
-      {bar:88,endSub:8,lane:1,freeSide:'right'},
-      {bar:106,endSub:6,lane:7,freeSide:'left'},
-      {bar:122,endSub:8,lane:2,freeSide:'right'},
-      {bar:138,endSub:6,lane:6,freeSide:'left'},
-      {bar:150,endSub:8,lane:1,freeSide:'right'},
-      {bar:162,endSub:6,lane:7,freeSide:'left'},
-      {bar:176,endSub:8,lane:2,freeSide:'right'},
-      {bar:188,endSub:6,lane:6,freeSide:'left'},
-      {bar:200,endSub:8,lane:1,freeSide:'right'},
-      {bar:208,endSub:6,lane:7,freeSide:'left'}
-    ]);
+    sec(18,58,(bar,t)=>{
+      const seqs=[[1,2,3,2,5,6,5],[7,6,5,6,3,2,3],[2,3,1,3,6,5,7],[6,5,7,5,2,3,1]];
+      const seq=seqs[bar%4];
+      [0,3,5,8,10,13,15].forEach((s,i)=>add(t(s),seq[i]));
+      if(bar%8===6)chord(t(7),2,6);
+    });
 
+    // HPT axis-jack build with occasional Spica-like 16th pickups.
+    sec(58,78,(bar,t)=>{
+      const right=(bar%6)>=3,axis=right?6:2,inner=right?5:3,outer=right?7:1;
+      [0,2,4].forEach((s,i)=>add(t(s),i===1?inner:axis));
+      add(t(7),outer);add(t(9),axis);add(t(11),inner);
+      if(bar%3===2){add(t(13),axis);chord(t(15),right?2:6,axis);} else add(t(15),inner);
+    });
+
+    // Chorus: wide-to-inner gestures, alternating hands, short dense answers.
+    sec(78,116,(bar,t)=>{
+      const type=bar%4;
+      if(type===0){chord(t(0),1,7);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[3,5,3,2,3,5][i]));chord(t(15),2,6);}
+      if(type===1){[0,2,4,6,8,10,12,15].forEach((s,i)=>add(t(s),[7,6,5,6,3,2,3,1][i]));}
+      if(type===2){chord(t(0),2,6);[2,4,7,9,11,13].forEach((s,i)=>add(t(s),[5,3,5,6,5,3][i]));chord(t(15),1,7);}
+      if(type===3){[0,1,3,5,7,9,11,13,15].forEach((s,i)=>add(t(s),[1,2,3,2,6,5,6,7,4][i]));}
+    });
+
+    // Mid-song: swing across the screen, with more breathing room before the second build.
+    sec(116,146,(bar,t)=>{
+      const seqs=[[0,2,3,6,7,5,2],[8,6,5,2,1,3,6],[1,3,5,7,6,3,2],[7,5,3,1,2,5,6]];
+      [0,2,4,7,9,12,15].forEach((s,i)=>add(t(s),seqs[bar%4][i]));
+      if(bar%5===4)chord(t(6),2,6);
+    });
+
+    sec(146,168,(bar,t)=>{
+      const flip=bar&1,seq=flip?[6,7,5,6,3,2,3]:[2,1,3,2,5,6,5];
+      [0,3,5,8,10,13,15].forEach((s,i)=>add(t(s),seq[i]));
+      if(bar%6===5)chord(t(7),1,7);
+    });
+
+    sec(168,184,(bar,t)=>{
+      const right=bar&1,axis=right?6:2,answer=right?5:3,far=right?7:1;
+      add(t(0),axis);add(t(2),answer);add(t(4),axis);
+      chord(t(6),right?2:6,axis);
+      add(t(9),far);add(t(11),axis);add(t(13),answer);add(t(15),axis);
+    });
+
+    // Final chorus: busiest section, but still only two-thumb-safe starts.
+    sec(184,214,(bar,t)=>{
+      const type=bar%6;
+      if(type===0){chord(t(0),1,7);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[2,3,5,6,5,3][i]));chord(t(15),2,6);}
+      if(type===1){[0,1,3,5,7,9,11,13,15].forEach((s,i)=>add(t(s),[7,6,5,6,5,3,2,3,1][i]));}
+      if(type===2){chord(t(0),2,6);[2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),[3,5,3,6,5,7,4][i]));}
+      if(type===3){[0,2,3,5,6,8,10,12,14,15].forEach((s,i)=>add(t(s),[1,3,5,7,6,4,2,3,5,4][i]));}
+      if(type===4){chord(t(0),0,8);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[2,4,6,3,5,4][i]));chord(t(15),1,7);}
+      if(type===5){[0,1,2,4,6,8,10,12,14,15].forEach((s,i)=>add(t(s),[7,5,3,1,2,4,6,8,5,4][i]));}
+    });
+
+    // Rolling burst safety, copied from the Spica philosophy.
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-    if(notes.length>TARGET){
-      const groups=new Map();notes.forEach((n,i)=>{if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);groups.get(n.timeMs).push(i);});
-      const removable=[];notes.forEach((n,i)=>{if(groups.get(n.timeMs).length===1)removable.push(i);});
-      const excess=Math.min(notes.length-TARGET,removable.length),drop=new Set();
-      for(let k=0;k<excess;k++)drop.add(removable[Math.min(removable.length-1,Math.floor((k+.5)*removable.length/excess))]);
-      const out=notes.filter((n,i)=>n.holdVisualOnly||!drop.has(i));
-      return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:out.length,holdCount,notes:out};
+    const safe=[];
+    for(const n of notes){
+      const recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+      if(recent.length>=2)continue;
+      safe.push(n);
     }
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,holdCount,notes};
+
+    const side=l=>l<4?-1:l>4?1:0;
+    let heldUntil=-Infinity,holdCount=0;
+    for(let i=0;i<safe.length&&holdCount<30;i++){
+      const n=safe[i];
+      if(n.lane===4||n.timeMs<heldUntil+220||i%13!==4)continue;
+      const s=side(n.lane);
+      let hazard=n.timeMs+q*8; // up to two beats
+      const inside=safe.filter(x=>x.timeMs>n.timeMs&&x.timeMs<hazard);
+      for(const x of inside){
+        if(side(x.lane)===s){hazard=Math.min(hazard,x.timeMs-130);break;}
+      }
+      const free=inside.filter(x=>side(x.lane)!==s);
+      for(let a=0;a<free.length;a++)for(let b=a+1;b<free.length;b++){
+        if(free[b].timeMs-free[a].timeMs<115)hazard=Math.min(hazard,free[b].timeMs-130);
+      }
+      let steps=Math.min(8,Math.floor((hazard-n.timeMs)/q));
+      if(steps<4)continue;
+      n.holdEndMs=Math.round(n.timeMs+steps*q);n.holdVisualOnly=true;
+      heldUntil=n.holdEndMs;holdCount++;
+    }
+
+    const final=[];
+    for(const n of safe){
+      const active=safe.find(h=>h.holdVisualOnly&&n!==h&&n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs);
+      if(!active){final.push(n);continue;}
+      if(side(n.lane)===side(active.lane)||n.lane===active.lane)continue;
+      if(final.some(x=>x.timeMs===n.timeMs&&x!==active))continue;
+      final.push(n);
+    }
+
+    final.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount,notes:final};
   }
   async function prepare(){
     chart=makeChart();validateChart(chart);document.body.classList.remove('hasunosora-live-active');
