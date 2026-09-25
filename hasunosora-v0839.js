@@ -1,4 +1,4 @@
-// Ver.0.8.225: Genyo Yako rebuilt around corrected 158 BPM, varied phrases, strict chord rules and chorus holds.
+// Ver.0.8.226: Genyo Yako hold density raised to HPT-like levels; strict two-thumb rules retained.
 (function(){
   const VERSION='0.8.39';
   const TITLE='眩耀夜行';
@@ -165,8 +165,21 @@
       // Spica-style rolling burst guard: at most two starts in any 115ms.
       const safe=[];
       for(const n of work){
-        const recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
-        if(recent.length>=2)continue;
+        let recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+        if(recent.length>=2){
+          if(n.holdVisualOnly){
+            // Hold starts are structural. Prefer the hold and drop the latest ordinary
+            // tap in the same 115ms burst instead of silently deleting the hold.
+            for(let i=safe.length-1;i>=0&&recent.length>=2;i--){
+              const x=safe[i];
+              if(n.timeMs-x.timeMs<0||n.timeMs-x.timeMs>=115)continue;
+              if(x.holdVisualOnly)continue;
+              safe.splice(i,1);
+              recent=safe.filter(y=>n.timeMs-y.timeMs>=0&&n.timeMs-y.timeMs<115);
+            }
+          }
+          if(recent.length>=2)continue;
+        }
         safe.push(n);
       }
 
@@ -186,15 +199,7 @@
       return {notes:final,holdCount:final.filter(n=>n.holdVisualOnly).length};
     }
 
-    const specs=[
-      [8,0,8,8,1],[14,0,14,10,7],[20,0,20,8,2],[26,0,26,12,6],
-      [32,0,32,8,1],[40,0,40,10,7],[46,0,46,8,2],[52,0,52,12,6],
-      [58,0,58,8,1],[64,0,64,12,7],[70,0,70,8,2],[78,0,78,10,6],
-      [85,0,85,8,1],[92,0,92,12,7],[99,0,99,8,2],[106,0,106,10,6],
-      [113,0,113,8,1],[120,0,120,12,7],[126,0,126,8,2],
-      [130,0,130,12,6],[134,0,134,12,1],[138,0,138,12,7],[142,0,142,12,2],
-      [146,0,146,12,6],[150,0,150,10,1],[155,0,155,8,7]
-    ].map(([b,s,eb,es,l])=>({start:at(b,s),end:at(eb,es),lane:l}));
+    const specs=[[6,0,6,6,1],[10,0,10,8,7],[14,0,14,10,2],[18,0,18,6,6],[22,0,22,12,1],[26,0,26,8,7],[30,0,30,6,2],[34,0,34,8,6],[38,0,38,10,1],[42,0,42,6,7],[46,0,46,12,2],[50,0,50,8,6],[54,0,54,6,1],[58,0,58,8,7],[62,0,62,10,2],[66,0,66,6,6],[70,0,70,12,1],[74,0,74,8,7],[78,0,78,6,2],[82,0,82,8,6],[86,0,86,10,1],[90,0,90,6,7],[94,0,94,12,2],[98,0,98,8,6],[102,0,102,6,1],[106,0,106,8,7],[110,0,110,10,2],[114,0,114,6,6],[118,0,118,12,1],[122,0,122,8,7],[126,0,126,6,2],[130,0,130,8,6],[134,0,134,10,1],[138,0,138,6,7],[142,0,142,12,2],[146,0,146,8,6],[150,0,150,6,1],[154,0,154,8,7],[158,0,158,10,2]].map(([b,s,eb,es,l])=>({start:at(b,s),end:at(eb,es),lane:l}));
     const fin=finalizeWithHolds(notes,specs);
     return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:fin.notes.length,holdCount:fin.holdCount,notes:fin.notes};
   }
