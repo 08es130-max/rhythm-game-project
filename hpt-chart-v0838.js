@@ -280,7 +280,7 @@
     // Slight density lift for LoveFes. Only fill genuinely wide gaps in the SIF
     // transcription, keeping at least 115ms from neighboring starts and stopping
     // at 525 notes for the first section.
-    const FIRST_TARGET=525;
+    const FIRST_TARGET=560;
     const lanePattern=[2,6,3,5,1,7,4,6,2,5,3,7,1];
     let fillIndex=0;
     while(safeFirst.length<FIRST_TARGET){
@@ -298,14 +298,58 @@
       if(!added)break;
     }
 
+    // Re-introduce SIF-style long notes for the first section while keeping
+    // LoveFes' two-thumb rules stricter than the source chart.
+    // Rules:
+    // - no center-lane holds;
+    // - no overlapping holds;
+    // - keep at least 220ms between a release and the next hold start;
+    // - while holding, only one ordinary note at a time may appear on the opposite side;
+    // - never leave an ordinary note on the held side during the hold body.
+    const HOLD_TARGET=42;
+    const HOLD_STEP=Math.round((60000/BPM)/2); // 1/8 note at 170 BPM
+    const sortedFirst=[...safeFirst].sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    let holdCount=0, heldUntil=-Infinity;
+    for(const n of sortedFirst){
+      if(holdCount>=HOLD_TARGET)break;
+      if(n.lane===4||n.timeMs<heldUntil+220)continue;
+      const s=side(n.lane);
+      let hazard=n.timeMs+HOLD_STEP*4; // cap at ~706ms
+      const inside=sortedFirst.filter(x=>x.timeMs>n.timeMs&&x.timeMs<hazard);
+      for(const x of inside){
+        // Same-side taps would require the holding thumb, so end before them.
+        if(side(x.lane)===s){hazard=Math.min(hazard,x.timeMs-130);break;}
+      }
+      // A hold already consumes one thumb. Two ordinary starts inside any 115ms
+      // window on the free side would become an effective three-finger pattern.
+      const free=inside.filter(x=>side(x.lane)!==s);
+      for(let i=0;i<free.length;i++){
+        for(let j=i+1;j<free.length;j++){
+          if(free[j].timeMs-free[i].timeMs<115){
+            hazard=Math.min(hazard,free[j].timeMs-130);
+            break;
+          }
+        }
+      }
+      let steps=Math.floor((hazard-n.timeMs)/HOLD_STEP);
+      steps=Math.min(4,steps);
+      if(steps<2)continue; // minimum ~353ms
+      const end=n.timeMs+steps*HOLD_STEP;
+      if(end<=n.timeMs+300)continue;
+      n.holdEndMs=end;
+      n.holdVisualOnly=true;
+      heldUntil=end;
+      holdCount++;
+    }
+
     notes.length=0;
-    notes.push(...safeFirst,...continuation);
+    notes.push(...sortedFirst,...continuation);
 
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     return {
       title:'HAPPY PARTY TRAIN',
       artist:'Aqours',
-      difficulty:'EXPERT / SIF本家1番再現＋密度調整・二本指向け',
+      difficulty:'EXPERT / SIF本家1番再現＋ロング・二本指向け',
       bpm:BPM,
       offsetMs:0,
       noteCount:notes.length,
