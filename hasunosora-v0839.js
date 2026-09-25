@@ -1,4 +1,4 @@
-// Ver.0.8.231: swing-free MASTER density expansion and direct launch.
+// Ver.0.8.232: MASTER density tuned to about 1400 notes; swing-free structure retained.
 (function(){
   const VERSION='0.8.39';
   const TITLE='眩耀夜行';
@@ -101,9 +101,9 @@
       const laneSeqs=[[1,3,5,7,4,2,6,4],[7,5,3,1,4,6,2,4],[0,2,4,6,8,5,3,1],[8,6,4,2,0,3,5,7],[2,4,7,5,3,1,6,4],[6,4,1,3,5,7,2,4]];
       const defs=[[0,10,[[2,6,10,14]],0],[10,38,[[1,3,5,7,9,11,13,15],[2,6,10,14]],1],[38,50,[[1,2,3,5,6,7,9,10,11,13,14,15]],2],[50,74,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],3],[74,88,[[3,7,11,15]],4],[88,116,[[1,3,5,7,9,11,13,15],[2,6,10,14]],5],[116,128,[[1,2,3,5,6,7,9,10,11,13,14,15]],0],[128,154,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],2],[154,161,[[1,2,3,5,6,7,9,10,11,13,14,15]],1]];
       for(const d of defs){
-        for(let bar=d[0];bar<d[1]&&notes.length<1800;bar++){
+        for(let bar=d[0];bar<d[1]&&notes.length<1570;bar++){
           const subs=d[2][(bar-d[0])%d[2].length],lanes=laneSeqs[(bar+d[3])%laneSeqs.length];
-          for(let j=0;j<subs.length&&notes.length<1800;j++){
+          for(let j=0;j<subs.length&&notes.length<1570;j++){
             const tm=Math.round(at(bar,subs[j]));
             if(occupied.has(tm))continue;
             add(tm,lanes[j%lanes.length]);occupied.add(tm);
