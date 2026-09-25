@@ -417,6 +417,46 @@
     }
     finalPart=addFinaleAccents(finalPart,18);
 
+    // The copied late first-part window contains few of the first section's assigned
+    // holds, so give the final chorus its own safe hold pass.
+    function assignSectionHolds(section,target){
+      const out=[...section].sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      let count=out.filter(n=>Number.isFinite(n.holdEndMs)).length;
+      let until=-Infinity;
+      for(const h of out.filter(n=>Number.isFinite(n.holdEndMs)))until=Math.max(until,h.holdEndMs);
+      for(const n of out){
+        if(count>=target)break;
+        if(Number.isFinite(n.holdEndMs)||n.lane===4||n.timeMs<until+220)continue;
+        const s=side(n.lane);
+        let hazard=n.timeMs+HOLD_STEP*4;
+        const inside=out.filter(x=>x!==n&&x.timeMs>n.timeMs&&x.timeMs<hazard);
+        for(const x of inside){
+          if(side(x.lane)===s){hazard=Math.min(hazard,x.timeMs-130);break;}
+        }
+        const free=inside.filter(x=>side(x.lane)!==s);
+        let crowded=false;
+        for(let i=0;i<free.length&&!crowded;i++){
+          for(let j=i+1;j<free.length;j++){
+            if(free[j].timeMs-free[i].timeMs<115){
+              hazard=Math.min(hazard,free[j].timeMs-130);
+              crowded=true;
+              break;
+            }
+          }
+        }
+        let steps=Math.min(4,Math.floor((hazard-n.timeMs)/HOLD_STEP));
+        if(steps<2)continue;
+        const end=n.timeMs+steps*HOLD_STEP;
+        if(end<=n.timeMs+300)continue;
+        n.holdEndMs=end;
+        n.holdVisualOnly=true;
+        until=end;
+        count++;
+      }
+      return out;
+    }
+    finalPart=assignSectionHolds(finalPart,16);
+
     // Preserve only the middle instrumental bridge from the old authored continuation.
     const bridge=continuation.filter(n=>n.timeMs<SECOND_START_MS);
 
