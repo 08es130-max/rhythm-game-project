@@ -1,4 +1,4 @@
-// Ver.0.8.41: Dazzling Game, audio-shaped two-thumb MASTER chart.
+// Ver.0.8.222: Dazzling Game rebuilt with distributed two-thumb hold phrases.
 (function(){
   const TITLE='Dazzling Game';
   const ARTIST='Liella!、澁谷かのん、ウィーン・マルガレーテ、鬼塚冬毬';
@@ -72,21 +72,50 @@
       chord(at(b,15),0,8);
     });
 
-    // Hold prototype. Keep the held lane empty for the full hold, and while one thumb is
-    // fixed, keep intervening notes on one side only so the other thumb never has to cross it.
-    const holdStart=Math.round(at(8,0)),holdEnd=Math.round(at(9,0)),holdLane=4;
-    for(let i=notes.length-1;i>=0;i--){
-      const n=notes[i];
-      if(n.timeMs<holdStart||n.timeMs>holdEnd)continue;
-      // Never place another note on the held lane.
-      // During this center-lane prototype, reserve the left half for the free thumb.
-      if(n.lane===holdLane||n.lane>holdLane){
-        seen.delete(n.timeMs+':'+n.lane);
-        count.set(n.timeMs,Math.max(0,(count.get(n.timeMs)||1)-1));
-        notes.splice(i,1);
+    // Long-hold phrases distributed across the song. Each hold reserves one hand;
+    // intervening taps are reduced to one note on the free side.
+    function applyHolds(specs){
+      const accepted=[];
+      for(const spec of specs){
+        const start=Math.round(at(spec.bar,spec.sub||0));
+        const end=Math.round(at(spec.bar,spec.endSub));
+        if(end<=start+260||accepted.some(h=>start<h.end+180&&end>h.start-180))continue;
+        const freeSide=spec.freeSide||(spec.lane<4?'right':spec.lane>4?'left':'right');
+        const kept=[],byTime=new Map();
+        for(const n of notes){
+          if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
+          if(n.holdVisualOnly)continue;
+          if(Math.abs(n.timeMs-start)<=25||Math.abs(n.timeMs-end)<=25)continue;
+          if(n.lane===spec.lane)continue;
+          const ok=freeSide==='left'?n.lane<=3:n.lane>=5;
+          if(!ok)continue;
+          const prev=byTime.get(n.timeMs);
+          if(!prev||Math.abs(n.lane-spec.lane)>Math.abs(prev.lane-spec.lane))byTime.set(n.timeMs,n);
+        }
+        kept.push(...byTime.values(),{timeMs:start,lane:spec.lane,holdEndMs:end,holdVisualOnly:true});
+        notes.length=0;notes.push(...kept);
+        accepted.push({start,end});
       }
+      return accepted.length;
     }
-    notes.push({timeMs:holdStart,lane:holdLane,holdEndMs:holdEnd,holdVisualOnly:true});
+    const holdCount=applyHolds([
+      {bar:8,endSub:8,lane:4,freeSide:'left'},
+      {bar:24,endSub:8,lane:1,freeSide:'right'},
+      {bar:40,endSub:6,lane:7,freeSide:'left'},
+      {bar:58,endSub:8,lane:2,freeSide:'right'},
+      {bar:72,endSub:6,lane:6,freeSide:'left'},
+      {bar:88,endSub:8,lane:1,freeSide:'right'},
+      {bar:106,endSub:6,lane:7,freeSide:'left'},
+      {bar:122,endSub:8,lane:2,freeSide:'right'},
+      {bar:138,endSub:6,lane:6,freeSide:'left'},
+      {bar:150,endSub:8,lane:1,freeSide:'right'},
+      {bar:162,endSub:6,lane:7,freeSide:'left'},
+      {bar:176,endSub:8,lane:2,freeSide:'right'},
+      {bar:188,endSub:6,lane:6,freeSide:'left'},
+      {bar:200,endSub:8,lane:1,freeSide:'right'},
+      {bar:208,endSub:6,lane:7,freeSide:'left'}
+    ]);
+
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     if(notes.length>TARGET){
       const groups=new Map();notes.forEach((n,i)=>{if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);groups.get(n.timeMs).push(i);});
@@ -94,9 +123,9 @@
       const excess=Math.min(notes.length-TARGET,removable.length),drop=new Set();
       for(let k=0;k<excess;k++)drop.add(removable[Math.min(removable.length-1,Math.floor((k+.5)*removable.length/excess))]);
       const out=notes.filter((n,i)=>n.holdVisualOnly||!drop.has(i));
-      return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:out.length,notes:out};
+      return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:out.length,holdCount,notes:out};
     }
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,notes};
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,holdCount,notes};
   }
   async function prepare(){
     chart=makeChart();validateChart(chart);document.body.classList.remove('hasunosora-live-active');
