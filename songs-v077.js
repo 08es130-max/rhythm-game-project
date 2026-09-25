@@ -1,4 +1,4 @@
-// Ver.0.7.7: revised HPT/SIF-inspired chart and more varied Boooooom Bee chart.
+// Ver.0.8.222: keep HPT unchanged; rebuild Boooooom Bee with distributed two-thumb holds.
 (function(){
   const VERSION='0.7.7';
   const HPT_AUDIO_KEY='happy-party-train';
@@ -130,9 +130,45 @@
     return B.finish();
   }
 
+  function applyPlayableHolds(chart,specs){
+    const notes=(chart.notes||[]).map(n=>({...n}));
+    const accepted=[];
+    for(const spec of specs){
+      const start=Math.round(spec.start),end=Math.round(spec.end),lane=spec.lane;
+      if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start+260)continue;
+      if(accepted.some(h=>start<h.end+180&&end>h.start-180))continue;
+  
+      // One thumb is occupied during a hold. Keep only notes on the free side,
+      // and never require two ordinary taps at the same moment while holding.
+      const freeSide=spec.freeSide||(lane<4?'right':lane>4?'left':'right');
+      const kept=[];
+      const bodyByTime=new Map();
+      for(const n of notes){
+        if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
+        if(n.holdVisualOnly)continue;
+        if(Math.abs(n.timeMs-start)<=25||Math.abs(n.timeMs-end)<=25)continue;
+        if(n.lane===lane)continue;
+        const onFreeSide=freeSide==='left'?n.lane<=3:n.lane>=5;
+        if(!onFreeSide)continue;
+        const key=n.timeMs;
+        const prev=bodyByTime.get(key);
+        if(!prev||Math.abs(n.lane-lane)>Math.abs(prev.lane-lane))bodyByTime.set(key,n);
+      }
+      kept.push(...bodyByTime.values());
+      kept.push({timeMs:start,lane,holdEndMs:end,holdVisualOnly:true});
+      notes.length=0;notes.push(...kept);
+      accepted.push({start,end,lane});
+    }
+    notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    chart.notes=notes;
+    chart.noteCount=notes.length;
+    chart.holdCount=accepted.length;
+    return chart;
+  }
+
   function makeBoom(){
     const B=builder('Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会',161.499,1370,225000);
-    const {add,chord,bars}=B;
+    const {add,chord,bars,at}=B;
 
     // Intro: four distinct bars instead of one repeated gesture.
     bars(0,16,(bar,t)=>{
@@ -223,7 +259,26 @@
       [0,1,2,4,5,6].forEach((s,i)=>add(t(s),seq[i]));
       chord(t(7),bar===157?0:2,bar===157?8:6);
     });
-    return B.finish();
+    const chart=B.finish();
+    const half=B.half;
+    return applyPlayableHolds(chart,[
+      {start:at(8,0),end:at(8,4),lane:1,freeSide:'right'},
+      {start:at(20,0),end:at(20,4),lane:7,freeSide:'left'},
+      {start:at(34,0),end:at(34,6),lane:2,freeSide:'right'},
+      {start:at(52,0),end:at(52,4),lane:6,freeSide:'left'},
+      {start:at(60,0),end:at(60,6),lane:1,freeSide:'right'},
+      {start:at(68,0),end:at(68,4),lane:7,freeSide:'left'},
+      {start:at(80,0),end:at(80,6),lane:2,freeSide:'right'},
+      {start:at(92,0),end:at(92,4),lane:6,freeSide:'left'},
+      {start:at(110,0),end:at(110,6),lane:1,freeSide:'right'},
+      {start:at(120,0),end:at(120,4),lane:7,freeSide:'left'},
+      {start:at(128,0),end:at(128,6),lane:2,freeSide:'right'},
+      {start:at(136,0),end:at(136,4),lane:6,freeSide:'left'},
+      {start:at(142,0),end:at(142,6),lane:1,freeSide:'right'},
+      {start:at(148,0),end:at(148,4),lane:7,freeSide:'left'},
+      {start:at(154,0),end:at(154,6),lane:2,freeSide:'right'},
+      {start:at(156,0),end:at(156,4),lane:6,freeSide:'left'}
+    ]);
   }
 
   async function prepare(chartFactory,audioKey,title){
