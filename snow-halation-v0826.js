@@ -1,4 +1,4 @@
-// Ver.0.8.230: Snow halation direct-launch guard; bypass stale cards and expose chart revision.
+// Ver.0.8.231: Snow halation swing-free MASTER density expansion; direct launch retained.
 (function(){
   'use strict';
   const TITLE='Snow halation';
@@ -315,8 +315,25 @@
       return final.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     }
 
+
+    // MASTER expansion from the EXPERT-like base. Straight 8th/16th timing only; no swing.
+    (function expandMasterDensity(){
+      const occupied=new Set(notes.map(n=>Math.round(n.timeMs)));
+      const laneSeqs=[[1,3,5,7,4,2,6,4],[7,5,3,1,4,6,2,4],[0,2,4,6,8,5,3,1],[8,6,4,2,0,3,5,7],[2,4,7,5,3,1,6,4],[6,4,1,3,5,7,2,4]];
+      const defs=[[0,9,[[4,12],[2,10]],0],[9,22,[[1,5,9,13],[2,6,10,14]],1],[22,31,[[1,3,5,7,9,11,13,15]],2],[31,39,[[1,2,3,5,6,7,9,10,11,13,14,15]],3],[39,59,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],4],[59,67,[[1,3,5,7,9,11,13,15]],5],[67,80,[[3,7,11,15]],0],[80,96,[[1,3,5,7,9,11,13,15]],1],[96,116,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],2],[116,132,[[3,7,11,15]],3],[132,154,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],4],[154,176,[[1,2,3,5,6,7,9,10,11,13,14,15]],5],[176,187,[[1,2,3,5,6,7,9,10,11,13,14,15]],0]];
+      for(const d of defs){
+        for(let bar=d[0];bar<d[1]&&notes.length<1800;bar++){
+          const subs=d[2][(bar-d[0])%d[2].length],lanes=laneSeqs[(bar+d[3])%laneSeqs.length];
+          for(let j=0;j<subs.length&&notes.length<1800;j++){
+            const tm=Math.round(at(bar,subs[j]));
+            if(occupied.has(tm))continue;
+            add(tm,lanes[j%lanes.length]);occupied.add(tm);
+          }
+        }
+      }
+    })();
     const final=finalize(notes);
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,chartRevision:'snow-0829-rhythm1',notes:final};
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,chartRevision:'snow-0831-master1',notes:final};
   }
 
   async function prepare(){
