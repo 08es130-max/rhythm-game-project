@@ -1,4 +1,4 @@
-// Ver.0.8.217: fully unified six-button home menu artwork.
+// Ver.0.8.218: add shared safe area around all six redesigned home buttons.
 (function(){
   'use strict';
 
@@ -32,10 +32,10 @@
         grid-column:auto!important;
         grid-row:auto!important;
         box-sizing:border-box!important;
-        width:100%!important;
-        height:100%!important;
-        max-width:100%!important;
-        max-height:100%!important;
+        width:91%!important;
+        height:91%!important;
+        max-width:91%!important;
+        max-height:91%!important;
         min-width:0!important;
         min-height:0!important;
         aspect-ratio:1/1!important;
@@ -58,7 +58,7 @@
         max-height:100%!important;
         object-fit:contain!important;
         object-position:center!important;
-        margin:0!important;
+        margin:auto!important;
         padding:0!important;
         border:0!important;
         transform:none!important;
