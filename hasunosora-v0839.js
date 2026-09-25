@@ -1,4 +1,4 @@
-// Ver.0.8.222: Genyo Yako rebuilt with distributed two-thumb hold phrases.
+// Ver.0.8.224: Genyo Yako fully rebuilt from HPT/Spica chart language.
 (function(){
   const VERSION='0.8.39';
   const TITLE='眩耀夜行';
@@ -11,168 +11,117 @@
   const JACKET='assets/jackets/genyo-yako-v0857.webp?v=0.8.57-jacket1';
 
   function makeChart(){
-    const beat=60000/BPM, q=beat/4, notes=[], seen=new Set(), counts=new Map();
-    const add=(t,l)=>{
-      t=Math.round(t);l=Math.max(0,Math.min(8,Math.round(l)));
-      if(t<START||t>END)return;
-      const key=t+':'+l,c=counts.get(t)||0;
-      if(seen.has(key)||c>=2)return;
-      seen.add(key);counts.set(t,c+1);notes.push({timeMs:t,lane:l});
-    };
+    const beat=60000/BPM,q=beat/4,notes=[],seen=new Set(),count=new Map();
+    const add=(t,l)=>{t=Math.round(t);l=Math.max(0,Math.min(8,Math.round(l)));if(t<START||t>END)return;
+      const k=t+':'+l,c=count.get(t)||0;if(seen.has(k)||c>=2)return;seen.add(k);count.set(t,c+1);notes.push({timeMs:t,lane:l});};
     const chord=(t,a,b)=>{add(t,a);if(a!==b)add(t,b);};
-    const at=(bar,sub)=>START+(bar*16+sub)*q;
-    const section=(a,b,fn)=>{for(let bar=a;bar<b;bar++)fn(bar,s=>at(bar,s));};
+    const at=(bar,s)=>START+(bar*16+s)*q;
+    const sec=(a,b,fn)=>{for(let bar=a;bar<b;bar++)fn(bar,s=>at(bar,s));};
 
-    section(0,10,(bar,t)=>{
-      const seq=bar%2?[7,5,4,3,1,4]:[1,3,4,5,7,4];
-      [0,3,6,8,11,14].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar%3===2)chord(t(15),2,6);
+    // HPT-like intro/verse language: inner lanes, off-beats and phrase-ending doubles.
+    sec(0,18,(bar,t)=>{
+      const flip=bar&1;
+      chord(t(0),flip?2:1,flip?6:7);
+      [3,6,10,13].forEach((s,i)=>add(t(s),flip?[6,5,3,2][i]:[2,3,5,6][i]));
+      if(bar%4===3)chord(t(15),3,5); else add(t(15),flip?6:2);
     });
 
-    section(10,38,(bar,t)=>{
-      const v=bar%4;
-      const seq=[[1,2,4,3,5,7,6,4],[7,6,4,5,3,1,2,4],[2,4,6,5,3,4,7,1],[6,4,2,3,5,4,1,7]][v];
-      [0,2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar%4===3){add(t(13),4);chord(t(15),1,7);}
+    sec(18,58,(bar,t)=>{
+      const seqs=[[1,2,3,2,5,6,5],[7,6,5,6,3,2,3],[2,3,1,3,6,5,7],[6,5,7,5,2,3,1]];
+      const seq=seqs[bar%4];
+      [0,3,5,8,10,13,15].forEach((s,i)=>add(t(s),seq[i]));
+      if(bar%8===6)chord(t(7),2,6);
     });
 
-    section(38,54,(bar,t)=>{
-      const left=bar%2===0, anchor=left?1:7;
-      const run=left?[2,3,4,5,6]:[6,5,4,3,2];
-      chord(t(0),anchor,4);add(t(2),anchor);
-      [4,6,8,10,12].forEach((s,i)=>add(t(s),run[i]));
-      chord(t(14),anchor,left?6:2);add(t(15),4);
+    // HPT axis-jack build with occasional Spica-like 16th pickups.
+    sec(58,78,(bar,t)=>{
+      const right=(bar%6)>=3,axis=right?6:2,inner=right?5:3,outer=right?7:1;
+      [0,2,4].forEach((s,i)=>add(t(s),i===1?inner:axis));
+      add(t(7),outer);add(t(9),axis);add(t(11),inner);
+      if(bar%3===2){add(t(13),axis);chord(t(15),right?2:6,axis);} else add(t(15),inner);
     });
 
-    section(54,82,(bar,t)=>{
-      const type=bar%7;
-      const P=[
-        ()=>{chord(t(0),0,8);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[2,4,6,5,3,4][i]));chord(t(14),1,7);},
-        ()=>{[0,2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),[7,5,3,4,6,2,4,1][i]));},
-        ()=>{chord(t(0),2,6);add(t(1),4);add(t(3),5);add(t(5),7);add(t(7),4);add(t(9),1);add(t(11),3);chord(t(14),0,8);},
-        ()=>{[0,1,3,5,7,9,11,13,15].forEach((s,i)=>add(t(s),[1,3,5,7,6,4,2,3,4][i]));},
-        ()=>{chord(t(0),1,7);add(t(2),4);chord(t(4),2,6);add(t(6),3);add(t(8),5);chord(t(10),0,8);add(t(12),4);chord(t(14),3,5);},
-        ()=>{[0,2,3,5,6,8,10,12,14].forEach((s,i)=>add(t(s),[8,6,4,2,0,3,5,7,4][i]));},
-        ()=>{chord(t(0),3,5);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),i%2?6:2));chord(t(14),1,7);}
-      ];P[type]();
+    // Chorus: wide-to-inner gestures, alternating hands, short dense answers.
+    sec(78,116,(bar,t)=>{
+      const type=bar%4;
+      if(type===0){chord(t(0),1,7);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[3,5,3,2,3,5][i]));chord(t(15),2,6);}
+      if(type===1){[0,2,4,6,8,10,12,15].forEach((s,i)=>add(t(s),[7,6,5,6,3,2,3,1][i]));}
+      if(type===2){chord(t(0),2,6);[2,4,7,9,11,13].forEach((s,i)=>add(t(s),[5,3,5,6,5,3][i]));chord(t(15),1,7);}
+      if(type===3){[0,1,3,5,7,9,11,13,15].forEach((s,i)=>add(t(s),[1,2,3,2,6,5,6,7,4][i]));}
     });
 
-    section(82,98,(bar,t)=>{
-      const seq=bar%2?[8,6,4,2,0,3,5,7]:[0,2,4,6,8,5,3,1];
-      [0,2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),seq[i]));
-      [5,11].forEach((s,i)=>add(t(s),bar%2?(i?2:6):(i?6:2)));
-      if(bar%4===3)chord(t(15),0,8);
+    // Mid-song: swing across the screen, with more breathing room before the second build.
+    sec(116,146,(bar,t)=>{
+      const seqs=[[0,2,3,6,7,5,2],[8,6,5,2,1,3,6],[1,3,5,7,6,3,2],[7,5,3,1,2,5,6]];
+      [0,2,4,7,9,12,15].forEach((s,i)=>add(t(s),seqs[bar%4][i]));
+      if(bar%5===4)chord(t(6),2,6);
     });
 
-    section(98,126,(bar,t)=>{
+    sec(146,168,(bar,t)=>{
+      const flip=bar&1,seq=flip?[6,7,5,6,3,2,3]:[2,1,3,2,5,6,5];
+      [0,3,5,8,10,13,15].forEach((s,i)=>add(t(s),seq[i]));
+      if(bar%6===5)chord(t(7),1,7);
+    });
+
+    sec(168,184,(bar,t)=>{
+      const right=bar&1,axis=right?6:2,answer=right?5:3,far=right?7:1;
+      add(t(0),axis);add(t(2),answer);add(t(4),axis);
+      chord(t(6),right?2:6,axis);
+      add(t(9),far);add(t(11),axis);add(t(13),answer);add(t(15),axis);
+    });
+
+    // Final chorus: busiest section, but still only two-thumb-safe starts.
+    sec(184,244,(bar,t)=>{
       const type=bar%6;
-      const seqs=[[2,3,5,4,6,7,4,1],[6,5,3,4,2,1,4,7],[0,4,2,6,4,8,5,3],[8,4,6,2,4,0,3,5],[1,4,7,5,2,4,6,3],[7,4,1,3,6,4,2,5]];
-      const subs=type%2?[0,1,4,6,8,11,13,15]:[0,2,4,5,8,10,12,14];
-      subs.forEach((s,i)=>add(t(s),seqs[type][i]));
-      if(type===2||type===5)chord(t(7),2,6);
+      if(type===0){chord(t(0),1,7);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[2,3,5,6,5,3][i]));chord(t(15),2,6);}
+      if(type===1){[0,1,3,5,7,9,11,13,15].forEach((s,i)=>add(t(s),[7,6,5,6,5,3,2,3,1][i]));}
+      if(type===2){chord(t(0),2,6);[2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),[3,5,3,6,5,7,4][i]));}
+      if(type===3){[0,2,3,5,6,8,10,12,14,15].forEach((s,i)=>add(t(s),[1,3,5,7,6,4,2,3,5,4][i]));}
+      if(type===4){chord(t(0),0,8);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[2,4,6,3,5,4][i]));chord(t(15),1,7);}
+      if(type===5){[0,1,2,4,6,8,10,12,14,15].forEach((s,i)=>add(t(s),[7,5,3,1,2,4,6,8,5,4][i]));}
     });
 
-    section(126,142,(bar,t)=>{
-      const flip=bar%2, a=flip?7:1;
-      chord(t(0),a,4);add(t(1),a);
-      [3,5,7,9,11,13].forEach((s,i)=>add(t(s),flip?[6,5,4,3,2,4][i]:[2,3,4,5,6,4][i]));
-      chord(t(15),flip?0:1,flip?8:7);
-    });
-
-    section(142,170,(bar,t)=>{
-      const type=bar%8;
-      const actions=[
-        ()=>{chord(t(0),0,8);add(t(1),4);[3,5,7,9,11,13].forEach((s,i)=>add(t(s),[2,6,3,5,1,7][i]));chord(t(15),2,6);},
-        ()=>{[0,2,4,6,8,10,12,14,15].forEach((s,i)=>add(t(s),[1,4,7,5,2,6,3,8,4][i]));},
-        ()=>{chord(t(0),1,7);chord(t(4),2,6);chord(t(8),3,5);add(t(10),4);add(t(11),2);add(t(12),4);add(t(13),6);chord(t(15),0,8);},
-        ()=>{[0,1,2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),[8,7,5,3,1,4,6,2,4][i]));},
-        ()=>{chord(t(0),2,6);[2,3,5,6,8,9,11,12,14].forEach((s,i)=>add(t(s),i%2?[7,1,6,2,5][Math.floor(i/2)]:4));},
-        ()=>{[0,2,4,5,7,9,10,12,14,15].forEach((s,i)=>add(t(s),[0,3,6,8,5,2,4,7,1,4][i]));},
-        ()=>{chord(t(0),3,5);add(t(2),4);chord(t(3),1,7);add(t(5),4);chord(t(7),0,8);add(t(9),3);add(t(11),5);chord(t(13),2,6);add(t(15),4);},
-        ()=>{[0,1,3,4,6,7,9,10,12,13,15].forEach((s,i)=>add(t(s),[1,3,5,7,6,4,2,0,3,6,4][i]));}
-      ];actions[type]();
-    });
-
-    section(170,190,(bar,t)=>{
-      const pair=bar%4===0?[2,5]:bar%4===1?[3,6]:bar%4===2?[1,4]:[4,7];
-      for(let s=0;s<16;s+=2)add(t(s),pair[(s/2)%2]);
-      [1,5,9,13].forEach((s,i)=>add(t(s),i%2?8:0));
-      if(bar%5===4)chord(t(15),1,7);
-    });
-
-    section(190,202,(bar,t)=>{
-      const seq=bar%2?[7,6,4,2,3,5]:[1,2,4,6,5,3];
-      [0,3,6,9,12,15].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar>=198){add(t(13),4);chord(t(15),2,6);}
-    });
-
-    section(202,238,(bar,t)=>{
-      const type=bar%6;
-      const seqs=[[0,2,4,6,8,7,5,3,1,4,6,2],[8,6,4,2,0,1,3,5,7,4,2,6],[1,3,5,7,6,4,2,0,3,5,7,4],[7,5,3,1,2,4,6,8,5,3,1,4],[2,4,6,3,5,7,4,1,3,5,2,6],[6,4,2,5,3,1,4,7,5,3,6,2]][type];
-      [0,1,3,4,6,7,8,10,11,12,14,15].forEach((s,i)=>add(t(s),seqs[i]));
-      if(type===0||type===3)chord(t(2),1,7);
-      if(type===2||type===5)chord(t(13),0,8);
-    });
-
-    section(238,244,(bar,t)=>{
-      const seq=bar%2?[8,6,4,2,0,4]:[0,2,4,6,8,4];
-      [0,2,5,8,11,14].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar===243)chord(t(15),0,8);else chord(t(15),2,6);
-    });
-
-    function applyHolds(specs){
-      const accepted=[];
-      for(const spec of specs){
-        const start=Math.round(at(spec.bar,spec.sub||0));
-        const end=Math.round(at(spec.bar,spec.endSub));
-        if(end<=start+260||accepted.some(h=>start<h.end+180&&end>h.start-180))continue;
-        const freeSide=spec.freeSide||(spec.lane<4?'right':spec.lane>4?'left':'right');
-        const kept=[],byTime=new Map();
-        for(const n of notes){
-          if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
-          if(n.holdVisualOnly)continue;
-          if(Math.abs(n.timeMs-start)<=25||Math.abs(n.timeMs-end)<=25)continue;
-          if(n.lane===spec.lane)continue;
-          const ok=freeSide==='left'?n.lane<=3:n.lane>=5;
-          if(!ok)continue;
-          const prev=byTime.get(n.timeMs);
-          if(!prev||Math.abs(n.lane-spec.lane)>Math.abs(prev.lane-spec.lane))byTime.set(n.timeMs,n);
-        }
-        kept.push(...byTime.values(),{timeMs:start,lane:spec.lane,holdEndMs:end,holdVisualOnly:true});
-        notes.length=0;notes.push(...kept);
-        accepted.push({start,end});
-      }
-      return accepted.length;
-    }
-    const holdCount=applyHolds([
-      {bar:6,endSub:8,lane:1,freeSide:'right'},
-      {bar:18,endSub:6,lane:7,freeSide:'left'},
-      {bar:32,endSub:8,lane:2,freeSide:'right'},
-      {bar:46,endSub:6,lane:6,freeSide:'left'},
-      {bar:60,endSub:8,lane:1,freeSide:'right'},
-      {bar:76,endSub:6,lane:7,freeSide:'left'},
-      {bar:90,endSub:8,lane:2,freeSide:'right'},
-      {bar:104,endSub:6,lane:6,freeSide:'left'},
-      {bar:118,endSub:8,lane:1,freeSide:'right'},
-      {bar:134,endSub:6,lane:7,freeSide:'left'},
-      {bar:148,endSub:8,lane:2,freeSide:'right'},
-      {bar:162,endSub:6,lane:6,freeSide:'left'},
-      {bar:178,endSub:8,lane:1,freeSide:'right'},
-      {bar:194,endSub:6,lane:7,freeSide:'left'},
-      {bar:210,endSub:8,lane:2,freeSide:'right'},
-      {bar:228,endSub:6,lane:6,freeSide:'left'}
-    ]);
-
+    // Rolling burst safety, copied from the Spica philosophy.
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-    if(notes.length>TARGET){
-      const grouped=new Map();notes.forEach((n,i)=>{if(!grouped.has(n.timeMs))grouped.set(n.timeMs,[]);grouped.get(n.timeMs).push(i);});
-      const removable=[];notes.forEach((n,i)=>{if(!n.holdVisualOnly&&grouped.get(n.timeMs).length===1)removable.push(i);});
-      const excess=Math.min(notes.length-TARGET,removable.length),remove=new Set();
-      for(let k=0;k<excess;k++)remove.add(removable[Math.min(removable.length-1,Math.floor((k+.5)*removable.length/excess))]);
-      const trimmed=notes.filter((_,i)=>!remove.has(i));
-      return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:trimmed.length,holdCount,notes:trimmed};
+    const safe=[];
+    for(const n of notes){
+      const recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+      if(recent.length>=2)continue;
+      safe.push(n);
     }
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,holdCount,notes};
+
+    const side=l=>l<4?-1:l>4?1:0;
+    let heldUntil=-Infinity,holdCount=0;
+    for(let i=0;i<safe.length&&holdCount<34;i++){
+      const n=safe[i];
+      if(n.lane===4||n.timeMs<heldUntil+220||i%13!==4)continue;
+      const s=side(n.lane);
+      let hazard=n.timeMs+q*8; // up to two beats
+      const inside=safe.filter(x=>x.timeMs>n.timeMs&&x.timeMs<hazard);
+      for(const x of inside){
+        if(side(x.lane)===s){hazard=Math.min(hazard,x.timeMs-130);break;}
+      }
+      const free=inside.filter(x=>side(x.lane)!==s);
+      for(let a=0;a<free.length;a++)for(let b=a+1;b<free.length;b++){
+        if(free[b].timeMs-free[a].timeMs<115)hazard=Math.min(hazard,free[b].timeMs-130);
+      }
+      let steps=Math.min(8,Math.floor((hazard-n.timeMs)/q));
+      if(steps<4)continue;
+      n.holdEndMs=Math.round(n.timeMs+steps*q);n.holdVisualOnly=true;
+      heldUntil=n.holdEndMs;holdCount++;
+    }
+
+    const final=[];
+    for(const n of safe){
+      const active=safe.find(h=>h.holdVisualOnly&&n!==h&&n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs);
+      if(!active){final.push(n);continue;}
+      if(side(n.lane)===side(active.lane)||n.lane===active.lane)continue;
+      if(final.some(x=>x.timeMs===n.timeMs&&x!==active))continue;
+      final.push(n);
+    }
+
+    final.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount,notes:final};
   }
 
   function applyGenyoChart(){
