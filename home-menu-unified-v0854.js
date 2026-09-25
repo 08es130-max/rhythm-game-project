@@ -1,4 +1,4 @@
-// Ver.0.8.219: restore full-size display; safe area is baked into regenerated icon canvases.
+// Ver.0.8.220: use newly generated full-safe-area icon assets.
 (function(){
   'use strict';
 
@@ -11,7 +11,7 @@
     ['homeGachaBtn','勧誘','gacha']
   ];
   const ASSET_BASE='assets/ui/home-v0855/';
-  const EMBEDDED=window.LOVEFES_HOME_V0855_ASSETS||{};
+  const EMBEDDED=window.LOVEFES_HOME_V0220_ASSETS||{};
 
   function ensureStyle(){
     if(document.getElementById('homeMenuUnifiedV0854Style')) return;
