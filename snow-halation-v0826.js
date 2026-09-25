@@ -1,4 +1,4 @@
-// Ver.0.8.226: Snow halation full-song two-thumb chart.
+// Ver.0.8.227: Snow halation hold density raised toward HPT level.
 (function(){
   'use strict';
   const TITLE='Snow halation';
@@ -114,7 +114,7 @@
     function finalize(raw){
       let work=raw.map(n=>({...n})).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
       const side=l=>l<4?-1:l>4?1:0;
-      const holdBars=[10,14,18,22,26,30,34,38,42,47,52,57,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,151,155,159,163,167,171,175,179,183];
+      const holdBars=[8,10,14,18,22,26,30,34,38,42,45,47,52,57,62,67,72,77,82,87,92,97,102,107,112,117,122,127,132,137,142,147,151,155,159,163,167,171,175,179,183,185];
       const lens=[8,10,6,12,8,6];
       const lanes=[1,7,2,6];
       const accepted=[];
