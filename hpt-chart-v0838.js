@@ -342,14 +342,138 @@
       holdCount++;
     }
 
-    notes.length=0;
-    notes.push(...sortedFirst,...continuation);
+    // Ver.0.8.216: extend the approved first-part design into verse 2 and the final chorus.
+    // Keep the first 102.353s untouched. Reuse its authored rhythm/hold language, not the
+    // older generic continuation, for the matching late-song sections.
+    const SECOND_START_MS=Math.round(at(136,0));
+    const FINAL_START_MS=Math.round(at(174,0));
+    const FINAL_END_MS=END_MS;
 
+    function cloneApprovedSection(sourceFrom,sourceTo,targetStart,targetEnd,mirror=false){
+      const shift=targetStart-sourceFrom;
+      const out=[];
+      for(const src of sortedFirst){
+        if(src.timeMs<sourceFrom||src.timeMs>sourceTo)continue;
+        if(Number.isFinite(src.holdEndMs)&&src.holdEndMs>sourceTo)continue;
+        const timeMs=src.timeMs+shift;
+        if(timeMs>targetEnd)continue;
+        const lane=mirror?8-src.lane:src.lane;
+        const n={timeMs,lane};
+        if(Number.isFinite(src.holdEndMs)){
+          const holdEndMs=src.holdEndMs+shift;
+          if(holdEndMs<=targetEnd){
+            n.holdEndMs=holdEndMs;
+            n.holdVisualOnly=true;
+          }
+        }
+        out.push(n);
+      }
+      return out;
+    }
+
+    // Verse 2: reuse ~54s of the approved first part, mirrored so it feels related
+    // without becoming a literal visual repeat.
+    const secondSourceFrom=4765;
+    const secondSourceTo=58765;
+    let secondPart=cloneApprovedSection(
+      secondSourceFrom,secondSourceTo,
+      SECOND_START_MS,FINAL_START_MS-1,
+      true
+    );
+
+    // Final chorus: reuse the densest final ~30s of the approved first part.
+    // Keep the original orientation so the song's final return feels familiar.
+    const finalSourceFrom=72441;
+    const finalSourceTo=SIF_FIRST_END_MS;
+    let finalPart=cloneApprovedSection(
+      finalSourceFrom,finalSourceTo,
+      FINAL_START_MS,FINAL_END_MS,
+      false
+    );
+
+    // A small finale-only lift: add safe opposite-side chord accents at selected
+    // single-note moments. Never alter holds, never exceed two simultaneous starts,
+    // and never create an effective three-finger pattern inside a running hold.
+    function addFinaleAccents(section,targetCount){
+      const out=[...section].sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      let added=0;
+      const times=[...new Set(out.map(n=>n.timeMs))];
+      for(const t of times){
+        if(added>=targetCount)break;
+        const same=out.filter(n=>n.timeMs===t);
+        if(same.length!==1)continue;
+        const base=same[0];
+        if(base.holdVisualOnly)continue;
+        const active=out.find(h=>Number.isFinite(h.holdEndMs)&&t>h.timeMs&&t<h.holdEndMs);
+        if(active)continue;
+        const recent=out.filter(n=>Math.abs(n.timeMs-t)<115);
+        if(recent.length!==1)continue;
+        const partner=base.lane<4?Math.max(5,8-base.lane):base.lane>4?Math.min(3,8-base.lane):(added&1?2:6);
+        if(partner===base.lane)continue;
+        out.push({timeMs:t,lane:partner});
+        added++;
+      }
+      return out.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    }
+    finalPart=addFinaleAccents(finalPart,18);
+
+    // Preserve only the middle instrumental bridge from the old authored continuation.
+    const bridge=continuation.filter(n=>n.timeMs<SECOND_START_MS);
+
+    notes.length=0;
+    notes.push(...sortedFirst,...bridge,...secondPart,...finalPart);
+
+    // Absolute LoveFes playability guard for the newly generated late-song sections.
+    // First part is already approved and remains byte-for-byte identical.
+    const protectedFirst=notes.filter(n=>n.timeMs<=SIF_FIRST_END_MS);
+    const late=notes.filter(n=>n.timeMs>SIF_FIRST_END_MS).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    const safeLate=[];
+    let activeHold=null;
+    let lastHoldEnd=-Infinity;
+    for(const src of late){
+      const n={...src};
+      if(activeHold&&n.timeMs>=activeHold.holdEndMs)activeHold=null;
+
+      if(Number.isFinite(n.holdEndMs)){
+        if(n.lane===4||activeHold||n.timeMs<lastHoldEnd+220){
+          delete n.holdEndMs; delete n.holdVisualOnly;
+        }else{
+          activeHold=n;
+          lastHoldEnd=n.holdEndMs;
+        }
+      }
+
+      if(activeHold&&n!==activeHold&&n.timeMs>activeHold.timeMs&&n.timeMs<activeHold.holdEndMs){
+        const heldSide=side(activeHold.lane);
+        if(side(n.lane)===heldSide||n.lane===activeHold.lane)continue;
+        const tapInWindow=safeLate.some(x=>
+          x!==activeHold&&!x.holdVisualOnly&&
+          x.timeMs>activeHold.timeMs&&x.timeMs<activeHold.holdEndMs&&
+          Math.abs(x.timeMs-n.timeMs)<115
+        );
+        if(tapInWindow)continue;
+      }
+
+      const recent=safeLate.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+      if(recent.length>=2)continue;
+      const same=safeLate.filter(x=>Math.abs(x.timeMs-n.timeMs)<=18);
+      if(same.length>=2||same.some(x=>x.lane===n.lane))continue;
+      if(same.length===1){
+        const sa=side(same[0].lane),sb=side(n.lane);
+        if(sa!==0&&sa===sb){
+          n.lane=same[0].lane<4?Math.max(5,8-same[0].lane):Math.min(3,8-same[0].lane);
+        }
+      }
+      safeLate.push(n);
+    }
+
+    notes.length=0;
+    notes.push(...protectedFirst,...safeLate);
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     return {
       title:'HAPPY PARTY TRAIN',
       artist:'Aqours',
-      difficulty:'EXPERT / SIF本家1番再現＋ロング・二本指向け',
+      difficulty:'EXPERT / SIF本家基準・全曲二本指向け',
       bpm:BPM,
       offsetMs:0,
       noteCount:notes.length,
