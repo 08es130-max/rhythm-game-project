@@ -1,7 +1,7 @@
-// Ver.0.8.37: Pointer Events input + buffered tap SFX.
+// Ver.0.8.221: Pointer Events input + buffered tap SFX + assist judgment windows.
 (function(){
   'use strict';
-  const VERSION='0.8.37';
+  const VERSION='0.8.221';
   let ref=null;
   let lanes=Array.from({length:9},()=>[]);
   let cursors=Array(9).fill(0);
@@ -17,6 +17,37 @@
     }
   }
   function ensure(){if(ref!==activeNotes)rebuild();}
+  const ASSIST_NEIGHBOR_GUARD_MS=10;
+  function assistEnabled(){
+    try{return typeof isPerfectAssistEnabled==='function'&&isPerfectAssistEnabled();}catch(_){return false;}
+  }
+  function maxHitWindow(){
+    try{return typeof getComboAssistWindow==='function'?getComboAssistWindow():HIT_WINDOWS.good;}catch(_){return HIT_WINDOWS.good;}
+  }
+  function gradeForAbs(abs){
+    try{return typeof getAssistGrade==='function'?getAssistGrade(abs):(abs<=getPerfectWindow()?'perfect':abs<=HIT_WINDOWS.great?'great':'good');}
+    catch(_){return abs<=HIT_WINDOWS.perfect?'perfect':abs<=HIT_WINDOWS.great?'great':'good';}
+  }
+  function noteWindows(list,index){
+    if(!assistEnabled())return {early:HIT_WINDOWS.good,late:HIT_WINDOWS.good};
+    const n=list[index];
+    let early=maxHitWindow(),late=maxHitWindow();
+    const prev=list[index-1],next=list[index+1];
+    if(prev&&Number.isFinite(prev.timeMs)){
+      early=Math.min(early,Math.max(0,(n.timeMs-prev.timeMs)/2-ASSIST_NEIGHBOR_GUARD_MS));
+    }
+    if(next&&Number.isFinite(next.timeMs)){
+      late=Math.min(late,Math.max(0,(next.timeMs-n.timeMs)/2-ASSIST_NEIGHBOR_GUARD_MS));
+    }
+    return {early,late};
+  }
+  function noteInWindow(list,index,now){
+    const n=list[index];
+    if(!n)return false;
+    const delta=now-n.timeMs;
+    const w=noteWindows(list,index);
+    return delta<0?(-delta<=w.early):(delta<=w.late);
+  }
   function toPerfTimestamp(ts){
     let v=Number(ts);
     if(!Number.isFinite(v)||v<=0)return performance.now();
@@ -91,7 +122,7 @@
   }
   function diagCandidate(lane,whenMs){
     ensure();
-    const win=HIT_WINDOWS.good;
+    const win=maxHitWindow();
     let best=null,bestDelta=null;
     for(const n of (lanes[lane]||[])){
       if(!n||n.finished||n.hit||n.missRegistered||n.holdStarted)continue;
@@ -105,14 +136,14 @@
     ensure();
     const list=lanes[lane];
     if(!list)return null;
-    const win=HIT_WINDOWS.good;
-    let best=null,bestAbs=Infinity;
-    for(const n of list){
+    let best=null,bestAbs=Infinity,bestIndex=-1;
+    for(let i=0;i<list.length;i++){
+      const n=list[i];
       if(!n.holdVisualOnly||!Number.isFinite(n.holdEndMs)||n.holdStarted||n.missRegistered)continue;
       const d=Math.abs(now-n.timeMs);
-      if(d<=win&&d<bestAbs){best=n;bestAbs=d;}
+      if(noteInWindow(list,i,now)&&d<bestAbs){best=n;bestAbs=d;bestIndex=i;}
     }
-    return best?{note:best,abs:bestAbs}:null;
+    return best?{note:best,abs:bestAbs,index:bestIndex}:null;
   }
 
   function startHoldIfPresent(lane,whenMs,pointerId){
@@ -121,9 +152,7 @@
     if(!found)return false;
     diag('hold-start',{lane,delta:Math.round(now-found.note.timeMs),pointerId});
     const n=found.note;
-    let grade='good';
-    if(found.abs<=getPerfectWindow())grade='perfect';
-    else if(found.abs<=HIT_WINDOWS.great)grade='great';
+    const grade=gradeForAbs(found.abs);
     // Stage 1: record hold state only. End/release judgment and extra scoring are intentionally not added yet.
     n.holdStarted=true;
     n.holdPointerId=pointerId;
@@ -156,7 +185,7 @@
     const list=lanes[lane];
     if(!list)return;
     const now=Number.isFinite(whenMs)?whenMs:currentMs();
-    const win=HIT_WINDOWS.good;
+    const win=maxHitWindow();
     let i=cursors[lane]||0;
     while(i<list.length){
       const n=list[i];
@@ -170,17 +199,15 @@
       if(n.timeMs>now+win)break;
       if(n.finished||n.hit||n.missRegistered)continue;
       const d=Math.abs(now-n.timeMs);
-      if(d<best){best=d;candidate=n;bestIndex=j;}
+      if(noteInWindow(list,j,now)&&d<best){best=d;candidate=n;bestIndex=j;}
     }
     if(!candidate){
       const d=diagCandidate(lane,now);
       diag('no-candidate',{lane,pointerId:null,...d});
       return;
     }
-    diag('tap-hit',{lane,delta:Math.round(now-candidate.timeMs),grade:best<=getPerfectWindow()?'perfect':best<=HIT_WINDOWS.great?'great':'good'});
-    let grade='good';
-    if(best<=getPerfectWindow())grade='perfect';
-    else if(best<=HIT_WINDOWS.great)grade='great';
+    const grade=gradeForAbs(best);
+    diag('tap-hit',{lane,delta:Math.round(now-candidate.timeMs),grade});
     registerHit(candidate,grade);
     playTapSound(grade);
     if(bestIndex===cursors[lane]){
@@ -255,7 +282,7 @@
     let hitWhenMs=whenMs;
     if(holdPointers.size>0){
       ensure();
-      const win=HIT_WINDOWS.good;
+      const win=maxHitWindow();
       // iOS/PWA can report a PointerEvent timeStamp about 100-150ms behind the
       // actual game clock during multi-touch. That made valid free-thumb taps fall
       // outside GOOD even though pointerdown itself reached the game. For hold-free
@@ -302,10 +329,8 @@
     const delta=whenMs-n.holdEndMs;
     diag('hold-release',{lane:n.lane,delta:Math.round(delta),start:n.timeMs,end:n.holdEndMs,pointerId:n.holdPointerId});
     const abs=Math.abs(delta);
-    if(abs<=HIT_WINDOWS.good){
-      let grade='good';
-      if(abs<=getPerfectWindow())grade='perfect';
-      else if(abs<=HIT_WINDOWS.great)grade='great';
+    if(abs<=maxHitWindow()){
+      const grade=gradeForAbs(abs);
       n.holdEndGrade=grade;
       n.holdResolved=true;
       n.hit=true;
