@@ -373,8 +373,10 @@
     // Make the full verse-2 window an exact time-shifted copy of the equally long
     // closing window of the approved first section.
     const secondDuration=FINAL_START_MS-SECOND_START_MS;
-    const secondSourceTo=SIF_FIRST_END_MS;
-    const secondSourceFrom=secondSourceTo-secondDuration;
+    // Exact 53.647s template from the approved first section.
+    // This window keeps the same dense tap/hold balance that made verse 1 feel right.
+    const secondSourceFrom=6000;
+    const secondSourceTo=secondSourceFrom+secondDuration;
     const secondPart=exactCloneWindow(
       secondSourceFrom,secondSourceTo,
       SECOND_START_MS,FINAL_START_MS-1
@@ -383,8 +385,10 @@
     // The final chorus likewise uses the equally long tail of the approved first
     // section. This keeps every tap/chord/hold relationship identical.
     const finalDuration=FINAL_END_MS-FINAL_START_MS;
-    const finalSourceTo=SIF_FIRST_END_MS;
-    const finalSourceFrom=finalSourceTo-finalDuration;
+    // Exact ~30s chorus template from the approved first section, chosen from the
+    // dense hold-rich middle/late passage rather than the hold-free tail.
+    const finalSourceFrom=41000;
+    const finalSourceTo=finalSourceFrom+finalDuration;
     const finalPart=exactCloneWindow(
       finalSourceFrom,finalSourceTo,
       FINAL_START_MS,FINAL_END_MS
