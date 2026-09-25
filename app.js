@@ -33,7 +33,7 @@ const rScore = document.getElementById('rScore');
 const laneKeys = ['KeyA','KeyS','KeyD','KeyF','Space','KeyJ','KeyK','KeyL','Semicolon'];
 const laneArtworks = Array.from({length:9}, () => 'icon-192.png');
 const HIT_WINDOWS = {perfect:45, great:85, good:150};
-const MISS_WINDOW = 150;
+const MISS_WINDOW = 180;
 const TRAIL_MS = 420;
 
 let chart = null;
