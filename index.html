@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="home-layering-v0814.css?v=0.8.101-lrmenu1" />
 <link rel="stylesheet" href="gacha-v045.css?v=0.8.176-lrenvelope2" data-gacha-patch="046" />
 <script>
-window.APP_VERSION = '0.8.220';
+window.APP_VERSION = '0.8.221';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -108,7 +108,7 @@ window.location.replace(url.toString());
 <div class="screen-header"><button class="home-back-btn" data-home type="button">ホーム</button><h1>設定</h1></div>
 <div class="screen-panel settings-grid">
 <div class="setting-card"><label>ノーツ速度<input id="speed" type="range" min="0.7" max="4.0" step="0.1" value="2.4" /><span id="speedValue">2.4x</span></label><div>保存値: <span id="speedSummary" class="settings-value">2.4x</span></div></div>
-<div class="setting-card"><label class="assist-setting" title="ONにするとPERFECT判定を±45msから±70msへ広げます。"><input id="perfectAssist" type="checkbox" /><span>判定強化 ON/OFF<br><small>PERFECT判定を広げる</small></span></label><div>現在: <span id="assistSummary" class="settings-value">OFF（PERFECT ±45ms）</span></div></div>
+<div class="setting-card"><label class="assist-setting" title="ONにするとPERFECTを±70msへ拡大し、コンボ受付を最大±180msまで広げます。GOODは出ず、最低GREATになります。近接ノーツでは受付範囲を自動調整します。"><input id="perfectAssist" type="checkbox" /><span>判定強化 ON/OFF<br><small>PERFECT拡大・コンボ補助・GOODなし</small></span></label><div>現在: <span id="assistSummary" class="settings-value">OFF（通常判定）</span></div></div>
 <div class="setting-card app-update-card"><div>アプリ更新</div><button id="forceLatestBtn" class="timing-adjust-btn" type="button">最新版にする</button><small id="forceLatestStatus">PWAのキャッシュを更新して最新版を読み込みます。</small></div>
 <div class="setting-card"><div>判定タイミング: <span id="timingCurrentValue" class="settings-value timing-current">0 ms</span></div><button id="timingAdjustBtn" class="timing-adjust-btn" type="button">判定調整を開く</button><input id="offset" type="hidden" value="0" /></div>
 </div>
@@ -132,8 +132,8 @@ window.location.replace(url.toString());
 <script src="assets/lr/embed/card-03.js?v=0.8.93-lrcard3"></script>
 <script src="assets/lr/embed/card-04.js?v=0.8.93-lrcard3"></script>
 <script src="gacha-data-v045.js?v=0.8.148-nijiorder1"></script>
-<script src="app.js?v=0.8.158-simbar1"></script>
-<script src="settings.js?v=0.8.140-update3"></script>
+<script src="app.js?v=0.8.221-assistmiss1"></script>
+<script src="settings.js?v=0.8.221-assist1"></script>
 <script src="tap-boost.js?v=0.5.7"></script>
 <script src="voice-events.js?v=0.5.7"></script>
 <script src="voice-manager.js?v=0.8.45-voice1"></script>
@@ -166,7 +166,7 @@ window.location.replace(url.toString());
 <script src="runtime-tuning-v074.js?v=0.8.2"></script>
 <script src="songs-v075.js?v=0.8.75-preserve1"></script>
 <script src="songs-v077.js?v=0.8.72-cross1"></script>
-<script src="input-fix-v077.js?v=0.8.200-holdtiming1"></script>
+<script src="input-fix-v077.js?v=0.8.221-assist1"></script>
 <script src="song-select-v082.js?v=0.8.75-launch1"></script>
 <script src="dazzling-game-v0841.js?v=0.8.178-holdchart1"></script>
 <script src="hpt-chart-v0838.js?v=0.8.218-hptphrase1"></script>
@@ -202,7 +202,7 @@ window.location.replace(url.toString());
 <script src="story-polish-v087.js?v=0.8.140-versionfix1"></script>
 <script src="story-icon-v0827.js?v=0.8.37-story-icon6"></script>
 <script src="assets/ui/home-v0220/home-icons-v0220.js?v=0.8.220-icons1"></script>\n<script src="home-menu-unified-v0854.js?v=0.8.220-safeicons1"></script>
-<script src="version-final-v0845.js?v=0.8.220-final144"></script>
+<script src="version-final-v0845.js?v=0.8.221-final145"></script>
 <script>
 document.addEventListener('click',async(e)=>{
   if(e.target?.id!=='copyInputDiagBtn')return;
