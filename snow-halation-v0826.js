@@ -1,4 +1,4 @@
-// Ver.0.8.229: Snow halation rebuilt from song-section rhythm, with early/late holds and chorus density lifts.
+// Ver.0.8.230: Snow halation direct-launch guard; bypass stale cards and expose chart revision.
 (function(){
   'use strict';
   const TITLE='Snow halation';
@@ -316,7 +316,7 @@
     }
 
     const final=finalize(notes);
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,notes:final};
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,chartRevision:'snow-0829-rhythm1',notes:final};
   }
 
   async function prepare(){
@@ -349,4 +349,5 @@
   const library=document.getElementById('songLibraryScreen');
   if(library){new MutationObserver(()=>{if(!library.hidden)requestAnimationFrame(install);}).observe(library,{attributes:true,attributeFilter:['hidden']});if(!library.hidden)install();}
   window.makeSnowHalationChartV0829=makeChart;
+  window.prepareSnowHalationV0829=prepare;
 })();
