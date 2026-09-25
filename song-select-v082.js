@@ -1,4 +1,4 @@
-// Ver.0.8.230: direct-launch Snow halation latest chart instead of hidden source-card handler.
+// Ver.0.8.231: direct-launch rebuilt MASTER charts.
 (function(){
   const VERSION='0.8.2';
   const state={songs:[],filtered:[],index:0,category:'all',syncQueued:false};
@@ -89,10 +89,10 @@
 
       // Snow halation must always launch the latest chart directly.
       // Do not route through a possibly stale/duplicated hidden source card.
-      if(song.title==='Snow halation' && typeof window.prepareSnowHalationV0829==='function'){
-        window.prepareSnowHalationV0829();
-        return;
-      }
+      if(song.title==='Snow halation' && typeof window.prepareSnowHalationV0829==='function'){ window.prepareSnowHalationV0829(); return; }
+      if(song.title==='Boooooom Boooooom Bee!!' && typeof window.prepareBoooooomBeeV077==='function'){ window.prepareBoooooomBeeV077(); return; }
+      if(song.title==='Dazzling Game' && typeof window.prepareDazzlingGameV0841==='function'){ window.prepareDazzlingGameV0841(); return; }
+      if(song.title==='眩耀夜行' && typeof window.prepareGenyoYakoV0839==='function'){ window.prepareGenyoYakoV0839(); return; }
 
       const grid=document.getElementById('songLibraryGrid');
       if(!grid)return;
