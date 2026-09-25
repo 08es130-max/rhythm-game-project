@@ -1,15 +1,15 @@
-// Ver.0.8.231: direct-launch rebuilt MASTER charts.
+// Ver.0.8.233: deduplicate songs and derive BPM/NOTES/★ from latest chart data.
 (function(){
-  const VERSION='0.8.2';
+  const VERSION='0.8.233';
   const state={songs:[],filtered:[],index:0,category:'all',syncQueued:false};
   const CATEGORY_LABELS=[
     ['all','ALL'],['muse',"μ's"],['aqours','Aqours'],['nijigasaki','虹ヶ咲'],['liella','Liella!'],['custom','追加曲']
   ];
   const KNOWN={
-    'スピカテリブル':{category:'muse',notes:'1350',level:'★9',palette:['#5b67d8','#a55fcb','#71c9ee']},
-    'Snow halation':{category:'muse',notes:'1028',level:'★11',palette:['#73c9f4','#f7b6cf','#6078c8']},
-    'HAPPY PARTY TRAIN':{category:'aqours',notes:'--',level:'★9',palette:['#eb9a3a','#2c9c9d','#214c78']},
-    'Boooooom Boooooom Bee!!':{category:'nijigasaki',notes:'--',level:'★9',palette:['#ea5b98','#efb835','#6e4fc2']}
+    'スピカテリブル':{category:'muse',palette:['#5b67d8','#a55fcb','#71c9ee']},
+    'Snow halation':{category:'muse',palette:['#73c9f4','#f7b6cf','#6078c8']},
+    'HAPPY PARTY TRAIN':{category:'aqours',palette:['#eb9a3a','#2c9c9d','#214c78']},
+    'Boooooom Boooooom Bee!!':{category:'nijigasaki',palette:['#ea5b98','#efb835','#6e4fc2']}
   };
 
   function categoryFor(title,artist,badge){
@@ -33,10 +33,58 @@
     const difficulty=(s.split('/')[0]||'EXPERT').trim();
     return {bpm,difficulty};
   }
+  function chartStats(chart){
+    if(!chart||!Array.isArray(chart.notes)||!chart.notes.length)return null;
+    const notes=chart.notes.length;
+    const holds=chart.notes.filter(n=>Number.isFinite(n.holdEndMs)).length;
+    const first=chart.notes[0]?.timeMs??0;
+    const last=Math.max(...chart.notes.map(n=>Number.isFinite(n.holdEndMs)?n.holdEndMs:n.timeMs));
+    const durationSec=Math.max(1,(last-first)/1000);
+    const density=notes/durationSec;
+    const effective=notes+holds*2+Math.round(density*20);
+    let stars=5;
+    if(effective>=1650)stars=13;
+    else if(effective>=1500)stars=12;
+    else if(effective>=1350)stars=11;
+    else if(effective>=1200)stars=10;
+    else if(effective>=1050)stars=9;
+    else if(effective>=850)stars=8;
+    else if(effective>=650)stars=7;
+    else if(effective>=450)stars=6;
+    return {notes,holds,bpm:Number(chart.bpm)||null,durationSec,density,level:`★${stars}`};
+  }
+
+  function latestChartFor(title){
+    try{
+      if(title==='Snow halation'&&typeof window.makeSnowHalationChartV0829==='function')return window.makeSnowHalationChartV0829();
+      if(title==='Boooooom Boooooom Bee!!'&&typeof window.makeBoooooomBeeChartV077==='function')return window.makeBoooooomBeeChartV077();
+      if(title==='Dazzling Game'&&typeof window.makeDazzlingGameChartV0841==='function')return window.makeDazzlingGameChartV0841();
+      if(title==='眩耀夜行'&&typeof window.makeGenyoYakoChartV0839==='function')return window.makeGenyoYakoChartV0839();
+      if(title==='HAPPY PARTY TRAIN'&&typeof window.makeHappyPartyTrainChartV0838==='function')return window.makeHappyPartyTrainChartV0838();
+    }catch(e){console.warn('最新版譜面メタデータの取得に失敗:',title,e);}
+    return null;
+  }
+
+  async function refreshSpicaMeta(){
+    const song=state.songs.find(s=>s.title==='スピカテリブル');
+    if(!song||typeof window.makeSpicaMasterReferenceChart!=='function')return;
+    try{
+      const res=await fetch(`charts/spica-terrible.json?v=${window.APP_VERSION||''}&t=${Date.now()}`,{cache:'no-store'});
+      if(!res.ok)return;
+      const raw=await res.json();
+      const chart=window.makeSpicaMasterReferenceChart(raw);
+      const stats=chartStats(chart);
+      if(!stats)return;
+      song.notes=String(stats.notes);song.level=stats.level;
+      if(stats.bpm)song.bpm=String(stats.bpm);
+      render();
+    }catch(e){console.warn('スピカテリブルのメタデータ取得に失敗',e);}
+  }
+
   function collectSongs(){
     const grid=document.getElementById('songLibraryGrid');
     if(!grid)return [];
-    return [...grid.querySelectorAll('.song-library-card')].map((card,i)=>{
+    const mapped=[...grid.querySelectorAll('.song-library-card')].map((card,i)=>{
       const title=card.querySelector('h3')?.textContent?.trim()||`楽曲 ${i+1}`;
       const ps=card.querySelectorAll('p');
       const artist=ps[0]?.textContent?.trim()||'アーティスト未設定';
@@ -45,8 +93,31 @@
       const button=card.querySelector('button');
       const known=KNOWN[title]||{};
       const jacket=card.dataset.jacket||known.jacket||'';
-      return {id:card.dataset.song075||card.dataset.songId||`${title}:${i}`,title,artist,bpm:meta.bpm,difficulty:meta.difficulty,badge,hasLaunchButton:!!button,category:categoryFor(title,artist,badge),notes:known.notes||'--',level:known.level||'★--',palette:paletteFor(title),jacket};
+      const chart=latestChartFor(title);
+      const stats=chartStats(chart);
+      return {
+        id:card.dataset.song075||card.dataset.songId||`${title}:${i}`,
+        title,artist,
+        bpm:stats?.bpm?String(stats.bpm):meta.bpm,
+        difficulty:chart?.difficulty||meta.difficulty,
+        badge,hasLaunchButton:!!button,
+        category:categoryFor(title,artist,badge),
+        notes:stats?String(stats.notes):'--',
+        level:stats?.level||'★--',
+        holds:stats?.holds??null,
+        palette:paletteFor(title),jacket,
+        _sourceIndex:i
+      };
     }).filter(s=>s.hasLaunchButton);
+
+    // One visible entry per song title. Prefer the newest source card.
+    const unique=new Map();
+    for(const song of mapped){
+      const key=String(song.title).trim().toLowerCase();
+      const prev=unique.get(key);
+      if(!prev||song._sourceIndex>=prev._sourceIndex)unique.set(key,song);
+    }
+    return [...unique.values()].map(({_sourceIndex,...song})=>song);
   }
 
   function ensureUI(){
@@ -178,6 +249,7 @@
     const current=state.filtered[state.index]?.title;
     state.songs=collectSongs();
     applyFilter(current);
+    refreshSpicaMeta();
   }
   function queueSync(){if(state.syncQueued)return;state.syncQueued=true;requestAnimationFrame(sync);}
   function syncVersion(){
