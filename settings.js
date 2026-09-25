@@ -332,3 +332,29 @@ restoreDeviceSettings();
     }
   });
 })();
+
+
+// Ver.0.8.234: remove the obsolete lower app-update card while keeping the primary one.
+(function(){
+  const root=document.getElementById('settingsScreen');
+  if(!root)return;
+
+  function removeObsoleteUpdateCard(){
+    const buttons=[...root.querySelectorAll('button')];
+    for(const btn of buttons){
+      if((btn.textContent||'').trim()!=='最新版に更新')continue;
+      let node=btn.parentElement;
+      while(node && node!==root){
+        const text=(node.textContent||'').trim();
+        if(text.includes('アプリ更新')){
+          node.remove();
+          break;
+        }
+        node=node.parentElement;
+      }
+    }
+  }
+
+  removeObsoleteUpdateCard();
+  new MutationObserver(removeObsoleteUpdateCard).observe(root,{childList:true,subtree:true});
+})();
