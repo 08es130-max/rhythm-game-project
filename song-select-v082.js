@@ -1,4 +1,4 @@
-// Ver.0.8.2: carousel-style song select UI that reuses the existing song launch handlers.
+// Ver.0.8.230: direct-launch Snow halation latest chart instead of hidden source-card handler.
 (function(){
   const VERSION='0.8.2';
   const state={songs:[],filtered:[],index:0,category:'all',syncQueued:false};
@@ -86,6 +86,14 @@
     document.getElementById('songLiveStart')?.addEventListener('click',()=>{
       const song=state.filtered[state.index];
       if(!song)return;
+
+      // Snow halation must always launch the latest chart directly.
+      // Do not route through a possibly stale/duplicated hidden source card.
+      if(song.title==='Snow halation' && typeof window.prepareSnowHalationV0829==='function'){
+        window.prepareSnowHalationV0829();
+        return;
+      }
+
       const grid=document.getElementById('songLibraryGrid');
       if(!grid)return;
       const cards=[...grid.querySelectorAll('.song-library-card')];
