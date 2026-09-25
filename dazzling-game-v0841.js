@@ -1,4 +1,4 @@
-// Ver.0.8.231: swing-free MASTER density expansion and direct launch.
+// Ver.0.8.232: MASTER density tuned to about 1400 notes; swing-free structure retained.
 (function(){
   const TITLE='Dazzling Game';
   const ARTIST='Liella!、澁谷かのん、ウィーン・マルガレーテ、鬼塚冬毬';
@@ -117,9 +117,9 @@
       const laneSeqs=[[1,3,5,7,4,2,6,4],[7,5,3,1,4,6,2,4],[0,2,4,6,8,5,3,1],[8,6,4,2,0,3,5,7],[2,4,7,5,3,1,6,4],[6,4,1,3,5,7,2,4]];
       const defs=[[0,14,[[2,6,10,14]],0],[14,48,[[1,3,5,7,9,11,13,15],[2,6,10,14]],1],[48,60,[[1,2,3,5,6,7,9,10,11,13,14,15]],2],[60,88,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],3],[88,104,[[3,7,11,15]],4],[104,138,[[1,3,5,7,9,11,13,15],[2,6,10,14]],5],[138,150,[[1,2,3,5,6,7,9,10,11,13,14,15]],0],[150,178,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],2],[178,190,[[3,7,11,15]],4],[190,211,[[1,2,3,4,5,6,7,9,10,11,12,13,14,15]],1]];
       for(const d of defs){
-        for(let bar=d[0];bar<d[1]&&notes.length<1800;bar++){
+        for(let bar=d[0];bar<d[1]&&notes.length<1530;bar++){
           const subs=d[2][(bar-d[0])%d[2].length],lanes=laneSeqs[(bar+d[3])%laneSeqs.length];
-          for(let j=0;j<subs.length&&notes.length<1800;j++){
+          for(let j=0;j<subs.length&&notes.length<1530;j++){
             const tm=Math.round(at(bar,subs[j]));
             if(occupied.has(tm))continue;
             add(tm,lanes[j%lanes.length]);occupied.add(tm);
