@@ -246,15 +246,66 @@
 [100412,5],[100588,3],[100588,5],[100941,7],[101029,1],[101118,7],[101471,3],[101471,5],[101647,4],[101824,4],[102000,2],[102000,6],
 [102353,0],[102353,5]];
     const continuation=notes.filter(n=>n.timeMs>SIF_FIRST_END_MS);
+
+    // LoveFes two-thumb simultaneous-note rules take priority over the source video:
+    // - at most two starts inside any rolling 115ms window;
+    // - a two-note chord must use opposite sides (center may pair with either side);
+    // - never require a third finger immediately before/after a chord.
+    const first=sifFirstPart.map(([timeMs,lane])=>({timeMs,lane}));
+    const groups=new Map();
+    for(const n of first){
+      if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);
+      groups.get(n.timeMs).push(n);
+    }
+    const side=l=>l<4?-1:l>4?1:0;
+    for(const g of groups.values()){
+      if(g.length!==2)continue;
+      const [a,b]=g;
+      const sa=side(a.lane),sb=side(b.lane);
+      if(sa!==0&&sa===sb){
+        const keep=Math.abs(a.lane-4)>=Math.abs(b.lane-4)?a:b;
+        const move=keep===a?b:a;
+        move.lane=keep.lane<4?Math.max(5,8-keep.lane):Math.min(3,8-keep.lane);
+      }
+    }
+    first.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+    const safeFirst=[];
+    for(const n of first){
+      const recent=safeFirst.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+      if(recent.length>=2)continue;
+      safeFirst.push(n);
+    }
+
+    // Slight density lift for LoveFes. Only fill genuinely wide gaps in the SIF
+    // transcription, keeping at least 115ms from neighboring starts and stopping
+    // at 525 notes for the first section.
+    const FIRST_TARGET=525;
+    const lanePattern=[2,6,3,5,1,7,4,6,2,5,3,7,1];
+    let fillIndex=0;
+    while(safeFirst.length<FIRST_TARGET){
+      const times=[...new Set(safeFirst.map(n=>n.timeMs))].sort((a,b)=>a-b);
+      let added=false;
+      for(let i=0;i<times.length-1&&safeFirst.length<FIRST_TARGET;i++){
+        const a=times[i],b=times[i+1];
+        if(b-a<350)continue;
+        const t=Math.round(a+(60000/BPM)/2);
+        if(t-a<115||b-t<115)continue;
+        if(safeFirst.some(n=>Math.abs(n.timeMs-t)<115))continue;
+        safeFirst.push({timeMs:t,lane:lanePattern[fillIndex++%lanePattern.length]});
+        added=true;
+      }
+      if(!added)break;
+    }
+
     notes.length=0;
-    for(const [timeMs,lane] of sifFirstPart) notes.push({timeMs,lane});
-    notes.push(...continuation);
+    notes.push(...safeFirst,...continuation);
 
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     return {
       title:'HAPPY PARTY TRAIN',
       artist:'Aqours',
-      difficulty:'EXPERT / SIF本家1番再現・二本指向け',
+      difficulty:'EXPERT / SIF本家1番再現＋密度調整・二本指向け',
       bpm:BPM,
       offsetMs:0,
       noteCount:notes.length,
