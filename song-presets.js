@@ -908,6 +908,8 @@ function makeSpicaMasterReferenceChart(source) {
     notes:outputChart
   };
 }
+window.makeSpicaMasterReferenceChart=makeSpicaMasterReferenceChart;
+
 async function loadBuiltInChart(path, fallbackTitle, transform = null) {
   try {
     const response = await fetch(`${path}?v=${window.APP_VERSION}&t=${Date.now()}`, {cache:'no-store'});
