@@ -1,4 +1,4 @@
-// Ver.0.8.222: keep HPT unchanged; rebuild Boooooom Bee with distributed two-thumb holds.
+// Ver.0.8.224: Boooooom Bee fully rebuilt from HPT/Spica chart language; HPT untouched.
 (function(){
   const VERSION='0.7.7';
   const HPT_AUDIO_KEY='happy-party-train';
@@ -166,119 +166,117 @@
     return chart;
   }
 
+  function promoteReferenceHolds(input,step,target){
+    const notes=input.map(n=>({...n})).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+    const side=l=>l<4?-1:l>4?1:0;
+    let heldUntil=-Infinity,count=0;
+    for(let i=0;i<notes.length&&count<target;i++){
+      const n=notes[i];
+      if(n.lane===4||n.timeMs<heldUntil+220||i%11!==3)continue;
+      const s=side(n.lane);
+      let end=n.timeMs+step*4;
+      const inside=notes.filter(x=>x.timeMs>n.timeMs&&x.timeMs<end);
+      for(const x of inside){
+        if(side(x.lane)===s){end=Math.min(end,x.timeMs-130);break;}
+      }
+      const free=inside.filter(x=>side(x.lane)!==s);
+      for(let a=0;a<free.length;a++)for(let b=a+1;b<free.length;b++){
+        if(free[b].timeMs-free[a].timeMs<115)end=Math.min(end,free[b].timeMs-130);
+      }
+      const steps=Math.min(4,Math.floor((end-n.timeMs)/step));
+      if(steps<2)continue;
+      n.holdEndMs=n.timeMs+steps*step;n.holdVisualOnly=true;heldUntil=n.holdEndMs;count++;
+    }
+
+    // Remove notes that would need the holding thumb, and collapse free-side doubles
+    // to one tap during a hold body.
+    const out=[];
+    for(const n of notes){
+      const active=notes.find(h=>h.holdVisualOnly&&n!==h&&n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs);
+      if(!active){out.push(n);continue;}
+      if(side(n.lane)===side(active.lane)||n.lane===active.lane)continue;
+      if(out.some(x=>x.timeMs===n.timeMs&&x!==active))continue;
+      out.push(n);
+    }
+    return out.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+  }
+
   function makeBoom(){
     const B=builder('Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会',161.499,1370,225000);
-    const {add,chord,bars,at}=B;
+    const {add,chord,bars,at,half}=B;
 
-    // Intro: four distinct bars instead of one repeated gesture.
+    // HPT / Spica reference language:
+    // - verses: off-beat single-note phrases, mostly inner lanes
+    // - builds: short axis jacks and alternating hands
+    // - choruses: wide -> inner motions with phrase-ending chords
+    // - bridge/finale: short Spica-like bursts, never more than two starts at once
     bars(0,16,(bar,t)=>{
-      const type=bar%4;
-      if(type===0){chord(t(0),0,8);add(t(2),4);add(t(4),2);add(t(6),6);}
-      if(type===1){add(t(0),1);add(t(1),3);add(t(3),5);add(t(5),7);chord(t(7),2,6);}
-      if(type===2){chord(t(0),1,7);add(t(2),5);add(t(3),4);add(t(5),3);chord(t(7),0,8);}
-      if(type===3){add(t(0),8);add(t(2),6);add(t(3),4);add(t(4),2);add(t(6),0);}
-    });
-
-    // Verse: 8-bar phrase library with deliberately different motion.
-    bars(16,48,(bar,t)=>{
-      const v=bar%8;
-      const P=[
-        [0,2,4,6,8],[8,5,3,1,4],[1,4,7,5,2],[7,4,1,3,6],
-        [2,3,6,5,4],[6,5,2,3,4],[0,4,8,3,5],[8,4,0,5,3]
-      ][v];
-      const subs=v%2?[0,1,3,5,7]:[0,2,3,5,7];
-      subs.forEach((s,i)=>add(t(s),P[i]));
-      if(v===3||v===7)chord(t(6),1,7);
-    });
-
-    // Build 1: syncopation increases toward chorus.
-    bars(48,62,(bar,t)=>{
-      const r=bar%4;
-      add(t(0),4);
-      add(t(r===0?1:2),r<2?2:6);
-      chord(t(3),r%2?2:1,r%2?6:7);
-      add(t(5),r%2?5:3);
-      if(bar>=58){add(t(6),4);chord(t(7),r%2?0:1,r%2?8:7);} else add(t(7),4);
-    });
-
-    // Chorus 1: big 'boom' chords, fast answers and satisfying center landings.
-    bars(62,86,(bar,t)=>{
-      const type=bar%6;
-      if(type===0){chord(t(0),0,8);add(t(1),4);add(t(2),3);add(t(3),5);chord(t(4),1,7);add(t(6),4);}
-      if(type===1){chord(t(0),2,6);add(t(2),4);add(t(3),7);add(t(4),6);chord(t(6),1,7);add(t(7),4);}
-      if(type===2){add(t(0),0);add(t(1),2);add(t(2),4);add(t(3),6);add(t(4),8);chord(t(6),2,6);}
-      if(type===3){chord(t(0),1,7);add(t(1),5);add(t(2),4);add(t(3),3);chord(t(5),0,8);add(t(7),4);}
-      if(type===4){add(t(0),8);add(t(1),7);add(t(2),5);add(t(3),4);add(t(4),3);add(t(5),1);chord(t(7),2,6);}
-      if(type===5){chord(t(0),3,5);add(t(2),4);chord(t(3),1,7);add(t(5),4);chord(t(7),0,8);}
-    });
-
-    // Break: alternating small motifs, each bar different from the previous two.
-    bars(86,106,(bar,t)=>{
-      const type=bar%5;
-      const seqs=[[1,2,1,4,6],[7,6,7,4,2],[2,5,3,6,4],[6,3,5,2,4],[0,3,8,5,4]];
-      const seq=seqs[type];
-      [0,1,3,5,7].forEach((s,i)=>add(t(s),seq[i]));
-      if(type===4)chord(t(6),1,7);
-    });
-
-    // Verse 2: call & response and diagonals, no reuse of chorus shapes.
-    bars(106,126,(bar,t)=>{
-      const type=bar%4;
-      const seq=type===0?[1,3,4,6,8]:type===1?[7,5,4,2,0]:type===2?[0,4,2,6,4]:[8,4,6,2,4];
-      [0,2,3,5,7].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar%5===0)chord(t(6),3,5);
-    });
-
-    // Build 2: denser but still readable.
-    bars(126,138,(bar,t)=>{
-      const flip=bar%2;
+      const flip=bar&1;
       chord(t(0),flip?2:1,flip?6:7);
-      add(t(1),4);add(t(3),flip?6:2);add(t(4),4);add(t(5),flip?3:5);
-      chord(t(7),flip?0:1,flip?8:7);
+      add(t(2),flip?6:2); add(t(3),flip?5:3);
+      add(t(5),flip?7:1);
+      if(bar%4===3)chord(t(7),3,5); else add(t(7),flip?6:2);
     });
 
-    // Final chorus: highest energy, changing pattern every bar.
-    bars(138,154,(bar,t)=>{
-      const type=bar%8;
-      const actions=[
-        ()=>{chord(t(0),0,8);add(t(1),4);add(t(2),2);add(t(3),6);chord(t(4),1,7);add(t(6),4);chord(t(7),3,5);},
-        ()=>{add(t(0),1);add(t(1),3);add(t(2),5);add(t(3),7);chord(t(5),2,6);add(t(7),4);},
-        ()=>{chord(t(0),2,6);add(t(1),4);add(t(3),8);add(t(4),6);add(t(5),4);chord(t(7),1,7);},
-        ()=>{add(t(0),8);add(t(1),6);add(t(2),4);add(t(3),2);add(t(4),0);chord(t(6),3,5);},
-        ()=>{chord(t(0),1,7);add(t(2),4);chord(t(3),0,8);add(t(5),4);chord(t(7),2,6);},
-        ()=>{add(t(0),0);add(t(1),3);add(t(2),6);add(t(3),8);add(t(5),5);add(t(6),2);chord(t(7),1,7);},
-        ()=>{chord(t(0),3,5);add(t(1),4);add(t(2),7);add(t(3),6);add(t(4),4);add(t(5),2);chord(t(7),0,8);},
-        ()=>{chord(t(0),0,8);chord(t(2),2,6);add(t(4),4);add(t(5),3);add(t(6),5);chord(t(7),1,7);}
+    bars(16,46,(bar,t)=>{
+      const seqs=[
+        [1,2,3,2,5,6],[7,6,5,6,3,2],
+        [2,3,1,3,6,5],[6,5,7,5,2,3]
       ];
-      actions[type]();
+      const seq=seqs[bar%4];
+      [0,2,3,5,6,7].forEach((s,i)=>add(t(s),seq[i]));
+      if(bar%8===6)chord(t(4),2,6);
     });
 
-    // Finale: short celebratory run and final wide hit.
-    bars(154,158,(bar,t)=>{
-      const seq=bar%2?[8,6,4,2,0,4]:[0,2,4,6,8,4];
-      [0,1,2,4,5,6].forEach((s,i)=>add(t(s),seq[i]));
-      chord(t(7),bar===157?0:2,bar===157?8:6);
+    bars(46,62,(bar,t)=>{
+      const right=(bar%6)>=3,axis=right?6:2,inner=right?5:3,outer=right?7:1;
+      add(t(0),axis);add(t(1),inner);add(t(2),axis);
+      add(t(4),outer);add(t(5),axis);
+      if(bar%3===2)chord(t(7),right?2:6,axis); else add(t(7),inner);
     });
+
+    bars(62,88,(bar,t)=>{
+      const type=bar%4;
+      if(type===0){chord(t(0),1,7);add(t(1),3);add(t(2),5);add(t(3),3);add(t(5),2);add(t(6),3);chord(t(7),2,6);}
+      if(type===1){add(t(0),7);add(t(1),6);add(t(2),5);add(t(3),6);add(t(4),3);add(t(5),2);add(t(7),1);}
+      if(type===2){chord(t(0),2,6);add(t(1),5);add(t(2),3);add(t(4),5);add(t(5),6);add(t(6),5);chord(t(7),1,7);}
+      if(type===3){add(t(0),1);add(t(1),2);add(t(2),3);add(t(3),2);add(t(4),6);add(t(5),5);add(t(6),6);add(t(7),7);}
+    });
+
+    bars(88,108,(bar,t)=>{
+      const seqs=[[0,2,3,6,7,5,2],[8,6,5,2,1,3,6],[1,3,5,7,6,3,2],[7,5,3,1,2,5,6]];
+      [0,1,2,4,5,6,7].forEach((s,i)=>add(t(s),seqs[bar%4][i]));
+      if(bar%5===4)chord(t(3),2,6);
+    });
+
+    bars(108,128,(bar,t)=>{
+      const flip=bar&1,seq=flip?[6,7,5,6,3,2]:[2,1,3,2,5,6];
+      [0,2,3,5,6,7].forEach((s,i)=>add(t(s),seq[i]));
+      if(bar%6===5)chord(t(4),1,7);
+    });
+
+    bars(128,140,(bar,t)=>{
+      const right=bar&1,axis=right?6:2,answer=right?5:3,far=right?7:1;
+      add(t(0),axis);add(t(1),answer);add(t(2),axis);
+      chord(t(3),right?2:6,axis);
+      add(t(5),far);add(t(6),axis);add(t(7),answer);
+    });
+
+    bars(140,158,(bar,t)=>{
+      const type=bar%6;
+      if(type===0){chord(t(0),1,7);add(t(1),2);add(t(2),3);add(t(3),5);add(t(4),6);add(t(5),5);chord(t(7),2,6);}
+      if(type===1){add(t(0),7);add(t(1),6);add(t(2),5);add(t(3),6);add(t(4),5);add(t(5),3);add(t(6),2);add(t(7),3);}
+      if(type===2){chord(t(0),2,6);add(t(1),3);add(t(2),5);add(t(3),3);add(t(4),6);add(t(5),5);add(t(6),7);chord(t(7),1,7);}
+      if(type===3){add(t(0),1);add(t(1),3);add(t(2),5);add(t(3),7);add(t(4),6);add(t(5),4);add(t(6),2);add(t(7),4);}
+      if(type===4){chord(t(0),0,8);add(t(1),2);add(t(2),4);add(t(3),6);add(t(4),3);add(t(5),5);chord(t(7),2,6);}
+      if(type===5){add(t(0),7);add(t(1),5);add(t(2),3);add(t(3),1);add(t(4),2);add(t(5),4);add(t(6),6);chord(t(7),1,7);}
+    });
+
     const chart=B.finish();
-    const half=B.half;
-    return applyPlayableHolds(chart,[
-      {start:at(8,0),end:at(8,4),lane:1,freeSide:'right'},
-      {start:at(20,0),end:at(20,4),lane:7,freeSide:'left'},
-      {start:at(34,0),end:at(34,6),lane:2,freeSide:'right'},
-      {start:at(52,0),end:at(52,4),lane:6,freeSide:'left'},
-      {start:at(60,0),end:at(60,6),lane:1,freeSide:'right'},
-      {start:at(68,0),end:at(68,4),lane:7,freeSide:'left'},
-      {start:at(80,0),end:at(80,6),lane:2,freeSide:'right'},
-      {start:at(92,0),end:at(92,4),lane:6,freeSide:'left'},
-      {start:at(110,0),end:at(110,6),lane:1,freeSide:'right'},
-      {start:at(120,0),end:at(120,4),lane:7,freeSide:'left'},
-      {start:at(128,0),end:at(128,6),lane:2,freeSide:'right'},
-      {start:at(136,0),end:at(136,4),lane:6,freeSide:'left'},
-      {start:at(142,0),end:at(142,6),lane:1,freeSide:'right'},
-      {start:at(148,0),end:at(148,4),lane:7,freeSide:'left'},
-      {start:at(154,0),end:at(154,6),lane:2,freeSide:'right'},
-      {start:at(156,0),end:at(156,4),lane:6,freeSide:'left'}
-    ]);
+    chart.notes=promoteReferenceHolds(chart.notes,half,22);
+    chart.noteCount=chart.notes.length;
+    chart.holdCount=chart.notes.filter(n=>n.holdVisualOnly).length;
+    return chart;
   }
 
   async function prepare(chartFactory,audioKey,title){
