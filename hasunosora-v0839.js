@@ -1,4 +1,4 @@
-// Ver.0.8.39: Hasunosora page and high-difficulty Genyo Yako chart.
+// Ver.0.8.222: Genyo Yako rebuilt with distributed two-thumb hold phrases.
 (function(){
   const VERSION='0.8.39';
   const TITLE='眩耀夜行';
@@ -120,6 +120,49 @@
       if(bar===243)chord(t(15),0,8);else chord(t(15),2,6);
     });
 
+    function applyHolds(specs){
+      const accepted=[];
+      for(const spec of specs){
+        const start=Math.round(at(spec.bar,spec.sub||0));
+        const end=Math.round(at(spec.bar,spec.endSub));
+        if(end<=start+260||accepted.some(h=>start<h.end+180&&end>h.start-180))continue;
+        const freeSide=spec.freeSide||(spec.lane<4?'right':spec.lane>4?'left':'right');
+        const kept=[],byTime=new Map();
+        for(const n of notes){
+          if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
+          if(n.holdVisualOnly)continue;
+          if(Math.abs(n.timeMs-start)<=25||Math.abs(n.timeMs-end)<=25)continue;
+          if(n.lane===spec.lane)continue;
+          const ok=freeSide==='left'?n.lane<=3:n.lane>=5;
+          if(!ok)continue;
+          const prev=byTime.get(n.timeMs);
+          if(!prev||Math.abs(n.lane-spec.lane)>Math.abs(prev.lane-spec.lane))byTime.set(n.timeMs,n);
+        }
+        kept.push(...byTime.values(),{timeMs:start,lane:spec.lane,holdEndMs:end,holdVisualOnly:true});
+        notes.length=0;notes.push(...kept);
+        accepted.push({start,end});
+      }
+      return accepted.length;
+    }
+    const holdCount=applyHolds([
+      {bar:6,endSub:8,lane:1,freeSide:'right'},
+      {bar:18,endSub:6,lane:7,freeSide:'left'},
+      {bar:32,endSub:8,lane:2,freeSide:'right'},
+      {bar:46,endSub:6,lane:6,freeSide:'left'},
+      {bar:60,endSub:8,lane:1,freeSide:'right'},
+      {bar:76,endSub:6,lane:7,freeSide:'left'},
+      {bar:90,endSub:8,lane:2,freeSide:'right'},
+      {bar:104,endSub:6,lane:6,freeSide:'left'},
+      {bar:118,endSub:8,lane:1,freeSide:'right'},
+      {bar:134,endSub:6,lane:7,freeSide:'left'},
+      {bar:148,endSub:8,lane:2,freeSide:'right'},
+      {bar:162,endSub:6,lane:6,freeSide:'left'},
+      {bar:178,endSub:8,lane:1,freeSide:'right'},
+      {bar:194,endSub:6,lane:7,freeSide:'left'},
+      {bar:210,endSub:8,lane:2,freeSide:'right'},
+      {bar:228,endSub:6,lane:6,freeSide:'left'}
+    ]);
+
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     if(notes.length>TARGET){
       const grouped=new Map();notes.forEach((n,i)=>{if(!grouped.has(n.timeMs))grouped.set(n.timeMs,[]);grouped.get(n.timeMs).push(i);});
@@ -127,9 +170,9 @@
       const excess=Math.min(notes.length-TARGET,removable.length),remove=new Set();
       for(let k=0;k<excess;k++)remove.add(removable[Math.min(removable.length-1,Math.floor((k+.5)*removable.length/excess))]);
       const trimmed=notes.filter((_,i)=>!remove.has(i));
-      return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:trimmed.length,notes:trimmed};
+      return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:trimmed.length,holdCount,notes:trimmed};
     }
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,notes};
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 蓮ノ空・二本指上級',bpm:BPM,offsetMs:0,noteCount:notes.length,holdCount,notes};
   }
 
   function applyGenyoChart(){
