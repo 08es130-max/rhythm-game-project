@@ -342,70 +342,92 @@
       holdCount++;
     }
 
-    // Ver.0.8.217: exact-copy mode for verse 2 and the final chorus.
-    // The approved first-section chart is the master template. No mirroring,
-    // lane rewriting, extra accents, or independently generated holds are used.
-    const SECOND_START_MS=Math.round(at(136,0));
-    const FINAL_START_MS=Math.round(at(174,0));
-    const FINAL_END_MS=END_MS;
+    // Ver.0.8.218: phrase-aligned full-song reconstruction.
+    // The SIF game-size chart is effectively Intro -> A -> A' -> B -> Chorus.
+    // Map those exact approved phrase windows onto their corresponding locations
+    // in the 4:38 full version, using the 170 BPM bar grid.
+    const BAR_MS=8*half;
+    const barTime=(bar)=>Math.round(START_MS+bar*BAR_MS);
 
-    function exactCloneWindow(sourceFrom,sourceTo,targetStart,targetEnd){
+    // SIF / approved first-section phrase boundaries.
+    const SRC_AP_START=barTime(32);   // A' starts: "会いたいのは..."
+    const SRC_B_START=barTime(48);    // B starts: "旅に出よう..."
+    const SRC_CH_START=barTime(57);   // 1 chorus starts: "想いを乗せて..."
+    const SRC_CH_END=barTime(73);     // end of 16-bar chorus template
+
+    function cloneExact(sourceFrom,sourceTo,targetStart,targetEnd){
       const shift=targetStart-sourceFrom;
       const out=[];
       for(const src of sortedFirst){
-        if(src.timeMs<sourceFrom||src.timeMs>sourceTo)continue;
-        if(Number.isFinite(src.holdEndMs)&&src.holdEndMs>sourceTo)continue;
+        if(src.timeMs<sourceFrom||src.timeMs>=sourceTo)continue;
         const timeMs=src.timeMs+shift;
-        if(timeMs>targetEnd)continue;
+        if(timeMs>=targetEnd)continue;
         const n={timeMs,lane:src.lane};
         if(Number.isFinite(src.holdEndMs)){
           const holdEndMs=src.holdEndMs+shift;
-          if(holdEndMs<=targetEnd){
+          if(holdEndMs<targetEnd){
             n.holdEndMs=holdEndMs;
             n.holdVisualOnly=true;
           }
         }
         out.push(n);
       }
-      return out.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      return out;
     }
 
-    // Make the full verse-2 window an exact time-shifted copy of the equally long
-    // closing window of the approved first section.
-    const secondDuration=FINAL_START_MS-SECOND_START_MS;
-    // Exact 53.647s template from the approved first section.
-    // This window keeps the same dense tap/hold balance that made verse 1 feel right.
-    const secondSourceFrom=6000;
-    const secondSourceTo=secondSourceFrom+secondDuration;
-    const secondPart=exactCloneWindow(
-      secondSourceFrom,secondSourceTo,
-      SECOND_START_MS,FINAL_START_MS-1
-    );
+    function repeatExact(sourceFrom,sourceTo,targetStart,targetEnd){
+      const sourceLen=sourceTo-sourceFrom;
+      const out=[];
+      let cursor=targetStart;
+      while(cursor<targetEnd){
+        out.push(...cloneExact(sourceFrom,sourceTo,cursor,Math.min(targetEnd,cursor+sourceLen)));
+        cursor+=sourceLen;
+      }
+      return out.filter(n=>n.timeMs<targetEnd);
+    }
 
-    // The final chorus likewise uses the equally long tail of the approved first
-    // section. This keeps every tap/chord/hold relationship identical.
-    const finalDuration=FINAL_END_MS-FINAL_START_MS;
-    // Exact ~30s chorus template from the approved first section, chosen from the
-    // dense hold-rich middle/late passage rather than the hold-free tail.
-    const finalSourceFrom=41000;
-    const finalSourceTo=finalSourceFrom+finalDuration;
-    const finalPart=exactCloneWindow(
-      finalSourceFrom,finalSourceTo,
-      FINAL_START_MS,FINAL_END_MS
-    );
+    // Full-version structural positions from the song's 170 BPM chord form:
+    // 2A ~ bar81, 2B ~ bar97, 2 chorus ~ bar114, final chorus ~ bar149.
+    const TWO_A_START=barTime(81);
+    const TWO_B_START=barTime(97);
+    const TWO_CH_START=barTime(114);
+    const INTERLUDE2_START=barTime(131);
+    const FINAL_CH_START=barTime(149);
+    const ENDING_START=barTime(178);
 
-    // Keep the existing bridge before verse 2, but replace verse 2 and the final
-    // chorus completely with the exact copies above.
-    const bridge=continuation.filter(n=>n.timeMs<SECOND_START_MS);
+    // 2A has the same melodic role as A' ("会いたいのは..." -> "知りたいのは...").
+    // Copy all 16 bars exactly, including lanes, chords, and holds.
+    const twoA=cloneExact(SRC_AP_START,SRC_B_START,TWO_A_START,TWO_B_START);
+
+    // 2B is longer than B in the game edit. Repeat the exact B phrase rather than
+    // inventing a new pattern, trimming only at the structural boundary.
+    const twoB=repeatExact(SRC_B_START,SRC_CH_START,TWO_B_START,TWO_CH_START);
+
+    // 2 chorus: exact 1-chorus template, with the final extra bar filled by the
+    // beginning of the same template.
+    const twoChorus=repeatExact(SRC_CH_START,SRC_CH_END,TWO_CH_START,INTERLUDE2_START);
+
+    // Final chorus is an expanded reprise. Repeat the exact approved 1-chorus
+    // template across all 29 bars; no mirroring, lane rewrite, or added accents.
+    const finalChorus=repeatExact(SRC_CH_START,SRC_CH_END,FINAL_CH_START,ENDING_START);
+
+    // Keep the old authored continuation only where the full song is genuinely
+    // instrumental / structurally different. Replace 2A through 2 chorus and the
+    // whole final chorus with the exact phrase-aligned copies above.
+    const untouched=continuation.filter(n=>
+      (n.timeMs<TWO_A_START) ||
+      (n.timeMs>=INTERLUDE2_START&&n.timeMs<FINAL_CH_START) ||
+      (n.timeMs>=ENDING_START)
+    );
 
     notes.length=0;
-    notes.push(...sortedFirst,...bridge,...secondPart,...finalPart);
+    notes.push(...sortedFirst,...untouched,...twoA,...twoB,...twoChorus,...finalChorus);
 
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     return {
       title:'HAPPY PARTY TRAIN',
       artist:'Aqours',
-      difficulty:'EXPERT / 1番完全基準・全曲二本指向け',
+      difficulty:'EXPERT / 1番フレーズ完全対応・全曲二本指向け',
       bpm:BPM,
       offsetMs:0,
       noteCount:notes.length,
