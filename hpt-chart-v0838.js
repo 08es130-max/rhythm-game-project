@@ -342,14 +342,14 @@
       holdCount++;
     }
 
-    // Ver.0.8.216: extend the approved first-part design into verse 2 and the final chorus.
-    // Keep the first 102.353s untouched. Reuse its authored rhythm/hold language, not the
-    // older generic continuation, for the matching late-song sections.
+    // Ver.0.8.217: exact-copy mode for verse 2 and the final chorus.
+    // The approved first-section chart is the master template. No mirroring,
+    // lane rewriting, extra accents, or independently generated holds are used.
     const SECOND_START_MS=Math.round(at(136,0));
     const FINAL_START_MS=Math.round(at(174,0));
     const FINAL_END_MS=END_MS;
 
-    function cloneApprovedSection(sourceFrom,sourceTo,targetStart,targetEnd,mirror=false){
+    function exactCloneWindow(sourceFrom,sourceTo,targetStart,targetEnd){
       const shift=targetStart-sourceFrom;
       const out=[];
       for(const src of sortedFirst){
@@ -357,8 +357,7 @@
         if(Number.isFinite(src.holdEndMs)&&src.holdEndMs>sourceTo)continue;
         const timeMs=src.timeMs+shift;
         if(timeMs>targetEnd)continue;
-        const lane=mirror?8-src.lane:src.lane;
-        const n={timeMs,lane};
+        const n={timeMs,lane:src.lane};
         if(Number.isFinite(src.holdEndMs)){
           const holdEndMs=src.holdEndMs+shift;
           if(holdEndMs<=targetEnd){
@@ -368,152 +367,41 @@
         }
         out.push(n);
       }
-      return out;
-    }
-
-    // Verse 2: reuse ~54s of the approved first part, mirrored so it feels related
-    // without becoming a literal visual repeat.
-    const secondSourceFrom=4765;
-    const secondSourceTo=58765;
-    let secondPart=cloneApprovedSection(
-      secondSourceFrom,secondSourceTo,
-      SECOND_START_MS,FINAL_START_MS-1,
-      true
-    );
-
-    // Final chorus: reuse the densest final ~30s of the approved first part.
-    // Keep the original orientation so the song's final return feels familiar.
-    const finalSourceFrom=72441;
-    const finalSourceTo=SIF_FIRST_END_MS;
-    let finalPart=cloneApprovedSection(
-      finalSourceFrom,finalSourceTo,
-      FINAL_START_MS,FINAL_END_MS,
-      false
-    );
-
-    // A small finale-only lift: add safe opposite-side chord accents at selected
-    // single-note moments. Never alter holds, never exceed two simultaneous starts,
-    // and never create an effective three-finger pattern inside a running hold.
-    function addFinaleAccents(section,targetCount){
-      const out=[...section].sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-      let added=0;
-      const times=[...new Set(out.map(n=>n.timeMs))];
-      for(const t of times){
-        if(added>=targetCount)break;
-        const same=out.filter(n=>n.timeMs===t);
-        if(same.length!==1)continue;
-        const base=same[0];
-        if(base.holdVisualOnly)continue;
-        const active=out.find(h=>Number.isFinite(h.holdEndMs)&&t>h.timeMs&&t<h.holdEndMs);
-        if(active)continue;
-        const recent=out.filter(n=>Math.abs(n.timeMs-t)<115);
-        if(recent.length!==1)continue;
-        const partner=base.lane<4?Math.max(5,8-base.lane):base.lane>4?Math.min(3,8-base.lane):(added&1?2:6);
-        if(partner===base.lane)continue;
-        out.push({timeMs:t,lane:partner});
-        added++;
-      }
       return out.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     }
-    finalPart=addFinaleAccents(finalPart,18);
 
-    // The copied late first-part window contains few of the first section's assigned
-    // holds, so give the final chorus its own safe hold pass.
-    function assignSectionHolds(section,target){
-      const out=[...section].sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-      let count=out.filter(n=>Number.isFinite(n.holdEndMs)).length;
-      let until=-Infinity;
-      for(const h of out.filter(n=>Number.isFinite(n.holdEndMs)))until=Math.max(until,h.holdEndMs);
-      for(const n of out){
-        if(count>=target)break;
-        if(Number.isFinite(n.holdEndMs)||n.lane===4||n.timeMs<until+220)continue;
-        const s=side(n.lane);
-        let hazard=n.timeMs+HOLD_STEP*4;
-        const inside=out.filter(x=>x!==n&&x.timeMs>n.timeMs&&x.timeMs<hazard);
-        for(const x of inside){
-          if(side(x.lane)===s){hazard=Math.min(hazard,x.timeMs-130);break;}
-        }
-        const free=inside.filter(x=>side(x.lane)!==s);
-        let crowded=false;
-        for(let i=0;i<free.length&&!crowded;i++){
-          for(let j=i+1;j<free.length;j++){
-            if(free[j].timeMs-free[i].timeMs<115){
-              hazard=Math.min(hazard,free[j].timeMs-130);
-              crowded=true;
-              break;
-            }
-          }
-        }
-        let steps=Math.min(4,Math.floor((hazard-n.timeMs)/HOLD_STEP));
-        if(steps<2)continue;
-        const end=n.timeMs+steps*HOLD_STEP;
-        if(end<=n.timeMs+300)continue;
-        n.holdEndMs=end;
-        n.holdVisualOnly=true;
-        until=end;
-        count++;
-      }
-      return out;
-    }
-    finalPart=assignSectionHolds(finalPart,16);
+    // Make the full verse-2 window an exact time-shifted copy of the equally long
+    // closing window of the approved first section.
+    const secondDuration=FINAL_START_MS-SECOND_START_MS;
+    const secondSourceTo=SIF_FIRST_END_MS;
+    const secondSourceFrom=secondSourceTo-secondDuration;
+    const secondPart=exactCloneWindow(
+      secondSourceFrom,secondSourceTo,
+      SECOND_START_MS,FINAL_START_MS-1
+    );
 
-    // Preserve only the middle instrumental bridge from the old authored continuation.
+    // The final chorus likewise uses the equally long tail of the approved first
+    // section. This keeps every tap/chord/hold relationship identical.
+    const finalDuration=FINAL_END_MS-FINAL_START_MS;
+    const finalSourceTo=SIF_FIRST_END_MS;
+    const finalSourceFrom=finalSourceTo-finalDuration;
+    const finalPart=exactCloneWindow(
+      finalSourceFrom,finalSourceTo,
+      FINAL_START_MS,FINAL_END_MS
+    );
+
+    // Keep the existing bridge before verse 2, but replace verse 2 and the final
+    // chorus completely with the exact copies above.
     const bridge=continuation.filter(n=>n.timeMs<SECOND_START_MS);
 
     notes.length=0;
     notes.push(...sortedFirst,...bridge,...secondPart,...finalPart);
 
-    // Absolute LoveFes playability guard for the newly generated late-song sections.
-    // First part is already approved and remains byte-for-byte identical.
-    const protectedFirst=notes.filter(n=>n.timeMs<=SIF_FIRST_END_MS);
-    const late=notes.filter(n=>n.timeMs>SIF_FIRST_END_MS).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-    const safeLate=[];
-    let activeHold=null;
-    let lastHoldEnd=-Infinity;
-    for(const src of late){
-      const n={...src};
-      if(activeHold&&n.timeMs>=activeHold.holdEndMs)activeHold=null;
-
-      if(Number.isFinite(n.holdEndMs)){
-        if(n.lane===4||activeHold||n.timeMs<lastHoldEnd+220){
-          delete n.holdEndMs; delete n.holdVisualOnly;
-        }else{
-          activeHold=n;
-          lastHoldEnd=n.holdEndMs;
-        }
-      }
-
-      if(activeHold&&n!==activeHold&&n.timeMs>activeHold.timeMs&&n.timeMs<activeHold.holdEndMs){
-        const heldSide=side(activeHold.lane);
-        if(side(n.lane)===heldSide||n.lane===activeHold.lane)continue;
-        const tapInWindow=safeLate.some(x=>
-          x!==activeHold&&!x.holdVisualOnly&&
-          x.timeMs>activeHold.timeMs&&x.timeMs<activeHold.holdEndMs&&
-          Math.abs(x.timeMs-n.timeMs)<115
-        );
-        if(tapInWindow)continue;
-      }
-
-      const recent=safeLate.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
-      if(recent.length>=2)continue;
-      const same=safeLate.filter(x=>Math.abs(x.timeMs-n.timeMs)<=18);
-      if(same.length>=2||same.some(x=>x.lane===n.lane))continue;
-      if(same.length===1){
-        const sa=side(same[0].lane),sb=side(n.lane);
-        if(sa!==0&&sa===sb){
-          n.lane=same[0].lane<4?Math.max(5,8-same[0].lane):Math.min(3,8-same[0].lane);
-        }
-      }
-      safeLate.push(n);
-    }
-
-    notes.length=0;
-    notes.push(...protectedFirst,...safeLate);
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     return {
       title:'HAPPY PARTY TRAIN',
       artist:'Aqours',
-      difficulty:'EXPERT / SIF本家基準・全曲二本指向け',
+      difficulty:'EXPERT / 1番完全基準・全曲二本指向け',
       bpm:BPM,
       offsetMs:0,
       noteCount:notes.length,
