@@ -1,4 +1,4 @@
-// Ver.0.8.224: Boooooom Bee fully rebuilt from HPT/Spica chart language; HPT untouched.
+// Ver.0.8.225: Boooooom Bee rebuilt with corrected BPM, varied phrases, strict chord rules and full hold coverage.
 (function(){
   const VERSION='0.7.7';
   const HPT_AUDIO_KEY='happy-party-train';
@@ -202,81 +202,206 @@
   }
 
   function makeBoom(){
-    const B=builder('Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会',161.499,1370,225000);
+    const B=builder('Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会',160,1370,225000);
     const {add,chord,bars,at,half}=B;
 
-    // HPT / Spica reference language:
-    // - verses: off-beat single-note phrases, mostly inner lanes
-    // - builds: short axis jacks and alternating hands
-    // - choruses: wide -> inner motions with phrase-ending chords
-    // - bridge/finale: short Spica-like bursts, never more than two starts at once
-    bars(0,16,(bar,t)=>{
+    // 0-12: intro - big "boom" accents with space between answers.
+    bars(0,12,(bar,t)=>{
+      const p=bar%6;
+      if(p===0){chord(t(0),0,8);add(t(2),4);add(t(5),2);add(t(7),6);}
+      if(p===1){add(t(0),1);add(t(1),3);add(t(3),5);add(t(6),7);}
+      if(p===2){chord(t(0),1,7);add(t(2),5);add(t(4),4);add(t(7),3);}
+      if(p===3){add(t(0),8);add(t(2),6);add(t(3),4);add(t(5),2);add(t(7),0);}
+      if(p===4){add(t(0),2);add(t(2),3);chord(t(4),1,7);add(t(7),5);}
+      if(p===5){add(t(0),6);add(t(1),5);add(t(3),3);chord(t(6),0,8);}
+    });
+
+    // 12-38: verse - syncopated speech-like rhythm, 8 genuinely different bars.
+    const verseSubs=[[0,2,5,7],[0,1,4,6,7],[0,3,5,7],[0,2,3,6],[0,1,3,5,7],[0,2,5,6],[0,3,4,7],[0,1,4,7]];
+    const verseLanes=[[1,3,6,5],[7,5,3,1,4],[2,4,7,5],[6,4,1,3],[0,3,5,7,4],[8,5,2,4],[1,4,6,2],[7,4,2,6]];
+    bars(12,38,(bar,t)=>{
+      const k=(bar-12)%8;
+      verseSubs[k].forEach((s,i)=>add(t(s),verseLanes[k][i]));
+      if(k===3)chord(t(7),1,7);
+      if(k===7)chord(t(6),2,6);
+    });
+
+    // 38-50: pre-chorus - axis pressure rises, but changes every two bars.
+    bars(38,50,(bar,t)=>{
+      const k=(bar-38)%6, right=k>=3,axis=right?6:2,inner=right?5:3,far=right?7:1;
+      if(k===0||k===3){add(t(0),axis);add(t(1),inner);add(t(2),axis);add(t(5),far);add(t(7),axis);}
+      else if(k===1||k===4){add(t(0),inner);add(t(2),axis);chord(t(4),right?2:6,axis);add(t(7),far);}
+      else {add(t(0),far);add(t(2),axis);add(t(3),inner);add(t(5),axis);chord(t(7),right?1:7,axis);}
+    });
+
+    // 50-76: chorus - large hits, quick answers, changing shapes instead of one loop.
+    bars(50,76,(bar,t)=>{
+      const k=(bar-50)%8;
+      const P=[
+        ()=>{chord(t(0),0,8);add(t(1),4);add(t(3),3);add(t(4),5);chord(t(7),1,7);},
+        ()=>{add(t(0),1);add(t(1),3);add(t(2),5);add(t(4),7);add(t(6),4);},
+        ()=>{chord(t(0),2,6);add(t(2),4);add(t(3),7);add(t(5),6);chord(t(7),1,7);},
+        ()=>{add(t(0),8);add(t(1),6);add(t(3),4);add(t(4),2);add(t(6),0);},
+        ()=>{chord(t(0),1,7);add(t(2),5);add(t(3),4);add(t(4),3);chord(t(7),0,8);},
+        ()=>{add(t(0),0);add(t(1),2);add(t(2),4);add(t(4),6);add(t(5),8);add(t(7),4);},
+        ()=>{chord(t(0),3,5);add(t(2),2);add(t(3),4);add(t(5),6);chord(t(7),1,7);},
+        ()=>{add(t(0),7);add(t(1),5);add(t(3),4);add(t(5),3);chord(t(7),0,8);}
+      ];P[k]();
+    });
+
+    // 76-88: break - fewer notes and wider travel.
+    bars(76,88,(bar,t)=>{
+      const k=(bar-76)%4;
+      const subs=[[0,3,7],[0,2,5,7],[0,4,6],[0,1,5,7]][k];
+      const lanes=[[0,4,8],[8,5,2,0],[1,4,7],[7,5,3,1]][k];
+      subs.forEach((s,i)=>add(t(s),lanes[i]));
+    });
+
+    // 88-112: verse 2 - new call/response, not verse-1 copy.
+    bars(88,112,(bar,t)=>{
+      const k=(bar-88)%6;
+      const subs=[[0,2,4,7],[0,1,3,6],[0,3,5,7],[0,2,5,7],[0,1,4,6,7],[0,3,6]][k];
+      const lanes=[[2,4,6,7],[7,5,3,1],[0,3,6,4],[8,5,2,4],[1,3,5,7,4],[6,4,2]][k];
+      subs.forEach((s,i)=>add(t(s),lanes[i]));
+      if(k===5)chord(t(7),1,7);
+    });
+
+    // 112-124: second build with short Spica-like bursts.
+    bars(112,124,(bar,t)=>{
       const flip=bar&1;
-      chord(t(0),flip?2:1,flip?6:7);
-      add(t(2),flip?6:2); add(t(3),flip?5:3);
-      add(t(5),flip?7:1);
-      if(bar%4===3)chord(t(7),3,5); else add(t(7),flip?6:2);
+      if(bar%3===0){add(t(0),flip?6:2);add(t(1),flip?5:3);add(t(2),flip?6:2);add(t(4),4);chord(t(7),1,7);}
+      else if(bar%3===1){add(t(0),flip?7:1);add(t(2),4);add(t(3),flip?5:3);add(t(5),flip?6:2);add(t(7),4);}
+      else {chord(t(0),2,6);add(t(2),flip?5:3);add(t(3),4);add(t(4),flip?3:5);chord(t(7),1,7);}
     });
 
-    bars(16,46,(bar,t)=>{
-      const seqs=[
-        [1,2,3,2,5,6],[7,6,5,6,3,2],
-        [2,3,1,3,6,5],[6,5,7,5,2,3]
-      ];
-      const seq=seqs[bar%4];
-      [0,2,3,5,6,7].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar%8===6)chord(t(4),2,6);
+    // 124-146: final chorus - highest density but many phrase variants.
+    bars(124,146,(bar,t)=>{
+      const k=(bar-124)%10;
+      const variants=[
+        [[0,8],[1,4],[3,3],[4,5],[6,2],[7,6]],
+        [[0,1],[1,3],[2,5],[3,7],[5,4],[7,0]],
+        [[0,2],[0,6],[2,4],[4,7],[5,5],[7,1]],
+        [[0,8],[1,6],[2,4],[3,2],[4,0],[7,4]],
+        [[0,1],[0,7],[2,5],[3,4],[5,3],[7,2]],
+        [[0,0],[1,2],[3,4],[4,6],[6,8],[7,4]],
+        [[0,3],[0,5],[2,2],[3,4],[5,6],[7,1]],
+        [[0,7],[1,5],[3,3],[4,1],[6,4],[7,8]],
+        [[0,0],[0,8],[2,3],[4,5],[5,2],[7,6]],
+        [[0,2],[1,4],[2,6],[4,3],[5,5],[7,1]]
+      ][k];
+      const by=new Map();
+      variants.forEach(([s,l])=>{if(by.has(s))chord(t(s),by.get(s),l);else{by.set(s,l);add(t(s),l);}});
     });
 
-    bars(46,62,(bar,t)=>{
-      const right=(bar%6)>=3,axis=right?6:2,inner=right?5:3,outer=right?7:1;
-      add(t(0),axis);add(t(1),inner);add(t(2),axis);
-      add(t(4),outer);add(t(5),axis);
-      if(bar%3===2)chord(t(7),right?2:6,axis); else add(t(7),inner);
+    bars(146,150,(bar,t)=>{
+      const seq=bar&1?[8,6,4,2,0,4]:[0,2,4,6,8,4];
+      [0,1,2,4,5,7].forEach((s,i)=>add(t(s),seq[i]));
+      if(bar===149)chord(t(7),0,8);
     });
 
-    bars(62,88,(bar,t)=>{
-      const type=bar%4;
-      if(type===0){chord(t(0),1,7);add(t(1),3);add(t(2),5);add(t(3),3);add(t(5),2);add(t(6),3);chord(t(7),2,6);}
-      if(type===1){add(t(0),7);add(t(1),6);add(t(2),5);add(t(3),6);add(t(4),3);add(t(5),2);add(t(7),1);}
-      if(type===2){chord(t(0),2,6);add(t(1),5);add(t(2),3);add(t(4),5);add(t(5),6);add(t(6),5);chord(t(7),1,7);}
-      if(type===3){add(t(0),1);add(t(1),2);add(t(2),3);add(t(3),2);add(t(4),6);add(t(5),5);add(t(6),6);add(t(7),7);}
-    });
+    const base=B.finish();
+    const specs=[
+      [14,0,14,4,1],[20,0,20,6,7],[27,0,27,4,2],[34,0,34,6,6],
+      [41,0,41,4,1],[47,0,47,6,7],[53,0,53,4,2],[58,0,58,6,6],
+      [64,0,64,4,1],[70,0,70,6,7],[80,0,80,4,2],[86,0,86,6,6],
+      [92,0,92,4,1],[99,0,99,6,7],[106,0,106,4,2],[114,0,114,6,6],
+      [121,0,121,4,1],[127,0,127,6,7],[132,0,132,4,2],[137,0,137,6,6],
+      [142,0,142,4,1],[147,0,147,4,7]
+    ].map(([b,s,eb,es,l])=>({start:at(b,s),end:at(eb,es),lane:l}));
 
-    bars(88,108,(bar,t)=>{
-      const seqs=[[0,2,3,6,7,5,2],[8,6,5,2,1,3,6],[1,3,5,7,6,3,2],[7,5,3,1,2,5,6]];
-      [0,1,2,4,5,6,7].forEach((s,i)=>add(t(s),seqs[bar%4][i]));
-      if(bar%5===4)chord(t(3),2,6);
-    });
+    function finalizeWithHolds(rawNotes, holdSpecs){
+      let work=rawNotes.map(n=>({...n})).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      const side=l=>l<4?-1:l>4?1:0;
+      const accepted=[];
 
-    bars(108,128,(bar,t)=>{
-      const flip=bar&1,seq=flip?[6,7,5,6,3,2]:[2,1,3,2,5,6];
-      [0,2,3,5,6,7].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar%6===5)chord(t(4),1,7);
-    });
+      // Build explicit long notes. Holds never overlap; leave 220ms after release.
+      for(const spec of holdSpecs){
+        const start=Math.round(spec.start),end=Math.round(spec.end),lane=spec.lane;
+        if(end<=start+300)continue;
+        if(accepted.some(h=>start<h.end+220&&end>h.start-220))continue;
+        const heldSide=side(lane);
+        const byTime=new Map(),kept=[];
+        for(const n of work){
+          if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
+          if(Math.abs(n.timeMs-start)<=25){
+            // At a hold start, keep at most one partner, on the opposite side or center.
+            if(n.lane===lane)continue;
+            const ns=side(n.lane);
+            if(heldSide!==0&&ns===heldSide)continue;
+            const prev=byTime.get(start);
+            if(!prev)byTime.set(start,n);
+            continue;
+          }
+          if(Math.abs(n.timeMs-end)<=25){
+            if(n.lane===lane)continue;
+            const ns=side(n.lane);
+            if(heldSide!==0&&ns===heldSide)continue;
+            const prev=byTime.get(end);
+            if(!prev)byTime.set(end,n);
+            continue;
+          }
+          if(n.timeMs>start&&n.timeMs<end){
+            // One thumb is holding: only one tap at a time on the free side.
+            const ns=side(n.lane);
+            if(heldSide<0&&ns<=0)continue;
+            if(heldSide>0&&ns>=0)continue;
+            if(heldSide===0&&ns===0)continue;
+            const prev=byTime.get(n.timeMs);
+            if(!prev)byTime.set(n.timeMs,n);
+            continue;
+          }
+        }
+        kept.push(...byTime.values(),{timeMs:start,lane,holdEndMs:end,holdVisualOnly:true});
+        work=kept.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+        accepted.push({start,end,lane});
+      }
 
-    bars(128,140,(bar,t)=>{
-      const right=bar&1,axis=right?6:2,answer=right?5:3,far=right?7:1;
-      add(t(0),axis);add(t(1),answer);add(t(2),axis);
-      chord(t(3),right?2:6,axis);
-      add(t(5),far);add(t(6),axis);add(t(7),answer);
-    });
+      // Exact simultaneous-note rule:
+      // left + right, or center + either side. Never left+left / right+right.
+      const groups=new Map();
+      for(const n of work){
+        if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);
+        groups.get(n.timeMs).push(n);
+      }
+      for(const g of groups.values()){
+        if(g.length>2)g.splice(2);
+        if(g.length!==2)continue;
+        const [a,b]=g,sa=side(a.lane),sb=side(b.lane);
+        if(sa!==0&&sa===sb){
+          const move=Math.abs(a.lane-4)<Math.abs(b.lane-4)?a:b;
+          move.lane=8-move.lane;
+          if(move.lane===4)move.lane=sa<0?6:2;
+        }
+      }
+      work=[...groups.values()].flat().sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
 
-    bars(140,158,(bar,t)=>{
-      const type=bar%6;
-      if(type===0){chord(t(0),1,7);add(t(1),2);add(t(2),3);add(t(3),5);add(t(4),6);add(t(5),5);chord(t(7),2,6);}
-      if(type===1){add(t(0),7);add(t(1),6);add(t(2),5);add(t(3),6);add(t(4),5);add(t(5),3);add(t(6),2);add(t(7),3);}
-      if(type===2){chord(t(0),2,6);add(t(1),3);add(t(2),5);add(t(3),3);add(t(4),6);add(t(5),5);add(t(6),7);chord(t(7),1,7);}
-      if(type===3){add(t(0),1);add(t(1),3);add(t(2),5);add(t(3),7);add(t(4),6);add(t(5),4);add(t(6),2);add(t(7),4);}
-      if(type===4){chord(t(0),0,8);add(t(1),2);add(t(2),4);add(t(3),6);add(t(4),3);add(t(5),5);chord(t(7),2,6);}
-      if(type===5){add(t(0),7);add(t(1),5);add(t(2),3);add(t(3),1);add(t(4),2);add(t(5),4);add(t(6),6);chord(t(7),1,7);}
-    });
+      // Spica-style rolling burst guard: at most two starts in any 115ms.
+      const safe=[];
+      for(const n of work){
+        const recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+        if(recent.length>=2)continue;
+        safe.push(n);
+      }
 
-    const chart=B.finish();
-    chart.notes=promoteReferenceHolds(chart.notes,half,22);
-    chart.noteCount=chart.notes.length;
-    chart.holdCount=chart.notes.filter(n=>n.holdVisualOnly).length;
-    return chart;
+      // Re-check hold-body ergonomics after chord correction.
+      const final=[];
+      for(const n of safe){
+        const active=safe.find(h=>h.holdVisualOnly&&h!==n&&n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs);
+        if(!active){final.push(n);continue;}
+        const hs=side(active.lane),ns=side(n.lane);
+        if(hs<0&&ns<=0)continue;
+        if(hs>0&&ns>=0)continue;
+        if(hs===0&&ns===0)continue;
+        if(final.some(x=>x.timeMs===n.timeMs&&x!==active))continue;
+        final.push(n);
+      }
+      final.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      return {notes:final,holdCount:final.filter(n=>n.holdVisualOnly).length};
+    }
+
+    const fin=finalizeWithHolds(base.notes,specs);
+    base.notes=fin.notes;base.noteCount=fin.notes.length;base.holdCount=fin.holdCount;base.bpm=160;
+    return base;
   }
 
   async function prepare(chartFactory,audioKey,title){
