@@ -1,4 +1,4 @@
-// Ver.0.8.216: split story/lounge art so only the embedded label moves upward.
+// Ver.0.8.217: fully unified six-button home menu artwork.
 (function(){
   'use strict';
 
@@ -11,6 +11,7 @@
     ['homeGachaBtn','勧誘','gacha']
   ];
   const ASSET_BASE='assets/ui/home-v0855/';
+  const EMBEDDED=window.LOVEFES_HOME_V0855_ASSETS||{};
 
   function ensureStyle(){
     if(document.getElementById('homeMenuUnifiedV0854Style')) return;
@@ -60,40 +61,11 @@
         margin:0!important;
         padding:0!important;
         border:0!important;
-        filter:drop-shadow(0 7px 13px rgba(0,0,0,.23))!important;
+        transform:none!important;
+        clip-path:none!important;
+        filter:drop-shadow(0 6px 11px rgba(0,0,0,.20))!important;
         image-rendering:auto!important;
         pointer-events:none!important;
-      }
-      /* Ver.0.8.216: story/lounge PNGs include their labels.
-         Split each image into an upper-art layer and a lower-label layer so the label itself,
-         not the whole icon, can be tucked upward toward the illustration. */
-      #homeScreen #homeStoryBtn>.home-menu-art-base,
-      #homeScreen #homeInteractionBtn>.home-menu-art-base{
-        position:absolute!important;
-        inset:0!important;
-        filter:drop-shadow(0 7px 13px rgba(0,0,0,.23))!important;
-      }
-      #homeScreen #homeStoryBtn>.home-menu-art-base{
-        clip-path:inset(0 0 34% 0)!important;
-      }
-      #homeScreen #homeInteractionBtn>.home-menu-art-base{
-        clip-path:inset(0 0 35% 0)!important;
-      }
-      #homeScreen #homeStoryBtn>.home-menu-art-label,
-      #homeScreen #homeInteractionBtn>.home-menu-art-label{
-        position:absolute!important;
-        inset:0!important;
-        z-index:2!important;
-        transform-origin:center center!important;
-        filter:drop-shadow(0 4px 8px rgba(0,0,0,.17))!important;
-      }
-      #homeScreen #homeStoryBtn>.home-menu-art-label{
-        clip-path:inset(62% 2% 2% 2%)!important;
-        transform:translateY(-8%) scale(1.015)!important;
-      }
-      #homeScreen #homeInteractionBtn>.home-menu-art-label{
-        clip-path:inset(63% 2% 2% 2%)!important;
-        transform:translateY(-9%) scale(1.02)!important;
       }
       #homeScreen .home-menu-interaction{
         padding:0!important;
@@ -128,34 +100,16 @@
 
     const source=btn.querySelector('.lounge-home-icon');
     const src=source?.currentSrc || source?.src;
-    if(!src) return false;
-
     const img=document.createElement('img');
-    img.className='home-menu-art lounge-home-art';
+    img.className='home-menu-art';
     img.alt='ラウンジ';
     img.decoding='async';
     img.draggable=false;
-    img.src=src;
+    if(src) img.src=src;
     btn.replaceChildren(img);
     btn.title='ラウンジ';
     btn.setAttribute('aria-label','ラウンジ');
     return true;
-  }
-
-  function installSplitLabel(btn,key,img){
-    if(key!=='story' && key!=='lounge') return;
-    img.classList.add('home-menu-art-base');
-    let label=btn.querySelector('.home-menu-art-label');
-    if(!label){
-      label=img.cloneNode(false);
-      label.className='home-menu-art home-menu-art-label';
-      label.removeAttribute('id');
-      label.alt='';
-      label.setAttribute('aria-hidden','true');
-      label.dataset.v0855Source='1';
-      btn.appendChild(label);
-    }
-    if(label.src!==img.src) label.src=img.src;
   }
 
   function normalize(){
@@ -164,8 +118,6 @@
 
     convertLoungeToFullArt();
 
-    // Keep only the six actual buttons as grid children. Legacy literal text nodes
-    // (for example a written "\\n") otherwise consume a CSS-grid cell on iPhone.
     [...menu.childNodes].forEach(node=>{if(node.nodeType===Node.TEXT_NODE)node.remove();});
 
     const buttons=[];
@@ -174,37 +126,38 @@
       if(!btn) return false;
       btn.title=label;
       btn.setAttribute('aria-label',label);
+
+      // Remove the temporary 0.8.216 split-label duplicate layer.
+      btn.querySelectorAll('.home-menu-art-label').forEach(node=>node.remove());
+
       let img=btn.querySelector('.home-menu-art');
       if(!img){
         img=document.createElement('img');
         img.className='home-menu-art';
         btn.replaceChildren(img);
       }
-      if(img){
-        img.alt=label;
-        img.decoding='async';
-        img.draggable=false;
-        const oldSrc=img.currentSrc||img.src;
-        if(!img.dataset.v0855Source){
-          img.dataset.v0855Source='1';
-          img.onerror=()=>{
-            if(img.dataset.v0855Fallback==='1') return;
-            img.dataset.v0855Fallback='1';
-            if(oldSrc) img.src=oldSrc;
-          };
-        }
-        const primary=`${ASSET_BASE}${key}.png?v=${window.APP_VERSION||'0.8.128'}-icons2`;
-        if(img.dataset.v0855Fallback!=='1' && !img.src.includes(`/home-v0855/${key}.png`)){
-          img.src=primary;
-        }
-        installSplitLabel(btn,key,img);
+      img.className='home-menu-art';
+      img.alt=label;
+      img.decoding='async';
+      img.draggable=false;
+
+      const fallback=`${ASSET_BASE}${key}.png?v=${window.APP_VERSION||'0.8.217'}-fallback`;
+      const primary=EMBEDDED[key]||fallback;
+      if(img.dataset.v0217Key!==key){
+        img.dataset.v0217Key=key;
+        img.onerror=()=>{
+          if(img.dataset.v0217Fallback==='1') return;
+          img.dataset.v0217Fallback='1';
+          img.src=fallback;
+        };
       }
+      if(img.dataset.v0217Fallback!=='1' && img.src!==primary) img.src=primary;
       buttons.push(btn);
     }
 
-    // DOM order defines the 3x2 grid: Live / Story / Settings / Club Room / Lounge / Scout.
     buttons.forEach(btn=>menu.appendChild(btn));
     menu.dataset.unifiedV0854='1';
+    menu.dataset.artVersion='0.8.217';
     return true;
   }
 
