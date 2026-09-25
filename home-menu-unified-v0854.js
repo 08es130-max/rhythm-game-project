@@ -32,10 +32,10 @@
         grid-column:auto!important;
         grid-row:auto!important;
         box-sizing:border-box!important;
-        width:91%!important;
-        height:91%!important;
-        max-width:91%!important;
-        max-height:91%!important;
+        width:100%!important;
+        height:100%!important;
+        max-width:100%!important;
+        max-height:100%!important;
         min-width:0!important;
         min-height:0!important;
         aspect-ratio:1/1!important;
@@ -52,10 +52,10 @@
       }
       #homeScreen .home-menu>.home-menu-btn>.home-menu-art{
         display:block!important;
-        width:100%!important;
-        height:100%!important;
-        max-width:100%!important;
-        max-height:100%!important;
+        width:91%!important;
+        height:91%!important;
+        max-width:91%!important;
+        max-height:91%!important;
         object-fit:contain!important;
         object-position:center!important;
         margin:auto!important;
