@@ -1,9 +1,9 @@
-// Ver.0.8.224: Dazzling Game fully rebuilt from HPT/Spica chart language.
+// Ver.0.8.225: Dazzling Game rebuilt around corrected 188 BPM with varied phrases and strict two-thumb rules.
 (function(){
   const TITLE='Dazzling Game';
   const ARTIST='Liella!、澁谷かのん、ウィーン・マルガレーテ、鬼塚冬毬';
   const AUDIO_KEY='dazzling-game';
-  const BPM=184.57, START=2949, END=270500, TARGET=1500;
+  const BPM=188, START=2949, END=270500, TARGET=1500;
   function makeChart(){
     const beat=60000/BPM,q=beat/4,notes=[],seen=new Set(),count=new Map();
     const add=(t,l)=>{t=Math.round(t);l=Math.max(0,Math.min(8,Math.round(l)));if(t<START||t>END)return;
@@ -12,110 +12,207 @@
     const at=(bar,s)=>START+(bar*16+s)*q;
     const sec=(a,b,fn)=>{for(let bar=a;bar<b;bar++)fn(bar,s=>at(bar,s));};
 
-    // HPT-like intro/verse language: inner lanes, off-beats and phrase-ending doubles.
-    sec(0,18,(bar,t)=>{
+    // Intro 0-14: dramatic, spacious opening.
+    sec(0,14,(bar,t)=>{
+      const k=bar%7;
+      const S=[
+        [[0,1],[0,7],[4,4],[10,2],[14,6]],
+        [[0,7],[3,5],[7,3],[11,1],[15,4]],
+        [[0,2],[4,6],[8,4],[12,1],[15,7]],
+        [[0,8],[2,6],[6,4],[10,2],[14,0]],
+        [[0,1],[4,3],[8,5],[12,7],[15,4]],
+        [[0,2],[0,6],[5,4],[9,7],[13,1]],
+        [[0,7],[3,4],[6,1],[10,5],[15,3]]
+      ][k];
+      const first=new Map();
+      S.forEach(([s,l])=>{if(first.has(s))chord(t(s),first.get(s),l);else{first.set(s,l);add(t(s),l);}});
+    });
+
+    // Verse 1 14-48: fast vocal rhythm with different syncopation every bar.
+    const vSubs=[[0,3,5,8,11,14],[0,2,6,9,12,15],[0,1,4,7,10,13,15],[0,4,6,8,11,15],[0,2,5,7,12,14],[0,1,3,8,10,13,15],[0,3,6,9,11,14],[0,2,4,7,9,12,15]];
+    const vLane=[[1,3,5,7,4,2],[7,5,3,1,4,6],[2,4,6,5,3,1,7],[6,4,2,5,7,3],[0,3,5,4,2,6],[8,5,3,1,4,6,2],[1,4,7,5,2,6],[7,4,1,3,6,2,5]];
+    sec(14,48,(bar,t)=>{const k=(bar-14)%8;vSubs[k].forEach((s,i)=>add(t(s),vLane[k][i]));if(k===3)chord(t(14),1,7);if(k===7)chord(t(13),2,6);});
+
+    // Build 48-60: accelerating confrontation.
+    sec(48,60,(bar,t)=>{
+      const k=(bar-48)%6,flip=k>=3;
+      if(k%3===0){[0,2,4,7,10,13,15].forEach((s,i)=>add(t(s),flip?[6,5,6,3,2,3,1][i]:[2,3,2,5,6,5,7][i]));}
+      if(k%3===1){add(t(0),flip?7:1);add(t(3),4);chord(t(6),2,6);add(t(10),flip?3:5);add(t(14),4);}
+      if(k%3===2){chord(t(0),1,7);[3,5,8,11,13].forEach((s,i)=>add(t(s),flip?[6,4,2,5,3][i]:[2,4,6,3,5][i]));}
+    });
+
+    // Chorus 1 60-88: wide hits + rapid answers, 8-bar phrase library.
+    sec(60,88,(bar,t)=>{
+      const k=(bar-60)%8;
+      const P=[
+        ()=>{chord(t(0),0,8);[2,4,6,9,12,14].forEach((s,i)=>add(t(s),[2,4,6,5,3,1][i]));},
+        ()=>{[0,2,5,7,10,12,15].forEach((s,i)=>add(t(s),[7,5,3,4,6,2,4][i]));},
+        ()=>{chord(t(0),1,7);add(t(1),4);add(t(4),6);add(t(6),2);add(t(9),5);add(t(13),3);},
+        ()=>{[0,1,3,6,8,11,13,15].forEach((s,i)=>add(t(s),[0,2,4,7,5,3,1,4][i]));},
+        ()=>{chord(t(0),2,6);[3,5,8,10,12,15].forEach((s,i)=>add(t(s),[4,1,5,8,3,7][i]));},
+        ()=>{[0,2,4,6,9,11,14].forEach((s,i)=>add(t(s),[8,6,4,1,3,5,7][i]));},
+        ()=>{chord(t(0),3,5);add(t(2),1);add(t(5),7);add(t(7),4);add(t(10),2);add(t(14),6);},
+        ()=>{[0,1,2,5,7,10,12,15].forEach((s,i)=>add(t(s),[1,3,5,7,4,6,2,4][i]));}
+      ];P[k]();
+    });
+
+    // 88-104 instrumental break: sparse strings / response.
+    sec(88,104,(bar,t)=>{
+      const k=(bar-88)%4;
+      const subs=[[0,4,8,12],[0,3,7,11,15],[0,5,10,15],[0,2,6,10,14]][k];
+      const lanes=[[1,4,7,3],[7,5,3,1,4],[0,4,8,4],[2,6,3,5,4]][k];
+      subs.forEach((s,i)=>add(t(s),lanes[i]));
+    });
+
+    // Verse 2 104-138: new rhythmic grammar, less mirror-copying.
+    sec(104,138,(bar,t)=>{
+      const k=(bar-104)%6;
+      const subs=[[0,2,5,9,12,15],[0,1,4,8,11,14],[0,3,6,10,13,15],[0,2,4,7,11,13],[0,1,5,8,10,14,15],[0,3,7,9,12,15]][k];
+      const lanes=[[2,5,7,4,1,6],[6,3,1,4,7,2],[0,4,6,3,5,8],[8,5,2,4,7,1],[1,4,7,5,2,6,3],[7,3,5,1,4,2]][k];
+      subs.forEach((s,i)=>add(t(s),lanes[i]));
+      if(k===2)chord(t(14),2,6);
+    });
+
+    // Build 2 138-150.
+    sec(138,150,(bar,t)=>{
       const flip=bar&1;
-      chord(t(0),flip?2:1,flip?6:7);
-      [3,6,10,13].forEach((s,i)=>add(t(s),flip?[6,5,3,2][i]:[2,3,5,6][i]));
-      if(bar%4===3)chord(t(15),3,5); else add(t(15),flip?6:2);
+      [0,2,4,6,9,11,13,15].forEach((s,i)=>add(t(s),flip?[7,5,3,1,4,6,2,4][i]:[1,3,5,7,4,2,6,4][i]));
+      if(bar%4===3)chord(t(8),0,8);
     });
 
-    sec(18,58,(bar,t)=>{
-      const seqs=[[1,2,3,2,5,6,5],[7,6,5,6,3,2,3],[2,3,1,3,6,5,7],[6,5,7,5,2,3,1]];
-      const seq=seqs[bar%4];
-      [0,3,5,8,10,13,15].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar%8===6)chord(t(7),2,6);
+    // Chorus 2 150-178: reuse musical role, not literal patterns.
+    sec(150,178,(bar,t)=>{
+      const k=(bar-150)%7;
+      const seqs=[
+        [0,2,4,6,8,10,12,14],[0,1,3,5,7,10,13,15],[0,3,5,8,11,13,15],[0,2,5,7,9,12,14],
+        [0,1,4,6,9,11,14,15],[0,2,3,6,8,10,13,15],[0,3,6,9,12,15]
+      ];
+      const lanes=[
+        [0,2,4,6,8,5,3,1],[1,3,5,7,6,4,2,4],[2,4,7,5,3,1,6],[8,6,4,2,0,3,5],
+        [1,4,7,5,2,6,3,4],[7,5,3,1,4,6,2,4],[2,6,3,5,1,7]
+      ];
+      seqs[k].forEach((s,i)=>add(t(s),lanes[k][i]));if(k===0||k===4)chord(t(15),1,7);
     });
 
-    // HPT axis-jack build with occasional Spica-like 16th pickups.
-    sec(58,78,(bar,t)=>{
-      const right=(bar%6)>=3,axis=right?6:2,inner=right?5:3,outer=right?7:1;
-      [0,2,4].forEach((s,i)=>add(t(s),i===1?inner:axis));
-      add(t(7),outer);add(t(9),axis);add(t(11),inner);
-      if(bar%3===2){add(t(13),axis);chord(t(15),right?2:6,axis);} else add(t(15),inner);
+    // Bridge 178-190: hold-friendly breathing section.
+    sec(178,190,(bar,t)=>{
+      const k=(bar-178)%4;
+      [[0,6,12],[0,4,10,15],[0,8,14],[0,3,9,15]][k].forEach((s,i)=>add(t(s),[[1,4,7],[7,4,2,6],[0,4,8],[2,5,3,7]][k][i]));
     });
 
-    // Chorus: wide-to-inner gestures, alternating hands, short dense answers.
-    sec(78,116,(bar,t)=>{
-      const type=bar%4;
-      if(type===0){chord(t(0),1,7);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[3,5,3,2,3,5][i]));chord(t(15),2,6);}
-      if(type===1){[0,2,4,6,8,10,12,15].forEach((s,i)=>add(t(s),[7,6,5,6,3,2,3,1][i]));}
-      if(type===2){chord(t(0),2,6);[2,4,7,9,11,13].forEach((s,i)=>add(t(s),[5,3,5,6,5,3][i]));chord(t(15),1,7);}
-      if(type===3){[0,1,3,5,7,9,11,13,15].forEach((s,i)=>add(t(s),[1,2,3,2,6,5,6,7,4][i]));}
+    // Final chorus 190-208: high energy, 9 different bar shapes.
+    sec(190,208,(bar,t)=>{
+      const k=(bar-190)%9;
+      const subs=[[0,1,3,5,7,9,11,13,15],[0,2,4,6,8,10,12,14],[0,3,5,7,10,12,15],[0,1,4,6,8,11,13,15],[0,2,5,7,9,12,14],[0,1,3,6,8,10,13,15],[0,2,4,7,9,11,14],[0,3,6,8,10,12,15],[0,1,4,7,10,13,15]][k];
+      const lanes=[[0,2,4,7,5,3,1,6,4],[8,6,4,2,0,3,5,7],[1,4,7,5,2,6,3],[7,5,3,1,4,6,2,4],[2,5,8,6,3,1,4],[6,3,0,2,5,7,4,1],[1,3,6,8,5,2,4],[7,4,1,3,6,2,5],[0,3,5,8,6,2,4]][k];
+      subs.forEach((s,i)=>add(t(s),lanes[i]));if(k===0||k===3||k===6)chord(t(15),1,7);
     });
 
-    // Mid-song: swing across the screen, with more breathing room before the second build.
-    sec(116,146,(bar,t)=>{
-      const seqs=[[0,2,3,6,7,5,2],[8,6,5,2,1,3,6],[1,3,5,7,6,3,2],[7,5,3,1,2,5,6]];
-      [0,2,4,7,9,12,15].forEach((s,i)=>add(t(s),seqs[bar%4][i]));
-      if(bar%5===4)chord(t(6),2,6);
-    });
+    sec(208,211,(bar,t)=>{[0,2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),bar&1?[8,6,4,2,0,3,5,4][i]:[0,2,4,6,8,5,3,4][i]));if(bar===210)chord(t(15),0,8);});
 
-    sec(146,168,(bar,t)=>{
-      const flip=bar&1,seq=flip?[6,7,5,6,3,2,3]:[2,1,3,2,5,6,5];
-      [0,3,5,8,10,13,15].forEach((s,i)=>add(t(s),seq[i]));
-      if(bar%6===5)chord(t(7),1,7);
-    });
-
-    sec(168,184,(bar,t)=>{
-      const right=bar&1,axis=right?6:2,answer=right?5:3,far=right?7:1;
-      add(t(0),axis);add(t(2),answer);add(t(4),axis);
-      chord(t(6),right?2:6,axis);
-      add(t(9),far);add(t(11),axis);add(t(13),answer);add(t(15),axis);
-    });
-
-    // Final chorus: busiest section, but still only two-thumb-safe starts.
-    sec(184,214,(bar,t)=>{
-      const type=bar%6;
-      if(type===0){chord(t(0),1,7);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[2,3,5,6,5,3][i]));chord(t(15),2,6);}
-      if(type===1){[0,1,3,5,7,9,11,13,15].forEach((s,i)=>add(t(s),[7,6,5,6,5,3,2,3,1][i]));}
-      if(type===2){chord(t(0),2,6);[2,4,6,8,10,12,14].forEach((s,i)=>add(t(s),[3,5,3,6,5,7,4][i]));}
-      if(type===3){[0,2,3,5,6,8,10,12,14,15].forEach((s,i)=>add(t(s),[1,3,5,7,6,4,2,3,5,4][i]));}
-      if(type===4){chord(t(0),0,8);[2,4,6,8,10,12].forEach((s,i)=>add(t(s),[2,4,6,3,5,4][i]));chord(t(15),1,7);}
-      if(type===5){[0,1,2,4,6,8,10,12,14,15].forEach((s,i)=>add(t(s),[7,5,3,1,2,4,6,8,5,4][i]));}
-    });
-
-    // Rolling burst safety, copied from the Spica philosophy.
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-    const safe=[];
-    for(const n of notes){
-      const recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
-      if(recent.length>=2)continue;
-      safe.push(n);
-    }
 
-    const side=l=>l<4?-1:l>4?1:0;
-    let heldUntil=-Infinity,holdCount=0;
-    for(let i=0;i<safe.length&&holdCount<30;i++){
-      const n=safe[i];
-      if(n.lane===4||n.timeMs<heldUntil+220||i%13!==4)continue;
-      const s=side(n.lane);
-      let hazard=n.timeMs+q*8; // up to two beats
-      const inside=safe.filter(x=>x.timeMs>n.timeMs&&x.timeMs<hazard);
-      for(const x of inside){
-        if(side(x.lane)===s){hazard=Math.min(hazard,x.timeMs-130);break;}
+    function finalizeWithHolds(rawNotes, holdSpecs){
+      let work=rawNotes.map(n=>({...n})).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      const side=l=>l<4?-1:l>4?1:0;
+      const accepted=[];
+
+      // Build explicit long notes. Holds never overlap; leave 220ms after release.
+      for(const spec of holdSpecs){
+        const start=Math.round(spec.start),end=Math.round(spec.end),lane=spec.lane;
+        if(end<=start+300)continue;
+        if(accepted.some(h=>start<h.end+220&&end>h.start-220))continue;
+        const heldSide=side(lane);
+        const byTime=new Map(),kept=[];
+        for(const n of work){
+          if(n.timeMs<start-25||n.timeMs>end+25){kept.push(n);continue;}
+          if(Math.abs(n.timeMs-start)<=25){
+            // At a hold start, keep at most one partner, on the opposite side or center.
+            if(n.lane===lane)continue;
+            const ns=side(n.lane);
+            if(heldSide!==0&&ns===heldSide)continue;
+            const prev=byTime.get(start);
+            if(!prev)byTime.set(start,n);
+            continue;
+          }
+          if(Math.abs(n.timeMs-end)<=25){
+            if(n.lane===lane)continue;
+            const ns=side(n.lane);
+            if(heldSide!==0&&ns===heldSide)continue;
+            const prev=byTime.get(end);
+            if(!prev)byTime.set(end,n);
+            continue;
+          }
+          if(n.timeMs>start&&n.timeMs<end){
+            // One thumb is holding: only one tap at a time on the free side.
+            const ns=side(n.lane);
+            if(heldSide<0&&ns<=0)continue;
+            if(heldSide>0&&ns>=0)continue;
+            if(heldSide===0&&ns===0)continue;
+            const prev=byTime.get(n.timeMs);
+            if(!prev)byTime.set(n.timeMs,n);
+            continue;
+          }
+        }
+        kept.push(...byTime.values(),{timeMs:start,lane,holdEndMs:end,holdVisualOnly:true});
+        work=kept.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+        accepted.push({start,end,lane});
       }
-      const free=inside.filter(x=>side(x.lane)!==s);
-      for(let a=0;a<free.length;a++)for(let b=a+1;b<free.length;b++){
-        if(free[b].timeMs-free[a].timeMs<115)hazard=Math.min(hazard,free[b].timeMs-130);
+
+      // Exact simultaneous-note rule:
+      // left + right, or center + either side. Never left+left / right+right.
+      const groups=new Map();
+      for(const n of work){
+        if(!groups.has(n.timeMs))groups.set(n.timeMs,[]);
+        groups.get(n.timeMs).push(n);
       }
-      let steps=Math.min(8,Math.floor((hazard-n.timeMs)/q));
-      if(steps<4)continue;
-      n.holdEndMs=Math.round(n.timeMs+steps*q);n.holdVisualOnly=true;
-      heldUntil=n.holdEndMs;holdCount++;
+      for(const g of groups.values()){
+        if(g.length>2)g.splice(2);
+        if(g.length!==2)continue;
+        const [a,b]=g,sa=side(a.lane),sb=side(b.lane);
+        if(sa!==0&&sa===sb){
+          const move=Math.abs(a.lane-4)<Math.abs(b.lane-4)?a:b;
+          move.lane=8-move.lane;
+          if(move.lane===4)move.lane=sa<0?6:2;
+        }
+      }
+      work=[...groups.values()].flat().sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+
+      // Spica-style rolling burst guard: at most two starts in any 115ms.
+      const safe=[];
+      for(const n of work){
+        const recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+        if(recent.length>=2)continue;
+        safe.push(n);
+      }
+
+      // Re-check hold-body ergonomics after chord correction.
+      const final=[];
+      for(const n of safe){
+        const active=safe.find(h=>h.holdVisualOnly&&h!==n&&n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs);
+        if(!active){final.push(n);continue;}
+        const hs=side(active.lane),ns=side(n.lane);
+        if(hs<0&&ns<=0)continue;
+        if(hs>0&&ns>=0)continue;
+        if(hs===0&&ns===0)continue;
+        if(final.some(x=>x.timeMs===n.timeMs&&x!==active))continue;
+        final.push(n);
+      }
+      final.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
+      return {notes:final,holdCount:final.filter(n=>n.holdVisualOnly).length};
     }
 
-    const final=[];
-    for(const n of safe){
-      const active=safe.find(h=>h.holdVisualOnly&&n!==h&&n.timeMs>h.timeMs&&n.timeMs<h.holdEndMs);
-      if(!active){final.push(n);continue;}
-      if(side(n.lane)===side(active.lane)||n.lane===active.lane)continue;
-      if(final.some(x=>x.timeMs===n.timeMs&&x!==active))continue;
-      final.push(n);
-    }
-
-    final.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount,notes:final};
+    const specs=[
+      [10,0,10,8,1],[18,0,18,10,7],[27,0,27,8,2],[36,0,36,12,6],
+      [45,0,45,8,1],[52,0,52,12,7],[58,0,58,8,2],[64,0,64,12,6],
+      [71,0,71,8,1],[78,0,78,12,7],[86,0,86,8,2],[94,0,94,12,6],
+      [102,0,102,8,1],[111,0,111,12,7],[120,0,120,8,2],[129,0,129,12,6],
+      [137,0,137,8,1],[145,0,145,12,7],[153,0,153,8,2],[161,0,161,12,6],
+      [170,0,170,8,1],[179,0,179,12,7],[184,0,184,8,2],[191,0,191,12,6],
+      [197,0,197,8,1],[203,0,203,10,7]
+    ].map(([b,s,eb,es,l])=>({start:at(b,s),end:at(eb,es),lane:l}));
+    const fin=finalizeWithHolds(notes,specs);
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:fin.notes.length,holdCount:fin.holdCount,notes:fin.notes};
   }
   async function prepare(){
     chart=makeChart();validateChart(chart);document.body.classList.remove('hasunosora-live-active');
