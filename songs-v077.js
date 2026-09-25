@@ -1,4 +1,4 @@
-// Ver.0.8.225: Boooooom Bee rebuilt with corrected BPM, varied phrases, strict chord rules and full hold coverage.
+// Ver.0.8.226: Boooooom Bee hold density raised to HPT-like levels; strict two-thumb rules retained.
 (function(){
   const VERSION='0.7.7';
   const HPT_AUDIO_KEY='happy-party-train';
@@ -300,14 +300,7 @@
     });
 
     const base=B.finish();
-    const specs=[
-      [14,0,14,4,1],[20,0,20,6,7],[27,0,27,4,2],[34,0,34,6,6],
-      [41,0,41,4,1],[47,0,47,6,7],[53,0,53,4,2],[58,0,58,6,6],
-      [64,0,64,4,1],[70,0,70,6,7],[80,0,80,4,2],[86,0,86,6,6],
-      [92,0,92,4,1],[99,0,99,6,7],[106,0,106,4,2],[114,0,114,6,6],
-      [121,0,121,4,1],[127,0,127,6,7],[132,0,132,4,2],[137,0,137,6,6],
-      [142,0,142,4,1],[147,0,147,4,7]
-    ].map(([b,s,eb,es,l])=>({start:at(b,s),end:at(eb,es),lane:l}));
+    const specs=[[6,0,6,6,1],[10,0,10,8,7],[14,0,14,10,2],[18,0,18,6,6],[22,0,22,12,1],[26,0,26,8,7],[30,0,30,6,2],[34,0,34,8,6],[38,0,38,10,1],[42,0,42,6,7],[46,0,46,12,2],[50,0,50,8,6],[54,0,54,6,1],[58,0,58,8,7],[62,0,62,10,2],[66,0,66,6,6],[70,0,70,12,1],[74,0,74,8,7],[78,0,78,6,2],[82,0,82,8,6],[86,0,86,10,1],[90,0,90,6,7],[94,0,94,12,2],[98,0,98,8,6],[102,0,102,6,1],[106,0,106,8,7],[110,0,110,10,2],[114,0,114,6,6],[118,0,118,12,1],[122,0,122,8,7],[126,0,126,6,2],[130,0,130,8,6],[134,0,134,10,1],[138,0,138,6,7],[142,0,142,12,2],[146,0,146,8,6]].map(([b,s,eb,es,l])=>({start:at(b,s),end:at(eb,es),lane:l}));
 
     function finalizeWithHolds(rawNotes, holdSpecs){
       let work=rawNotes.map(n=>({...n})).sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
@@ -378,8 +371,21 @@
       // Spica-style rolling burst guard: at most two starts in any 115ms.
       const safe=[];
       for(const n of work){
-        const recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
-        if(recent.length>=2)continue;
+        let recent=safe.filter(x=>n.timeMs-x.timeMs>=0&&n.timeMs-x.timeMs<115);
+        if(recent.length>=2){
+          if(n.holdVisualOnly){
+            // Hold starts are structural. Prefer the hold and drop the latest ordinary
+            // tap in the same 115ms burst instead of silently deleting the hold.
+            for(let i=safe.length-1;i>=0&&recent.length>=2;i--){
+              const x=safe[i];
+              if(n.timeMs-x.timeMs<0||n.timeMs-x.timeMs>=115)continue;
+              if(x.holdVisualOnly)continue;
+              safe.splice(i,1);
+              recent=safe.filter(y=>n.timeMs-y.timeMs>=0&&n.timeMs-y.timeMs<115);
+            }
+          }
+          if(recent.length>=2)continue;
+        }
         safe.push(n);
       }
 
