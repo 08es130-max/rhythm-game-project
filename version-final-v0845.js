@@ -1,14 +1,14 @@
-// Final version guard for Ver.0.8.224. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.225. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.224';
+  const VERSION='0.8.225';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     const text=document.querySelector('#updateBanner .update-text');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
-    if(text) text.textContent='Boooooom Boooooom Bee!!・Dazzling Game・眩耀夜行を、HAPPY PARTY TRAINとスピカテリブルの譜面設計を基準に全面再構築しました。長押し・左右振り・同時押し・密度変化も見直しています。';
+    if(text) text.textContent='3曲のBPMと曲長基準を修正して譜面を再構築しました。同時押しは左右1個ずつ、または中央＋片側のみとし、長押しも全曲に大幅追加しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,150);
 })();
