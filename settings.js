@@ -24,11 +24,27 @@ function isPerfectAssistEnabled() {
   return localStorage.getItem(SETTINGS_KEYS.perfectAssist) === 'true';
 }
 
+const PERFECT_ASSIST_WINDOW = 70;
+const COMBO_ASSIST_WINDOW = 180;
+
 function getPerfectWindow() {
-  return isPerfectAssistEnabled() ? 70 : HIT_WINDOWS.perfect;
+  return isPerfectAssistEnabled() ? PERFECT_ASSIST_WINDOW : HIT_WINDOWS.perfect;
+}
+
+function getComboAssistWindow() {
+  return isPerfectAssistEnabled() ? COMBO_ASSIST_WINDOW : HIT_WINDOWS.good;
+}
+
+function getAssistGrade(absMs) {
+  if (absMs <= getPerfectWindow()) return 'perfect';
+  if (isPerfectAssistEnabled()) return 'great';
+  if (absMs <= HIT_WINDOWS.great) return 'great';
+  return 'good';
 }
 
 window.getPerfectWindow = getPerfectWindow;
+window.getComboAssistWindow = getComboAssistWindow;
+window.getAssistGrade = getAssistGrade;
 
 function restoreDeviceSettings() {
   const savedSpeed = clampNumber(localStorage.getItem(SETTINGS_KEYS.speed), 0.7, 4.0, 1.0);
