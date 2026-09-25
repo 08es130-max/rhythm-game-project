@@ -1,4 +1,4 @@
-// Ver.0.7.6: rebuild HAPPY PARTY TRAIN and Boooooom Boooooom Bee!! charts with varied section-based patterns.
+// Ver.0.8.228: preserve patched Boooooom Bee card so legacy installer cannot restore the old chart handler.
 (function(){
   const VERSION='0.7.6';
   const HPT_AUDIO_KEY='happy-party-train';
@@ -260,11 +260,25 @@
 
   function installCards(){
     const grid=document.getElementById('songLibraryGrid');if(!grid)return;
-    grid.querySelectorAll('[data-song075="hpt"],[data-song075="boom"]').forEach(el=>el.remove());
-    grid.append(
-      makeCard('hpt','HAPPY PARTY TRAIN','Aqours','172.266',()=>prepareBuiltInSong(makeHappyPartyTrainChart,HPT_AUDIO_KEY,'HAPPY PARTY TRAIN')),
-      makeCard('boom','Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会','161.499',()=>prepareBuiltInSong(makeBoooooomBeeChart,BOOM_AUDIO_KEY,'Boooooom Boooooom Bee!!'))
+
+    // HPT still uses the legacy card as a base and is re-patched by hpt-chart-v0838.
+    grid.querySelectorAll('[data-song075="hpt"]').forEach(el=>el.remove());
+    grid.appendChild(
+      makeCard('hpt','HAPPY PARTY TRAIN','Aqours','172.266',()=>prepareBuiltInSong(makeHappyPartyTrainChart,HPT_AUDIO_KEY,'HAPPY PARTY TRAIN'))
     );
+
+    // IMPORTANT: once songs-v077 has patched the Boooooom Bee button, never recreate
+    // that card here. Recreating it could temporarily restore the old chart handler.
+    const boomCards=[...grid.querySelectorAll('[data-song075="boom"]')];
+    const patched=boomCards.find(card=>card.querySelector('button[data-v077="1"]'));
+    if(patched){
+      boomCards.forEach(card=>{if(card!==patched)card.remove();});
+    }else{
+      boomCards.forEach(el=>el.remove());
+      grid.appendChild(
+        makeCard('boom','Boooooom Boooooom Bee!!','虹ヶ咲学園スクールアイドル同好会','161.499',()=>prepareBuiltInSong(makeBoooooomBeeChart,BOOM_AUDIO_KEY,'Boooooom Boooooom Bee!!'))
+      );
+    }
   }
 
   const library=document.getElementById('songLibraryScreen');
