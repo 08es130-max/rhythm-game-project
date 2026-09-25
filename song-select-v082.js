@@ -7,7 +7,7 @@
   ];
   const KNOWN={
     'スピカテリブル':{category:'muse',notes:'1350',level:'★9',palette:['#5b67d8','#a55fcb','#71c9ee']},
-    'Snow halation':{category:'muse',notes:'1350',level:'★9',palette:['#73c9f4','#f7b6cf','#6078c8']},
+    'Snow halation':{category:'muse',notes:'1066',level:'★9',palette:['#73c9f4','#f7b6cf','#6078c8']},
     'HAPPY PARTY TRAIN':{category:'aqours',notes:'--',level:'★9',palette:['#eb9a3a','#2c9c9d','#214c78']},
     'Boooooom Boooooom Bee!!':{category:'nijigasaki',notes:'--',level:'★9',palette:['#ea5b98','#efb835','#6e4fc2']}
   };
