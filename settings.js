@@ -358,3 +358,103 @@ restoreDeviceSettings();
   removeObsoleteUpdateCard();
   new MutationObserver(removeObsoleteUpdateCard).observe(root,{childList:true,subtree:true});
 })();
+
+
+// Ver.0.8.241: portable save-data backup / restore for PWA reinstall and device migration.
+(function(){
+  'use strict';
+  const root=document.getElementById('settingsScreen');
+  const grid=root?.querySelector('.settings-grid');
+  if(!grid || document.getElementById('saveBackupExportBtn')) return;
+
+  const card=document.createElement('div');
+  card.className='setting-card';
+  card.innerHTML=`
+    <div>セーブデータ管理</div>
+    <button id="saveBackupExportBtn" class="timing-adjust-btn" type="button">バックアップを作成</button>
+    <button id="saveBackupImportBtn" class="timing-adjust-btn" type="button">バックアップから復元</button>
+    <input id="saveBackupFileInput" type="file" accept="application/json,.json" hidden>
+    <small id="saveBackupStatus">所持キャラ・解放状況・設定など、この端末のセーブデータをファイルに保存できます。</small>
+  `;
+  grid.appendChild(card);
+
+  const exportBtn=card.querySelector('#saveBackupExportBtn');
+  const importBtn=card.querySelector('#saveBackupImportBtn');
+  const fileInput=card.querySelector('#saveBackupFileInput');
+  const status=card.querySelector('#saveBackupStatus');
+
+  function snapshotLocalStorage(){
+    const data={};
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(key!=null) data[key]=localStorage.getItem(key);
+    }
+    return data;
+  }
+  function makeBackup(){
+    const data=snapshotLocalStorage();
+    return {
+      format:'hobofes-save-backup',
+      formatVersion:1,
+      createdAt:new Date().toISOString(),
+      appVersion:window.APP_VERSION||null,
+      origin:location.origin,
+      itemCount:Object.keys(data).length,
+      localStorage:data
+    };
+  }
+  function downloadJson(payload){
+    const stamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download='hobofes-save-'+stamp+'.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  exportBtn.addEventListener('click',()=>{
+    try{
+      const backup=makeBackup();
+      downloadJson(backup);
+      status.textContent=`バックアップを作成しました（${backup.itemCount}項目）。「ファイル」に保存して大切に保管してください。`;
+    }catch(e){
+      console.error(e);
+      status.textContent='バックアップの作成に失敗しました。';
+    }
+  });
+
+  importBtn.addEventListener('click',()=>{ fileInput.value=''; fileInput.click(); });
+  fileInput.addEventListener('change',async()=>{
+    const file=fileInput.files?.[0];
+    if(!file)return;
+    try{
+      const backup=JSON.parse(await file.text());
+      if(backup?.format!=='hobofes-save-backup' || backup?.formatVersion!==1 || !backup.localStorage || typeof backup.localStorage!=='object'){
+        throw new Error('invalid backup');
+      }
+      const count=Object.keys(backup.localStorage).length;
+      const date=backup.createdAt ? new Date(backup.createdAt).toLocaleString('ja-JP') : '不明';
+      if(!confirm(`バックアップを復元しますか？\n作成日時: ${date}\n保存項目: ${count}\n\n現在のセーブデータは復元直前のバックアップとして自動保存します。`)) return;
+
+      // Safety copy of the current state before destructive replacement.
+      downloadJson({...makeBackup(),reason:'before-restore'});
+
+      localStorage.clear();
+      for(const [key,value] of Object.entries(backup.localStorage)){
+        if(typeof key==='string' && (typeof value==='string' || value===null)){
+          localStorage.setItem(key,value===null?'':value);
+        }
+      }
+      status.textContent='復元しました。ゲームを再読み込みします…';
+      setTimeout(()=>location.reload(),500);
+    }catch(e){
+      console.error(e);
+      status.textContent='このファイルは有効な「ほぼフェス！」バックアップではありません。';
+      alert('バックアップを読み込めませんでした。ファイルを確認してください。');
+    }
+  });
+})();
