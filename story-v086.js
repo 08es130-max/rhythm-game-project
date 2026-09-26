@@ -203,12 +203,12 @@
   }
   function openStory(){overlay.hidden=false;document.body.style.overflow='hidden';showChapters();}
   function closeStory(){clearType();clearTimeout(autoTimer);auto=false;overlay.hidden=true;menuOverlay.hidden=true;backlogOverlay.hidden=true;document.body.style.overflow='';}
-  function showChapters(){clearType();clearTimeout(autoTimer);chapters.hidden=false;reader.hidden=true;menuOverlay.hidden=true;backlogOverlay.hidden=true;topTitle.textContent='MAIN STORY ― 虹をつなぐ歌 ―';renderChapters();}
+  function showChapters(){clearType();clearTimeout(autoTimer);chapters.hidden=false;reader.hidden=true;menuOverlay.hidden=true;backlogOverlay.hidden=true;topTitle.textContent='MAIN STORY ― 虹をつなぐ歌 ―';window.LOVEFES_STORY_VISUALS?.reset?.();renderChapters();}
   function openChapter(ci,li){chapterIndex=Math.max(0,Math.min(STORY.length-1,ci));lineIndex=Math.max(0,Math.min(STORY[chapterIndex].lines.length-1,li));chapters.hidden=true;reader.hidden=false;menuOverlay.hidden=true;backlogOverlay.hidden=true;topTitle.textContent=STORY[chapterIndex].title;backdrop.textContent=STORY[chapterIndex].title.replace(/^第\d+章\s*/,'');log=[];showLine();}
   function clearType(){if(timer){clearInterval(timer);timer=null;}typing=false;}
   function showLine(){
     clearType();clearTimeout(autoTimer);const ch=STORY[chapterIndex],ln=ch.lines[lineIndex];if(!ln){showChapters();return;}
-    nameplate.hidden=!ln.n;nameplate.textContent=ln.n||'';fullText=ln.t;text.textContent='';progress.textContent=`${chapterIndex+1}/${STORY.length}　${lineIndex+1}/${ch.lines.length}`;
+    nameplate.hidden=!ln.n;nameplate.textContent=ln.n||'';fullText=ln.t;text.textContent='';progress.textContent=`${chapterIndex+1}/${STORY.length}　${lineIndex+1}/${ch.lines.length}`;window.LOVEFES_STORY_VISUALS?.renderLine?.(ln,{chapter:ch,chapterIndex,lineIndex});
     log.push({n:ln.n||'',t:ln.t});if(log.length>80)log.shift();
     const sp=Number(speedSelect.value||26);if(sp===0){text.textContent=fullText;typing=false;scheduleAuto();return;}
     let p=0;typing=true;timer=setInterval(()=>{p++;text.textContent=fullText.slice(0,p);if(p>=fullText.length){clearType();scheduleAuto();}},sp);
@@ -242,6 +242,9 @@
   document.addEventListener('keydown',e=>{if(overlay.hidden)return;if(e.key==='Escape'){if(!backlogOverlay.hidden){backlogOverlay.hidden=true;menuOverlay.hidden=false;}else if(!menuOverlay.hidden)closeMenu();else openMenu();}});
   renderChapters();
   window.LOVEFES_STORY={open:openStory,close:closeStory,data:STORY,version:VERSION};
+  // Visual fields supported per line (optional): bg/background, left/l, right/r, cg/eventCG.
+  // Character slot object: {character:'栞子', expression:'serious'} or {src:'path.png'}.
+  // Omitted = keep previous visual state. null = clear that visual layer.
 })();
 
 /* Ver.0.8.131: story home-button styling must be injected as CSS, never left as raw JS. */
