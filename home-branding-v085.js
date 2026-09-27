@@ -1,12 +1,12 @@
-// Ver.0.8.5: inject the approved LoveFes logo at the top-left and register the new standing-art candidate.
+// Ver.0.8.5: inject the approved HoboFes logo at the top-left and register the new standing-art candidate.
 (function(){
-  const VERSION='0.8.9';
+  const VERSION='0.8.243';
   const titleHost=document.querySelector('.home-topbar > div:first-child');
   if(titleHost && !titleHost.querySelector('.home-lovefes-logo-v085')){
     const img=document.createElement('img');
     img.className='home-lovefes-logo-v085';
-    img.src=`assets/branding/lovefes-logo-v085.webp?v=${VERSION}`;
-    img.alt='ラブフェス！';
+    img.src=`hobofes-logo-v2.png?v=${VERSION}`;
+    img.alt='ほぼフェス！';
     img.decoding='async';
     img.draggable=false;
     titleHost.appendChild(img);
