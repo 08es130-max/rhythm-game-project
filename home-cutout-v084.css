@@ -17,7 +17,10 @@
   pointer-events:none;
   user-select:none;
   -webkit-user-drag:none;
-  filter:drop-shadow(0 18px 28px rgba(0,0,0,.34));
+  /* Keep the source PNG sharp on iPhone Safari: avoid rasterizing the enlarged cutout through a CSS filter. */
+  filter:none;
+  image-rendering:auto;
+  -webkit-font-smoothing:antialiased;
 }
 .home-character-cutout-v084[hidden]{display:none!important}
 .home-menu-art{
