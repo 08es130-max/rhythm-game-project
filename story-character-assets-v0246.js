@@ -1,4 +1,4 @@
-// Ver.0.8.248: compact 8-frame story sprite registry for 12 Nijigasaki members.
+// Ver.0.8.249: uploaded PNG 8-frame story sprite registry for 12 Nijigasaki members.
 (function(){
 'use strict';
 const api=window.LOVEFES_STORY_VISUALS;
@@ -13,11 +13,11 @@ const MEMBERS=[
  ['ランジュ','lanzhu',['鐘嵐珠','嵐珠']]
 ];
 function register(key,slug,aliases){
- const src=`${BASE}/${slug}.webp?v=${window.APP_VERSION||'0.8.248'}`;
+ const src=`${BASE}/${slug}.png?v=${window.APP_VERSION||'0.8.249'}`;
  const map=Object.fromEntries(EXPRESSIONS.map((e,i)=>[e,{src,frame:i}]));
  api.registerCharacterSet(key,map);
  aliases.forEach(a=>api.registerCharacterSet(a,map));
 }
 MEMBERS.forEach(m=>register(...m));
-window.LOVEFES_STORY_CHARACTER_ASSETS={version:'0.8.248',base:BASE,expressions:EXPRESSIONS,members:MEMBERS};
+window.LOVEFES_STORY_CHARACTER_ASSETS={version:'0.8.249',base:BASE,expressions:EXPRESSIONS,members:MEMBERS};
 })();
