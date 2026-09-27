@@ -382,6 +382,10 @@ restoreDeviceSettings();
   const importBtn=card.querySelector('#saveBackupImportBtn');
   const fileInput=card.querySelector('#saveBackupFileInput');
   const status=card.querySelector('#saveBackupStatus');
+  const LAST_BACKUP_KEY='hobofesLastBackupAtV1';
+  function formatBackupTime(iso){if(!iso)return '未作成';const d=new Date(iso);return Number.isNaN(d.getTime())?'未作成':d.toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}
+  function showLastBackup(){status.textContent=`最終バックアップ：${formatBackupTime(localStorage.getItem(LAST_BACKUP_KEY))}　所持キャラ・解放状況・設定などを保存します。`}
+  showLastBackup();
 
   function snapshotLocalStorage(){
     const data={};
@@ -421,7 +425,8 @@ restoreDeviceSettings();
     try{
       const backup=makeBackup();
       downloadJson(backup);
-      status.textContent=`バックアップを作成しました（${backup.itemCount}項目）。「ファイル」に保存して大切に保管してください。`;
+      localStorage.setItem(LAST_BACKUP_KEY,backup.createdAt);
+      showLastBackup();
     }catch(e){
       console.error(e);
       status.textContent='バックアップの作成に失敗しました。';
