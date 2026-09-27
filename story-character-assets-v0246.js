@@ -1,51 +1,23 @@
-// Ver.0.8.246: story character-expression asset registry for the 12 Nijigasaki members.
+// Ver.0.8.248: compact 8-frame story sprite registry for 12 Nijigasaki members.
 (function(){
 'use strict';
 const api=window.LOVEFES_STORY_VISUALS;
 if(!api?.registerCharacterSet)return;
-
-const BASE='assets/story/characters';
+const BASE='assets/story/sprites';
 const EXPRESSIONS=['default','smile','shy','surprised','worried','angry','crying','wink'];
 const MEMBERS=[
-  {key:'歩夢',slug:'ayumu',aliases:['上原歩夢']},
-  {key:'かすみ',slug:'kasumi',aliases:['中須かすみ']},
-  {key:'しずく',slug:'shizuku',aliases:['桜坂しずく']},
-  {key:'果林',slug:'karin',aliases:['朝香果林']},
-  {key:'愛',slug:'ai',aliases:['宮下愛']},
-  {key:'彼方',slug:'kanata',aliases:['近江彼方']},
-  {key:'せつ菜',slug:'setsuna',aliases:['優木せつ菜','中川菜々','菜々']},
-  {key:'エマ',slug:'emma',aliases:['エマ・ヴェルデ']},
-  {key:'璃奈',slug:'rina',aliases:['天王寺璃奈']},
-  {key:'栞子',slug:'shioriko',aliases:['三船栞子']},
-  {key:'ミア',slug:'mia',aliases:['ミア・テイラー']},
-  {key:'ランジュ',slug:'lanzhu',aliases:['鐘嵐珠','嵐珠']}
+ ['歩夢','ayumu',['上原歩夢']],['かすみ','kasumi',['中須かすみ']],['しずく','shizuku',['桜坂しずく']],
+ ['果林','karin',['朝香果林']],['愛','ai',['宮下愛']],['彼方','kanata',['近江彼方']],
+ ['せつ菜','setsuna',['優木せつ菜','中川菜々','菜々']],['エマ','emma',['エマ・ヴェルデ']],
+ ['璃奈','rina',['天王寺璃奈']],['栞子','shioriko',['三船栞子']],['ミア','mia',['ミア・テイラー']],
+ ['ランジュ','lanzhu',['鐘嵐珠','嵐珠']]
 ];
-
-const loaded=Object.create(null);
-function candidate(member,expr){return `${BASE}/${member.slug}/${expr}.webp`;}
-function preload(url){
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>resolve(url);
-    img.onerror=()=>resolve(null);
-    img.src=url+(url.includes('?')?'&':'?')+'v='+(window.APP_VERSION||'0.8.246');
-  });
+function register(key,slug,aliases){
+ const src=`${BASE}/${slug}.webp?v=${window.APP_VERSION||'0.8.248'}`;
+ const map=Object.fromEntries(EXPRESSIONS.map((e,i)=>[e,{src,frame:i}]));
+ api.registerCharacterSet(key,map);
+ aliases.forEach(a=>api.registerCharacterSet(a,map));
 }
-async function loadMember(member){
-  const pairs=await Promise.all(EXPRESSIONS.map(async expr=>[expr,await preload(candidate(member,expr))]));
-  const map=Object.fromEntries(pairs.filter(([,url])=>url));
-  if(!Object.keys(map).length)return false;
-  api.registerCharacterSet(member.key,map);
-  for(const alias of member.aliases)api.registerCharacterSet(alias,map);
-  loaded[member.key]=Object.keys(map);
-  return true;
-}
-async function loadAll(){
-  const result=await Promise.all(MEMBERS.map(loadMember));
-  return result.filter(Boolean).length;
-}
-window.LOVEFES_STORY_CHARACTER_ASSETS={
-  version:'0.8.246',base:BASE,expressions:EXPRESSIONS,members:MEMBERS,loaded,loadAll
-};
-loadAll();
+MEMBERS.forEach(m=>register(...m));
+window.LOVEFES_STORY_CHARACTER_ASSETS={version:'0.8.248',base:BASE,expressions:EXPRESSIONS,members:MEMBERS};
 })();
