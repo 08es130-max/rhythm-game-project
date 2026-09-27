@@ -39,13 +39,14 @@
         .story-visual-bg-wrap{position:absolute;inset:0;background:linear-gradient(145deg,#10233e,#0d1729 48%,#09111f)}
         .story-visual-bg{width:100%;height:100%;object-fit:cover;display:none;opacity:0;transition:opacity .22s ease}
         .story-visual-bg.is-visible{display:block;opacity:1}
-        .story-visual-sprite-wrap{position:absolute;inset:0;display:flex;align-items:flex-end;pointer-events:none}
-        .story-visual-sprite-left-wrap{justify-content:flex-start;padding-left:max(2.5vw,env(safe-area-inset-left))}
-        .story-visual-sprite-right-wrap{justify-content:flex-end;padding-right:max(2.5vw,env(safe-area-inset-right))}
-        .story-visual-sprite{display:none;max-height:92%;max-width:43%;object-fit:contain;object-position:center bottom;opacity:0;filter:drop-shadow(0 12px 24px rgba(0,0,0,.38));transition:opacity .16s ease,transform .16s ease}
+        .story-visual-sprite-wrap{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;pointer-events:none}
+        .story-visual-sprite-left-wrap{transform:translateX(-18vw)}
+        .story-visual-sprite-right-wrap{transform:translateX(18vw)}
+        .story-reader.story-single-left .story-visual-sprite-left-wrap,.story-reader.story-single-right .story-visual-sprite-right-wrap{transform:translateX(0)}
+        .story-visual-sprite{display:none;max-height:92%;max-width:34%;object-fit:contain;object-position:center bottom;opacity:0;filter:drop-shadow(0 12px 24px rgba(0,0,0,.38));transition:opacity .16s ease,transform .16s ease}
         .story-visual-left{transform:translateX(-2%)}
         .story-visual-right{transform:translateX(2%)}
-        .story-visual-sprite.is-visible{display:block;opacity:1;transform:translateX(0)}\n        .story-visual-sprite.is-sprite-sheet{height:92%;width:auto;aspect-ratio:5/17;max-width:43%;object-fit:contain;background-color:transparent}
+        .story-visual-sprite.is-visible{display:block;opacity:1;transform:translateX(0)}\n        .story-visual-sprite.is-sprite-sheet{height:92%;width:auto;aspect-ratio:5/17;max-width:34%;object-fit:contain;background-color:transparent;mix-blend-mode:multiply}
         .story-visual-cg-wrap{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#050914;z-index:3}
         .story-visual-cg-wrap.is-visible{display:flex}
         .story-visual-cg{width:100%;height:100%;object-fit:cover;display:block}
@@ -53,8 +54,9 @@
         .story-reader.has-story-visual .story-scene{opacity:0}
         @media (orientation:landscape) and (pointer:coarse){
           .story-visual-sprite{max-height:94%;max-width:41%}
-          .story-visual-sprite-left-wrap{padding-left:max(4vw,env(safe-area-inset-left))}
-          .story-visual-sprite-right-wrap{padding-right:max(4vw,env(safe-area-inset-right))}
+          .story-visual-sprite-left-wrap{transform:translateX(-17vw)}
+          .story-visual-sprite-right-wrap{transform:translateX(17vw)}
+          .story-reader.story-single-left .story-visual-sprite-left-wrap,.story-reader.story-single-right .story-visual-sprite-right-wrap{transform:translateX(0)}
         }
       `;
       document.head.appendChild(style);
@@ -149,6 +151,8 @@
     setImage(cg,cgUrl);
     cgWrap?.classList.toggle('is-visible',!!cgUrl);
     reader.classList.toggle('has-story-visual',!!(bgUrl||leftUrl||rightUrl||cgUrl));
+    reader.classList.toggle('story-single-left',!!leftUrl&&!rightUrl);
+    reader.classList.toggle('story-single-right',!!rightUrl&&!leftUrl);
   }
 
   function renderLine(line){
@@ -173,7 +177,7 @@
   function reset(){
     state.background=undefined;state.left=undefined;state.right=undefined;state.cg=undefined;
     const reader=document.getElementById('storyReader');
-    reader?.classList.remove('has-story-visual');
+    reader?.classList.remove('has-story-visual','story-single-left','story-single-right');
     ['storyVisualBg','storyVisualLeft','storyVisualRight','storyVisualCg'].forEach(id=>setImage(document.getElementById(id),null));
     document.getElementById('storyVisualCgWrap')?.classList.remove('is-visible');
   }
@@ -192,7 +196,7 @@
   }
 
   const api={
-    version:'0.8.240',
+    version:'0.8.250',
     registry,state,
     ensureUI,renderLine,reset,
     registerBackground,registerCG,registerCharacter,registerCharacterSet
