@@ -39,11 +39,11 @@
       .story-chapters{padding-top:66px!important;padding-left:calc(var(--story-safe-left) + 8px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important;padding-bottom:calc(var(--story-safe-bottom) + 14px)!important;box-sizing:border-box!important}
       .story-chapter-head,.story-chapter-grid{box-sizing:border-box!important}
       .story-reader{left:0!important;right:0!important}
-      .story-message-wrap{left:calc(var(--story-safe-left) + 8px)!important;right:calc(var(--story-safe-right) + 8px)!important;bottom:max(4%,var(--story-safe-bottom))!important}
+      .story-message-wrap{left:calc(var(--story-safe-left) + 8px)!important;right:calc(var(--story-safe-right) + 8px)!important;bottom:max(3%,var(--story-safe-bottom))!important;min-height:0!important}
       .story-backdrop-title{max-width:calc(100vw - var(--story-safe-left) - var(--story-safe-right) - 40px)!important}
       .story-menu-overlay,.story-backlog{padding-top:calc(var(--story-safe-top) + 8px)!important;padding-right:calc(var(--story-safe-right) + 8px)!important;padding-bottom:calc(var(--story-safe-bottom) + 8px)!important;padding-left:calc(var(--story-safe-left) + 8px)!important;box-sizing:border-box!important}
       .story-menu-panel,.story-backlog-panel{max-width:calc(100vw - var(--story-safe-left) - var(--story-safe-right) - 24px)!important}
-      .story-message{font-size:clamp(17px,2.55vw,25px)!important;line-height:1.65!important;padding:34px 30px 25px!important}
+      .story-message{font-size:clamp(17px,2.55vw,25px)!important;line-height:1.5!important;padding:24px 30px 17px!important;min-height:0!important}
       .story-nameplate{left:18px!important;right:auto!important;top:-22px!important;min-width:116px!important;max-width:48%!important;text-align:left!important;padding:7px 16px!important;font-size:14px!important}
       .story-progress{font-size:9px!important}
       .story-menu-btn{min-width:82px!important;min-height:40px!important;padding:10px 18px!important;font-size:13px!important;border-radius:999px!important}
@@ -54,8 +54,8 @@
         .home-menu{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:repeat(2,minmax(0,1fr))!important;gap:7px!important}
         .home-menu-story{grid-column:2!important;grid-row:2!important;width:108%!important;height:108%!important;border-radius:14px!important}
         .story-chapters{padding-top:62px!important;padding-left:calc(var(--story-safe-left) + 10px)!important;padding-right:calc(var(--story-safe-right) + 10px)!important}
-        .story-message-wrap{left:calc(var(--story-safe-left) + 10px)!important;right:calc(var(--story-safe-right) + 10px)!important;min-height:35%!important}
-        .story-message{font-size:16px!important;line-height:1.6!important;padding:27px 22px 18px!important}
+        .story-message-wrap{left:calc(var(--story-safe-left) + 10px)!important;right:calc(var(--story-safe-right) + 10px)!important;min-height:0!important;height:auto!important}
+        .story-message{font-size:16px!important;line-height:1.45!important;padding:18px 22px 12px!important;min-height:96px!important;max-height:26vh!important}
         .story-nameplate{left:12px!important;right:auto!important;top:-17px!important;min-width:92px!important;padding:5px 11px!important;font-size:11px!important}
         .story-progress{font-size:7px!important}
         .story-menu-btn{min-width:88px!important;min-height:42px!important;padding:10px 18px!important;font-size:11px!important}
