@@ -404,12 +404,13 @@ restoreDeviceSettings();
     };
   }
   function downloadJson(payload){
-    const stamp=new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    const d=new Date();
+    const stamp=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}_${String(d.getHours()).padStart(2,'0')}-${String(d.getMinutes()).padStart(2,'0')}`;
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const a=document.createElement('a');
     a.href=url;
-    a.download='hobofes-save-'+stamp+'.json';
+    a.download=`ほぼフェス_セーブデータバックアップ_${stamp}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
