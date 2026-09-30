@@ -1,4 +1,4 @@
-// Ver.0.8.233: deduplicate songs and derive BPM/NOTES/★ from latest chart data.
+// Ver.0.8.252: deduplicate songs and derive BPM/NOTES/★ from latest chart data.
 (function(){
   const VERSION='0.8.233';
   const state={songs:[],filtered:[],index:0,category:'all',syncQueued:false};
@@ -158,12 +158,23 @@
       const song=state.filtered[state.index];
       if(!song)return;
 
-      // Snow halation must always launch the latest chart directly.
-      // Do not route through a possibly stale/duplicated hidden source card.
-      if(song.title==='Snow halation' && typeof window.prepareSnowHalationV0829==='function'){ window.prepareSnowHalationV0829(); return; }
-      if(song.title==='Boooooom Boooooom Bee!!' && typeof window.prepareBoooooomBeeV077==='function'){ window.prepareBoooooomBeeV077(); return; }
-      if(song.title==='Dazzling Game' && typeof window.prepareDazzlingGameV0841==='function'){ window.prepareDazzlingGameV0841(); return; }
-      if(song.title==='眩耀夜行' && typeof window.prepareGenyoYakoV0839==='function'){ window.prepareGenyoYakoV0839(); return; }
+      // Built-in songs must launch only their own latest chart.
+      // Never proxy through a hidden source-card button: several legacy chart patches
+      // replace those buttons later, which can make one selection launch another chart.
+      const builtInLaunchers={
+        'スピカテリブル':window.prepareSpicaSong,
+        'Snow halation':window.prepareSnowHalationV0829,
+        'HAPPY PARTY TRAIN':window.prepareHappyPartyTrainV0838,
+        'Boooooom Boooooom Bee!!':window.prepareBoooooomBeeV077,
+        'Dazzling Game':window.prepareDazzlingGameV0841,
+        '眩耀夜行':window.prepareGenyoYakoV0840
+      };
+      if(Object.prototype.hasOwnProperty.call(builtInLaunchers,song.title)){
+        const launch=builtInLaunchers[song.title];
+        if(typeof launch==='function'){ launch(); return; }
+        console.warn('選択中の内蔵楽曲専用起動関数が見つかりません',song.title);
+        return;
+      }
 
       const grid=document.getElementById('songLibraryGrid');
       if(!grid)return;
