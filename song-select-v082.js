@@ -167,7 +167,7 @@
         'HAPPY PARTY TRAIN':window.prepareHappyPartyTrainV0838,
         'Boooooom Boooooom Bee!!':window.prepareBoooooomBeeV077,
         'Dazzling Game':window.prepareDazzlingGameV0841,
-        '眩耀夜行':window.prepareGenyoYakoV0840
+        '眩耀夜行':window.prepareGenyoYakoV0839
       };
       if(Object.prototype.hasOwnProperty.call(builtInLaunchers,song.title)){
         const launch=builtInLaunchers[song.title];
