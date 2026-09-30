@@ -387,13 +387,13 @@
     }
 
     // Full-version structural positions from the song's 170 BPM chord form:
-    // 2A ~ bar81, 2B ~ bar97, 2 chorus ~ bar114, final chorus ~ bar149.
-    const TWO_A_START=barTime(81);
-    const TWO_B_START=barTime(97);
-    const TWO_CH_START=barTime(114);
-    const INTERLUDE2_START=barTime(131);
-    const FINAL_CH_START=barTime(149);
-    const ENDING_START=barTime(178);
+    // Ver.0.8.254: screen-recording audio alignment shows the full-song targets were 4 bars late.\n    // 2A ~ bar77, 2B ~ bar93, 2 chorus ~ bar110, final chorus ~ bar145.
+    const TWO_A_START=barTime(77);
+    const TWO_B_START=barTime(93);
+    const TWO_CH_START=barTime(110);
+    const INTERLUDE2_START=barTime(127);
+    const FINAL_CH_START=barTime(145);
+    const ENDING_START=barTime(174);
 
     // 2A has the same melodic role as A' ("会いたいのは..." -> "知りたいのは...").
     // Copy all 16 bars exactly, including lanes, chords, and holds.
