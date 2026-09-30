@@ -485,4 +485,5 @@
   }
   requestAnimationFrame(()=>requestAnimationFrame(patchHptCard));
   window.makeHappyPartyTrainChartV0838=makeHpt0838;
+  window.prepareHappyPartyTrainV0838=prepareHpt0838;
 })();
