@@ -119,6 +119,22 @@
       if(bar===163)chord(t(15),0,8);
     });
 
+    // Absolute two-thumb chord rule: simultaneous notes must span left + right.
+    // Center lane (4) may be assigned to either thumb, so center+one-side is allowed.
+    // Same-side pairs are mirrored across the center to keep every chord physically reachable.
+    const simultaneous=new Map();
+    notes.forEach(n=>{if(!simultaneous.has(n.timeMs))simultaneous.set(n.timeMs,[]);simultaneous.get(n.timeMs).push(n);});
+    const side=l=>l<4?-1:l>4?1:0;
+    for(const group of simultaneous.values()){
+      if(group.length!==2)continue;
+      const [a,b]=group,sa=side(a.lane),sb=side(b.lane);
+      if(sa!==0&&sa===sb){
+        const keep=Math.abs(a.lane-4)>=Math.abs(b.lane-4)?a:b;
+        const move=keep===a?b:a;
+        move.lane=8-keep.lane;
+      }
+    }
+
     notes.sort((a,b)=>a.timeMs-b.timeMs||a.lane-b.lane);
     if(notes.length>TARGET){
       const grouped=new Map();notes.forEach((n,i)=>{if(!grouped.has(n.timeMs))grouped.set(n.timeMs,[]);grouped.get(n.timeMs).push(i);});
