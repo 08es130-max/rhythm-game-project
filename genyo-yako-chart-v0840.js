@@ -171,4 +171,5 @@
   new MutationObserver(()=>requestAnimationFrame(patchButtons)).observe(document.body,{childList:true,subtree:true});
   requestAnimationFrame(()=>requestAnimationFrame(patchButtons));
   window.makeGenyoYakoChartV0840=makeChart;
+  window.prepareGenyoYakoV0840=prepare;
 })();
