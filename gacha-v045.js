@@ -4,93 +4,7 @@
   const DEFAULT_LR_RATE=.0001;
   const PULL_COUNT=10;
   const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-  const GACHA_BGM_SRC='assets/audio/gacha-starry-loop-v0864.wav?v=0.8.66-bgm2';
   let activePullSession=null;
-  let gachaAudioCtx=null;
-  let gachaBgmBuffer=null;
-  let gachaBgmSource=null;
-  let gachaBgmGain=null;
-  let previousAudioSessionType=null;
-  let gachaBgmLoadPromise=null;
-
-  function setGachaAmbientSession(){
-    try{
-      if(navigator.audioSession){
-        previousAudioSessionType=navigator.audioSession.type;
-        navigator.audioSession.type='ambient';
-      }
-    }catch(_){}
-  }
-  function restoreAudioSession(){
-    try{
-      if(navigator.audioSession&&previousAudioSessionType){
-        navigator.audioSession.type=previousAudioSessionType;
-      }
-    }catch(_){}
-    previousAudioSessionType=null;
-  }
-  function ensureGachaAudioContext(){
-    if(gachaAudioCtx)return gachaAudioCtx;
-    const Ctx=window.AudioContext||window.webkitAudioContext;
-    if(!Ctx)return null;
-    gachaAudioCtx=new Ctx();
-    gachaBgmGain=gachaAudioCtx.createGain();
-    gachaBgmGain.gain.value=0;
-    gachaBgmGain.connect(gachaAudioCtx.destination);
-    return gachaAudioCtx;
-  }
-  async function loadGachaBgm(){
-    const ctx=ensureGachaAudioContext();
-    if(!ctx)return null;
-    if(gachaBgmBuffer)return gachaBgmBuffer;
-    if(gachaBgmLoadPromise)return gachaBgmLoadPromise;
-    gachaBgmLoadPromise=fetch(GACHA_BGM_SRC,{cache:'force-cache'})
-      .then(r=>{if(!r.ok)throw new Error('BGM load failed');return r.arrayBuffer();})
-      .then(buf=>ctx.decodeAudioData(buf))
-      .then(decoded=>(gachaBgmBuffer=decoded))
-      .catch(()=>null)
-      .finally(()=>{gachaBgmLoadPromise=null;});
-    return gachaBgmLoadPromise;
-  }
-  async function startGachaBgm(){
-    setGachaAmbientSession();
-    const ctx=ensureGachaAudioContext();
-    if(!ctx)return;
-    try{await ctx.resume();}catch(_){}
-    const buffer=await loadGachaBgm();
-    if(!buffer||document.getElementById('gachaScreen')?.hidden)return;
-    try{gachaBgmSource?.stop();}catch(_){}
-    const src=ctx.createBufferSource();
-    src.buffer=buffer;
-    src.loop=true;
-    src.connect(gachaBgmGain);
-    const now=ctx.currentTime;
-    gachaBgmGain.gain.cancelScheduledValues(now);
-    gachaBgmGain.gain.setValueAtTime(0,now);
-    gachaBgmGain.gain.linearRampToValueAtTime(.28,now+.32);
-    src.start();
-    gachaBgmSource=src;
-  }
-  function stopGachaBgm(reset=true){
-    const ctx=gachaAudioCtx;
-    if(!ctx||!gachaBgmGain){
-      restoreAudioSession();
-      return;
-    }
-    const src=gachaBgmSource;
-    gachaBgmSource=null;
-    const now=ctx.currentTime;
-    try{
-      gachaBgmGain.gain.cancelScheduledValues(now);
-      gachaBgmGain.gain.setValueAtTime(gachaBgmGain.gain.value,now);
-      gachaBgmGain.gain.linearRampToValueAtTime(0,now+.18);
-    }catch(_){}
-    if(src){
-      setTimeout(()=>{try{src.stop();src.disconnect();}catch(_){}},220);
-    }
-    setTimeout(restoreAudioSession,240);
-  }
-
   function rand(){
     if(window.crypto?.getRandomValues){
       const a=new Uint32Array(1);
@@ -206,7 +120,6 @@
 
     const backHome=()=>{
       if(screen.classList.contains('is-pulling'))return;
-      stopGachaBgm(true);
       screen.hidden=true;
       if(typeof window.showAppScreen==='function')window.showAppScreen('home');
       else document.getElementById('homeScreen')?.removeAttribute('hidden');
@@ -604,14 +517,11 @@
     if(repeatButton){repeatButton.hidden=true;repeatButton.disabled=false;}
     renderScoutLobby(screen);
     screen.hidden=false;
-    startGachaBgm();
     screen.querySelector('#gachaPullTenBtn')?.focus({preventScroll:true});
     window.scrollTo({top:0,behavior:'auto'});
   };
 
   window.addEventListener('rhythmGameAdminSettingsChanged',()=>updateRateDisplay(document.getElementById('gachaScreen')));
-  window.startGachaBgm=startGachaBgm;
-  window.stopGachaBgm=stopGachaBgm;
 
   // 部室は初期N＋獲得済みUR/LRだけを表示する。
   function installOwnedRoomFilter(){
