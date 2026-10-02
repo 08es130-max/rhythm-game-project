@@ -134,8 +134,15 @@
 
   function drawHoldBody(n,now,leadMs,spawn,targetPoints){
     if(!Number.isFinite(n.holdEndMs))return;
-    const a=pointForNoteTime(n.timeMs,now,leadMs,n.lane,spawn,targetPoints);
+    const rawA=pointForNoteTime(n.timeMs,now,leadMs,n.lane,spawn,targetPoints);
     const b=pointForNoteTime(n.holdEndMs,now,leadMs,n.lane,spawn,targetPoints);
+    // Ver.0.8.258: once a hold has been successfully started, pin the near end
+    // of its ribbon to the judgment circle.  The old renderer kept progress > 1,
+    // so the ribbon flowed below the target exactly like a missed note.
+    const target=targetPoints[n.lane];
+    const a=n.holdStarted
+      ? {x:target.x,y:target.y,progress:1}
+      : rawA;
     // Perspective ribbon: width follows the same scale curve as normal notes.
     // The far edge is clamped to the common center spawn so it never extends above the origin.
     const endProgress=Math.max(0,Math.min(1,b.progress));
