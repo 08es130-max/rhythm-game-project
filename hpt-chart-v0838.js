@@ -395,21 +395,56 @@
     const FINAL_CH_START=barTime(145);
     const ENDING_START=barTime(174);
 
-    // 2A has the same melodic role as A' ("会いたいのは..." -> "知りたいのは...").
-    // Copy all 16 bars exactly, including lanes, chords, and holds.
-    const twoA=cloneExact(SRC_AP_START,SRC_B_START,TWO_A_START,TWO_B_START);
+    // Ver.0.8.255: lyric-phrase mapping.
+    // Never restart a template in the middle of a sung phrase.  Verse 2 and the
+    // final chorus are longer than their verse-1 counterparts, so map approved
+    // verse-1 phrase shapes one lyric phrase at a time.
+    const phrase=(srcBar,srcBars,dstBar,dstBars=srcBars)=>
+      repeatExact(barTime(srcBar),barTime(srcBar+srcBars),barTime(dstBar),barTime(dstBar+dstBars));
 
-    // 2B is longer than B in the game edit. Repeat the exact B phrase rather than
-    // inventing a new pattern, trimming only at the structural boundary.
-    const twoB=repeatExact(SRC_B_START,SRC_CH_START,TWO_B_START,TWO_CH_START);
+    // 2A: same 16-bar melodic role as verse-1 A'.  Keep the four lyric blocks
+    // aligned: 知りたいのは / だからもう / ひとりでも / 思い出を...
+    const twoA=[
+      ...phrase(32,4,77,4),
+      ...phrase(36,4,81,4),
+      ...phrase(40,4,85,4),
+      ...phrase(44,4,89,4)
+    ];
 
-    // 2 chorus: exact 1-chorus template, with the final extra bar filled by the
-    // beginning of the same template.
-    const twoChorus=repeatExact(SRC_CH_START,SRC_CH_END,TWO_CH_START,INTERLUDE2_START);
+    // 2B has 17 bars while verse-1 B has 9.  Do not repeat all 9 bars wholesale:
+    // assign its short/long vocal blocks separately so a new chart motif starts
+    // only when the next lyric phrase starts.
+    const twoB=[
+      ...phrase(48,2,93,2),   // 気にしない 小さなことは
+      ...phrase(50,2,95,3),   // いつでも笑顔でいたいから
+      ...phrase(52,2,98,3),   // 終わらない旅をしよう
+      ...phrase(54,2,101,4),  // 人生ってば…ためいきも…
+      ...phrase(56,1,105,5)   // ハラハラし放題！ -> chorus pickup
+    ];
 
-    // Final chorus is an expanded reprise. Repeat the exact approved 1-chorus
-    // template across all 29 bars; no mirroring, lane rewrite, or added accents.
-    const finalChorus=repeatExact(SRC_CH_START,SRC_CH_END,FINAL_CH_START,ENDING_START);
+    // 2 chorus: HAPPY→PARTY changes words, not the basic sung rhythm.  Map the
+    // approved chorus in lyric-sized blocks; the extra last bar remains a pickup.
+    const twoChorus=[
+      ...phrase(57,4,110,4),
+      ...phrase(61,4,114,4),
+      ...phrase(65,4,118,4),
+      ...phrase(69,4,122,4),
+      ...phrase(72,1,126,1)
+    ];
+
+    // Final chorus: explicitly follow its lyric order instead of looping a
+    // 16-bar chorus template across 29 bars.  First HAPPY pair, then PARTY pair,
+    // then the closing 1-chorus melody and the final "Ah...HAPPY TRAIN" tag.
+    const finalChorus=[
+      ...phrase(57,4,145,4),  // 想いを乗せて...
+      ...phrase(61,4,149,4),  // あしたが呼んでる...
+      ...phrase(57,4,153,4),  // 迷わず乗ったら PARTY...
+      ...phrase(61,4,157,4),  // 意外なひとが...
+      ...phrase(65,4,161,4),  // 期待にかがやく...
+      ...phrase(69,4,165,4),  // とおい駅で...
+      ...phrase(72,1,169,2),  // きっとなにかが待ってる...
+      ...phrase(69,3,171,3)   // Ah! どこまでもね…HAPPY TRAIN
+    ];
 
     // Keep the old authored continuation only where the full song is genuinely
     // instrumental / structurally different. Replace 2A through 2 chorus and the
