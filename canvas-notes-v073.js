@@ -215,11 +215,14 @@
         if(now<=n.holdEndMs+TRAIL_MS){
           drawHoldBody(n,now,leadMs,spawn,targetPoints);
           if(!n.hit){
-            const progress=getNoteProgress(dt,leadMs);
+            // Ver.0.8.262: hold-start circles use the same hard target clamp as
+            // the ribbon.  Normal notes keep their existing trail animation.
+            const rawProgress=getNoteProgress(dt,leadMs);
+            const progress=Math.min(1,rawProgress);
             const p=targetPoints[n.lane];
             const x=spawn.x+(p.x-spawn.x)*progress;
             const y=spawn.y+(p.y-spawn.y)*progress;
-            const scale=progress<=1?.45+.55*progress:1;
+            const scale=.45+.55*Math.max(0,Math.min(1,progress));
             drawNote(x,y,scale,n.missRegistered,n.simultaneous);
           }
         }
