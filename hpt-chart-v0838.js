@@ -387,63 +387,44 @@
     }
 
     // Full-version structural positions from the song's 170 BPM chord form:
-    // Ver.0.8.254: screen-recording audio alignment shows the full-song targets were 4 bars late.\n    // 2A ~ bar77, 2B ~ bar93, 2 chorus ~ bar110, final chorus ~ bar145.
-    const TWO_A_START=barTime(77);
-    const TWO_B_START=barTime(93);
-    const TWO_CH_START=barTime(110);
-    const INTERLUDE2_START=barTime(127);
-    const FINAL_CH_START=barTime(145);
-    const ENDING_START=barTime(174);
+    // Ver.0.8.256: rebuild from contiguous approved verse-1 chart windows.
+    // Keep every source window continuous so holds, stair runs and chord timing survive.
+    // Song structure (170 BPM): 2A 16 bars -> 2B 17 -> 2 chorus 17 ->
+    // interlude 18 -> final chorus 29.
+    const TWO_A_START=barTime(81);
+    const TWO_B_START=barTime(97);
+    const TWO_CH_START=barTime(114);
+    const INTERLUDE2_START=barTime(131);
+    const FINAL_CH_START=barTime(149);
+    const ENDING_START=barTime(178);
 
-    // Ver.0.8.255: lyric-phrase mapping.
-    // Never restart a template in the middle of a sung phrase.  Verse 2 and the
-    // final chorus are longer than their verse-1 counterparts, so map approved
-    // verse-1 phrase shapes one lyric phrase at a time.
-    const phrase=(srcBar,srcBars,dstBar,dstBars=srcBars)=>
-      repeatExact(barTime(srcBar),barTime(srcBar+srcBars),barTime(dstBar),barTime(dstBar+dstBars));
+    // 2A: exact approved A' chart, uncut. Holds and every run are copied intact.
+    const twoA=cloneExact(barTime(32),barTime(48),barTime(81),barTime(97));
 
-    // 2A: same 16-bar melodic role as verse-1 A'.  Keep the four lyric blocks
-    // aligned: 知りたいのは / だからもう / ひとりでも / 思い出を...
-    const twoA=[
-      ...phrase(32,4,77,4),
-      ...phrase(36,4,81,4),
-      ...phrase(40,4,85,4),
-      ...phrase(44,4,89,4)
-    ];
-
-    // 2B has 17 bars while verse-1 B has 9.  Do not repeat all 9 bars wholesale:
-    // assign its short/long vocal blocks separately so a new chart motif starts
-    // only when the next lyric phrase starts.
+    // 2B is 8 bars longer than verse-1 B. Use the final 8 bars of approved A'
+    // as the lead-in, then place the complete approved B chart on the LAST 9 bars.
+    // This is deliberate: the B-chart climax/stair run now lands immediately before
+    // the 2-chorus vocal entrance, exactly as it does before chorus 1.
     const twoB=[
-      ...phrase(48,2,93,2),   // 気にしない 小さなことは
-      ...phrase(50,2,95,3),   // いつでも笑顔でいたいから
-      ...phrase(52,2,98,3),   // 終わらない旅をしよう
-      ...phrase(54,2,101,4),  // 人生ってば…ためいきも…
-      ...phrase(56,1,105,5)   // ハラハラし放題！ -> chorus pickup
+      ...cloneExact(barTime(40),barTime(48),barTime(97),barTime(105)),
+      ...cloneExact(barTime(48),barTime(57),barTime(105),barTime(114))
     ];
 
-    // 2 chorus: HAPPY→PARTY changes words, not the basic sung rhythm.  Map the
-    // approved chorus in lyric-sized blocks; the extra last bar remains a pickup.
+    // 2 chorus: copy chorus 1 continuously.  The extra 17th bar uses the closing
+    // chorus bar, rather than restarting from the beginning.
     const twoChorus=[
-      ...phrase(57,4,110,4),
-      ...phrase(61,4,114,4),
-      ...phrase(65,4,118,4),
-      ...phrase(69,4,122,4),
-      ...phrase(72,1,126,1)
+      ...cloneExact(barTime(57),barTime(73),barTime(114),barTime(130)),
+      ...cloneExact(barTime(72),barTime(73),barTime(130),barTime(131))
     ];
 
-    // Final chorus: explicitly follow its lyric order instead of looping a
-    // 16-bar chorus template across 29 bars.  First HAPPY pair, then PARTY pair,
-    // then the closing 1-chorus melody and the final "Ah...HAPPY TRAIN" tag.
+    // Final chorus follows the actual lyric form: HAPPY pair -> PARTY pair ->
+    // closing half -> final tag.  Use long contiguous source windows, never
+    // arbitrary four-bar cuts, so long notes and stair runs remain present.
     const finalChorus=[
-      ...phrase(57,4,145,4),  // 想いを乗せて...
-      ...phrase(61,4,149,4),  // あしたが呼んでる...
-      ...phrase(57,4,153,4),  // 迷わず乗ったら PARTY...
-      ...phrase(61,4,157,4),  // 意外なひとが...
-      ...phrase(65,4,161,4),  // 期待にかがやく...
-      ...phrase(69,4,165,4),  // とおい駅で...
-      ...phrase(72,1,169,2),  // きっとなにかが待ってる...
-      ...phrase(69,3,171,3)   // Ah! どこまでもね…HAPPY TRAIN
+      ...cloneExact(barTime(57),barTime(65),barTime(149),barTime(157)),
+      ...cloneExact(barTime(57),barTime(65),barTime(157),barTime(165)),
+      ...cloneExact(barTime(65),barTime(73),barTime(165),barTime(173)),
+      ...cloneExact(barTime(68),barTime(73),barTime(173),barTime(178))
     ];
 
     // Keep the old authored continuation only where the full song is genuinely
