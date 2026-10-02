@@ -145,21 +145,29 @@
     const endScale=Math.max(.45,endProgress<=1?.45+.55*endProgress:1);
     const halfA=38*startScale,halfB=38*endScale;
     const dx=ex-a.x,dy=ey-a.y,len=Math.hypot(dx,dy)||1;
-    const nx=-dy/len,ny=dx/len;
+    const ux=dx/len,uy=dy/len;
+    const nx=-uy,ny=ux;
+    // Ver.0.8.257: stop the ribbon at the near edge of the release circle.
+    // Previously it ran to the circle centre and remained visible through the
+    // translucent note sprite.  A tiny overlap keeps the join hidden under the
+    // outer ring without letting the ribbon protrude past the circle.
+    const endRadius=38*endScale;
+    const overlap=Math.max(2,3*endScale);
+    const ribbonEndX=ex-ux*Math.max(0,endRadius-overlap);
+    const ribbonEndY=ey-uy*Math.max(0,endRadius-overlap);
     ctx.save();
     ctx.shadowColor='rgba(255,255,255,.18)';ctx.shadowBlur=5;
     ctx.fillStyle='rgba(255,255,255,.23)';
     ctx.beginPath();
     ctx.moveTo(a.x+nx*halfA,a.y+ny*halfA);
-    ctx.lineTo(ex+nx*halfB,ey+ny*halfB);
-    ctx.lineTo(ex-nx*halfB,ey-ny*halfB);
+    ctx.lineTo(ribbonEndX+nx*halfB,ribbonEndY+ny*halfB);
+    ctx.lineTo(ribbonEndX-nx*halfB,ribbonEndY-ny*halfB);
     ctx.lineTo(a.x-nx*halfA,a.y-ny*halfA);
     ctx.closePath();ctx.fill();
     ctx.restore();
 
     // Make the release/end note clearly distinguishable with a bright outer frame.
     drawNote(ex,ey,endScale,false,false);
-    const endRadius=38*endScale;
     ctx.save();
     ctx.shadowColor='rgba(255,255,255,.78)';ctx.shadowBlur=8;
     ctx.lineWidth=Math.max(3,5*endScale);
