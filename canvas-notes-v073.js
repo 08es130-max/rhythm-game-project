@@ -140,9 +140,17 @@
     // of its ribbon to the judgment circle.  The old renderer kept progress > 1,
     // so the ribbon flowed below the target exactly like a missed note.
     const target=targetPoints[n.lane];
-    const a=n.holdStarted
-      ? {x:target.x,y:target.y,progress:1}
-      : rawA;
+    // Ver.0.8.259: the near edge of a hold ribbon must NEVER travel past the
+    // judgment circle.  Do this from time/progress as well as holdStarted,
+    // because input state can be updated between animation frames on iOS/PWA.
+    // Missed holds are removed by advanceOldNotes(); they do not need a
+    // below-target ribbon animation.
+    const startProgress=Math.min(1,rawA.progress);
+    const a={
+      x:spawn.x+(target.x-spawn.x)*startProgress,
+      y:spawn.y+(target.y-spawn.y)*startProgress,
+      progress:startProgress
+    };
     // Perspective ribbon: width follows the same scale curve as normal notes.
     // The far edge is clamped to the common center spawn so it never extends above the origin.
     const endProgress=Math.max(0,Math.min(1,b.progress));
