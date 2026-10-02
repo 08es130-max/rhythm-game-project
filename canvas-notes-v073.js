@@ -171,6 +171,19 @@
     const ribbonEndX=ex-ux*Math.max(0,endRadius-overlap);
     const ribbonEndY=ey-uy*Math.max(0,endRadius-overlap);
     ctx.save();
+    // Ver.0.8.260: hard visual clip at the judgment circle.
+    // Clamping the ribbon centre was insufficient on diagonal lanes because the
+    // wide ribbon corners could still extend beyond the circle.  Clip the whole
+    // ribbon to the half-plane on the spawn side of the tangent through target.
+    const clipSpan=Math.max(canvas?.width||0,canvas?.height||0,2000)*3;
+    const tx=-uy,ty=ux;
+    ctx.beginPath();
+    ctx.moveTo(target.x+tx*clipSpan,target.y+ty*clipSpan);
+    ctx.lineTo(target.x+tx*clipSpan-ux*clipSpan,target.y+ty*clipSpan-uy*clipSpan);
+    ctx.lineTo(target.x-tx*clipSpan-ux*clipSpan,target.y-ty*clipSpan-uy*clipSpan);
+    ctx.lineTo(target.x-tx*clipSpan,target.y-ty*clipSpan);
+    ctx.closePath();
+    ctx.clip();
     ctx.shadowColor='rgba(255,255,255,.18)';ctx.shadowBlur=5;
     ctx.fillStyle='rgba(255,255,255,.23)';
     ctx.beginPath();
