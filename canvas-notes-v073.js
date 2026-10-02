@@ -136,15 +136,9 @@
     if(!Number.isFinite(n.holdEndMs))return;
     const rawA=pointForNoteTime(n.timeMs,now,leadMs,n.lane,spawn,targetPoints);
     const b=pointForNoteTime(n.holdEndMs,now,leadMs,n.lane,spawn,targetPoints);
-    // Ver.0.8.258: once a hold has been successfully started, pin the near end
-    // of its ribbon to the judgment circle.  The old renderer kept progress > 1,
-    // so the ribbon flowed below the target exactly like a missed note.
+    // Ver.0.8.261: keep the incoming ribbon visible from spawn.  Only clamp its
+    // near endpoint once it reaches the judgment target; do not clip the incoming side.
     const target=targetPoints[n.lane];
-    // Ver.0.8.259: the near edge of a hold ribbon must NEVER travel past the
-    // judgment circle.  Do this from time/progress as well as holdStarted,
-    // because input state can be updated between animation frames on iOS/PWA.
-    // Missed holds are removed by advanceOldNotes(); they do not need a
-    // below-target ribbon animation.
     const startProgress=Math.min(1,rawA.progress);
     const a={
       x:spawn.x+(target.x-spawn.x)*startProgress,
@@ -171,19 +165,6 @@
     const ribbonEndX=ex-ux*Math.max(0,endRadius-overlap);
     const ribbonEndY=ey-uy*Math.max(0,endRadius-overlap);
     ctx.save();
-    // Ver.0.8.260: hard visual clip at the judgment circle.
-    // Clamping the ribbon centre was insufficient on diagonal lanes because the
-    // wide ribbon corners could still extend beyond the circle.  Clip the whole
-    // ribbon to the half-plane on the spawn side of the tangent through target.
-    const clipSpan=Math.max(canvas?.width||0,canvas?.height||0,2000)*3;
-    const tx=-uy,ty=ux;
-    ctx.beginPath();
-    ctx.moveTo(target.x+tx*clipSpan,target.y+ty*clipSpan);
-    ctx.lineTo(target.x+tx*clipSpan-ux*clipSpan,target.y+ty*clipSpan-uy*clipSpan);
-    ctx.lineTo(target.x-tx*clipSpan-ux*clipSpan,target.y-ty*clipSpan-uy*clipSpan);
-    ctx.lineTo(target.x-tx*clipSpan,target.y-ty*clipSpan);
-    ctx.closePath();
-    ctx.clip();
     ctx.shadowColor='rgba(255,255,255,.18)';ctx.shadowBlur=5;
     ctx.fillStyle='rgba(255,255,255,.23)';
     ctx.beginPath();
