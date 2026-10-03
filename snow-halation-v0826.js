@@ -332,8 +332,33 @@
         }
       }
     })();
-    const final=finalize(notes);
-    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,chartRevision:'snow-0831-master1',notes:final};
+    let final=finalize(notes);
+
+    // Ver.0.8.263: HPT method — repeated vocal sections reuse continuous,
+    // finalized first-section windows.  Copy AFTER hold finalization so long
+    // notes and signature runs survive intact; never slice into arbitrary 4 bars.
+    const cloneWindow=(srcA,srcB,dstA,dstB)=>{
+      const s0=at(srcA,0),s1=at(srcB,0),d0=at(dstA,0),d1=at(dstB,0),shift=d0-s0;
+      return final.filter(n=>n.timeMs>=s0&&n.timeMs<s1).map(src=>{
+        const n={...src,timeMs:src.timeMs+shift};
+        if(Number.isFinite(src.holdEndMs)){
+          const e=src.holdEndMs+shift;
+          if(e<d1){n.holdEndMs=e;n.holdVisualOnly=true;}else{delete n.holdEndMs;delete n.holdVisualOnly;}
+        }
+        return n;
+      }).filter(n=>n.timeMs<d1);
+    };
+    const replaceWindow=(a,b,copies)=>{
+      const lo=at(a,0),hi=at(b,0);
+      final=final.filter(n=>n.timeMs<lo||n.timeMs>=hi).concat(copies).sort((x,y)=>x.timeMs-y.timeMs||x.lane-y.lane);
+    };
+    // 2A+2B mirrors the complete first A/B build; chorus 2 mirrors chorus 1.
+    replaceWindow(67,96,cloneWindow(9,38,67,96));
+    replaceWindow(96,116,cloneWindow(39,59,96,116));
+    // Final chorus keeps the first-chorus grammar continuously; two extra bars
+    // use its closing phrase rather than restarting the pattern.
+    replaceWindow(132,154,[...cloneWindow(39,59,132,152),...cloneWindow(57,59,152,154)]);
+    return {title:TITLE,artist:ARTIST,difficulty:'MASTER / 二本指上級',bpm:BPM,offsetMs:0,noteCount:final.length,holdCount:final.filter(n=>n.holdVisualOnly).length,chartRevision:'snow-0831-hptmethod1',notes:final};
   }
 
   async function prepare(){
