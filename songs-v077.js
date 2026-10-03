@@ -413,7 +413,26 @@
     }
 
     const fin=finalizeWithHolds(base.notes,specs);
-    base.notes=fin.notes;base.noteCount=fin.notes.length;base.holdCount=fin.holdCount;base.bpm=160;
+    let rebuilt=fin.notes.slice();
+    // Ver.0.8.263: HPT method. Repeated melody/build/chorus sections are copied
+    // from continuous finalized first-section windows, including intact holds.
+    const cloneWindow=(srcA,srcB,dstA,dstB)=>{
+      const s0=at(srcA,0),s1=at(srcB,0),d0=at(dstA,0),d1=at(dstB,0),shift=d0-s0;
+      return rebuilt.filter(n=>n.timeMs>=s0&&n.timeMs<s1).map(src=>{
+        const n={...src,timeMs:src.timeMs+shift};
+        if(Number.isFinite(src.holdEndMs)){
+          const e=src.holdEndMs+shift;
+          if(e<d1){n.holdEndMs=e;n.holdVisualOnly=true;}else{delete n.holdEndMs;delete n.holdVisualOnly;}
+        }
+        return n;
+      }).filter(n=>n.timeMs<d1);
+    };
+    const replaceWindow=(a,b,copies)=>{const lo=at(a,0),hi=at(b,0);rebuilt=rebuilt.filter(n=>n.timeMs<lo||n.timeMs>=hi).concat(copies).sort((x,y)=>x.timeMs-y.timeMs||x.lane-y.lane);};
+    replaceWindow(88,112,cloneWindow(12,36,88,112));
+    replaceWindow(112,124,cloneWindow(38,50,112,124));
+    replaceWindow(124,146,cloneWindow(50,72,124,146));
+    base.notes=rebuilt;base.noteCount=rebuilt.length;base.holdCount=rebuilt.filter(n=>n.holdVisualOnly).length;base.bpm=160;
+    base.chartRevision='boom-hptmethod1';
     return base;
   }
 
