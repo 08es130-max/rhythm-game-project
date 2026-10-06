@@ -935,6 +935,12 @@ async function prepareSpicaSong() {
   if (typeof window.setActiveRhythmChart === 'function') {
     window.setActiveRhythmChart(parsed, `スピカテリブル（${parsed.notes.length} notes）`, SPICA_AUDIO_KEY);
   }
+  // Ver.0.8.265: Spica had no transition from the carousel to the live screen.
+  // Keep its chart untouched; only use the same launch transition as other built-ins.
+  document.body.classList.remove('hasunosora-live-active');
+  document.querySelectorAll('.app-screen').forEach(el=>{el.hidden=el.id!=='liveScreen';});
+  try{resultPanel.hidden=true;}catch(_){}
+  window.scrollTo({top:0,behavior:'auto'});
   audioMode.value = 'file';
   await preparePresetAudio(SPICA_AUDIO_KEY, 'スピカテリブル');
   canStart();
