@@ -108,7 +108,19 @@
         palette:paletteFor(title),jacket,
         _sourceIndex:i
       };
-    }).filter(s=>s.hasLaunchButton);
+    }).filter(s=>{
+      // Ver.0.8.264: built-in songs use dedicated launchers and must not vanish
+      // merely because their legacy hidden source card has no usable button.
+      const builtIn={
+        'スピカテリブル':window.prepareSpicaSong,
+        'Snow halation':window.prepareSnowHalationV0829,
+        'HAPPY PARTY TRAIN':window.prepareHappyPartyTrainV0838,
+        'Boooooom Boooooom Bee!!':window.prepareBoooooomBeeV077,
+        'Dazzling Game':window.prepareDazzlingGameV0841,
+        '眩耀夜行':window.prepareGenyoYakoV0839
+      };
+      return s.hasLaunchButton||typeof builtIn[s.title]==='function';
+    });
 
     // One visible entry per song title. Prefer the newest source card.
     const unique=new Map();
