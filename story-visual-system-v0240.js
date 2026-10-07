@@ -1,7 +1,8 @@
-// Ver.0.8.240: reusable visual-novel image layer system for story backgrounds, sprites and event CGs.
+// Ver.0.8.266: visual-novel image layer system for story backgrounds and event CGs. Character standing sprites are disabled.
 (function(){
   'use strict';
 
+  const CHARACTER_SPRITES_ENABLED=false;
   const state={background:undefined,left:undefined,right:undefined,cg:undefined};
   const registry={
     backgrounds:Object.create(null),
@@ -21,8 +22,6 @@
     stage.setAttribute('aria-hidden','true');
     stage.innerHTML=`
       <div class="story-visual-bg-wrap"><img id="storyVisualBg" class="story-visual-bg" alt=""></div>
-      <div class="story-visual-sprite-wrap story-visual-sprite-left-wrap"><img id="storyVisualLeft" class="story-visual-sprite story-visual-left" alt=""></div>
-      <div class="story-visual-sprite-wrap story-visual-sprite-right-wrap"><img id="storyVisualRight" class="story-visual-sprite story-visual-right" alt=""></div>
       <div id="storyVisualCgWrap" class="story-visual-cg-wrap"><img id="storyVisualCg" class="story-visual-cg" alt=""></div>
     `;
     reader.prepend(stage);
@@ -141,8 +140,8 @@
     const cgWrap=document.getElementById('storyVisualCgWrap');
 
     const bgUrl=resolveBackground(state.background);
-    const leftUrl=resolveCharacter(state.left);
-    const rightUrl=resolveCharacter(state.right);
+    const leftUrl=CHARACTER_SPRITES_ENABLED?resolveCharacter(state.left):null;
+    const rightUrl=CHARACTER_SPRITES_ENABLED?resolveCharacter(state.right):null;
     const cgUrl=resolveCG(state.cg);
 
     setImage(bg,bgUrl);
@@ -196,10 +195,11 @@
   }
 
   const api={
-    version:'0.8.250',
+    version:'0.8.266',
     registry,state,
     ensureUI,renderLine,reset,
-    registerBackground,registerCG,registerCharacter,registerCharacterSet
+    registerBackground,registerCG,registerCharacter,registerCharacterSet,
+    characterSpritesEnabled:CHARACTER_SPRITES_ENABLED
   };
   window.LOVEFES_STORY_VISUALS=api;
   ensureUI();
