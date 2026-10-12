@@ -906,7 +906,7 @@ let nextSocialAt=0;
 let recentTalkPairs=[];
 const speed={slow:24,normal:42,fast:68},size={small:68,medium:88,large:112};
 // New members can join by adding their own six-pose frame JSON file.
-const LIVE_ASSETS={shioriko:'./mini-live/shioriko-frames.json',ayumu:'./mini-live/ayumu-frames.json',kasumi:'./mini-live/kasumi-frames.json',shizuku:'./mini-live/shizuku-frames.json',karin:'./mini-live/karin-frames.json',ai:'./mini-live/ai-frames.json',kanata:'./mini-live/kanata-frames.json',setsuna:'./mini-live/setsuna-frames.json',emma:'./mini-live/emma-frames.json',rina:'./mini-live/rina-frames.json',mia:'./mini-live/mia-frames.json',lanzhu:'./mini-live/lanzhu-frames.json'};
+const LIVE_ASSETS={shioriko:'https://08es130-max.github.io/love-poke-tools/mini-live/shioriko-frames.json',ayumu:'https://08es130-max.github.io/love-poke-tools/mini-live/ayumu-frames.json',kasumi:'https://08es130-max.github.io/love-poke-tools/mini-live/kasumi-frames.json',shizuku:'https://08es130-max.github.io/love-poke-tools/mini-live/shizuku-frames.json',karin:'https://08es130-max.github.io/love-poke-tools/mini-live/karin-frames.json',ai:'https://08es130-max.github.io/love-poke-tools/mini-live/ai-frames.json',kanata:'https://08es130-max.github.io/love-poke-tools/mini-live/kanata-frames.json',setsuna:'https://08es130-max.github.io/love-poke-tools/mini-live/setsuna-frames.json',emma:'https://08es130-max.github.io/love-poke-tools/mini-live/emma-frames.json',rina:'https://08es130-max.github.io/love-poke-tools/mini-live/rina-frames.json',mia:'https://08es130-max.github.io/love-poke-tools/mini-live/mia-frames.json',lanzhu:'https://08es130-max.github.io/love-poke-tools/mini-live/lanzhu-frames.json'};
 const LIVE_INTERVALS={rare:[15*60000,25*60000],normal:[7*60000,12*60000],often:[3*60000,5*60000]};
 const liveCache=new Map();
 let liveEvent=null,nextLiveAt=Infinity,liveLoading=false,liveGeneration=0;
@@ -1078,7 +1078,7 @@ function updateLive(now){
  yu.el.classList.add('mascot-yu-cheering');
  const cheerSprite=document.createElement('div');
  cheerSprite.className='mascot-yu-cheer-sprite';
- const cheerUrl='./assets/mascot/live/yu-cheer-8frames-transparent-padded.png';
+ const cheerUrl='https://08es130-max.github.io/love-poke-tools/assets/mascot/live/yu-cheer-8frames-transparent-padded.png';
  const probe=new Image();
  probe.onload=()=>{cheerSprite.style.backgroundImage='url("'+cheerUrl+'")';cheerSprite.classList.add('ready')};
  probe.onerror=()=>{console.warn('Yu cheering sprite not installed:',cheerUrl)};
