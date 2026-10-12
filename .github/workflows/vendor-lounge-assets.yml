@@ -19,13 +19,13 @@ jobs:
           set -euo pipefail
           mkdir -p lounge/assets/mascot/live lounge/mini-live
           for id in ayumu kasumi shizuku karin ai kanata setsuna emma rina shioriko mia lanzhu yu; do
-            curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/08es130-max/love-poke-tools/main/assets/mascot/${id}-sprite.png" -o "lounge/assets/mascot/${id}-sprite.png"
-            test "$(wc -c < "lounge/assets/mascot/${id}-sprite.png")" -gt 1000
+            curl --fail --location --retry 3 --silent --show-error "https://08es130-max.github.io/love-poke-tools/assets/mascot/${id}-sprite.png" -o "lounge/assets/mascot/${id}-sprite.png"
+            python3 -c "from PIL import Image; Image.open('lounge/assets/mascot/${id}-sprite.png').verify()"
           done
-          curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/08es130-max/love-poke-tools/main/assets/mascot/live/yu-cheer-8frames-transparent-padded.png" -o lounge/assets/mascot/live/yu-cheer-8frames-transparent-padded.png
-          test "$(wc -c < lounge/assets/mascot/live/yu-cheer-8frames-transparent-padded.png)" -gt 1000
+          curl --fail --location --retry 3 --silent --show-error "https://08es130-max.github.io/love-poke-tools/assets/mascot/live/yu-cheer-8frames-transparent-padded.png" -o lounge/assets/mascot/live/yu-cheer-8frames-transparent-padded.png
+          python3 -c "from PIL import Image; Image.open('lounge/assets/mascot/live/yu-cheer-8frames-transparent-padded.png').verify()"
           for id in ayumu kasumi shizuku karin ai kanata setsuna emma rina shioriko mia lanzhu; do
-            curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/08es130-max/love-poke-tools/main/mini-live/${id}-frames.json" -o "lounge/mini-live/${id}-frames.json"
+            curl --fail --location --retry 3 --silent --show-error "https://08es130-max.github.io/love-poke-tools/mini-live/${id}-frames.json" -o "lounge/mini-live/${id}-frames.json"
             python3 -m json.tool "lounge/mini-live/${id}-frames.json" >/dev/null
           done
       - name: Switch references only after all assets verified
