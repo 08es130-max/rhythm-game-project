@@ -1432,7 +1432,10 @@ function bubblePlacement(a){
   const speaker=mascotVisibleBox(a);
   if(a.id==='yu'&&a.performing){
     // Keep the cheer bubble directly above Yu, rather than off to her left.
-    const {w:tw,h:th}=bubbleDimensions(a);
+    // Cheer lines are always a single line; measure their real width before positioning.
+    a.b.style.whiteSpace='nowrap';a.b.style.maxWidth='none';a.b.style.width='max-content';
+    const tw=Math.min(innerWidth-16,Math.ceil(a.b.scrollWidth+2));
+    const th=a.b.getBoundingClientRect().height||36;
     const x=Math.max(8,Math.min(innerWidth-tw-8,speaker.center-tw/2));
     const y=Math.max(8,Math.min(innerHeight-th-8,speaker.top-th-12));
     a.b.style.left=x+'px';a.b.style.top=y+'px';a.b.style.width=tw+'px';
