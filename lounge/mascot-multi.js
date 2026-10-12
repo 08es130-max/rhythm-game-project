@@ -1086,7 +1086,7 @@ function updateLive(now){
  probe.src=cheerUrl;
  yu.el.appendChild(cheerSprite);yu.liveImage=cheerSprite;
  const yq=box(yu);
- yu.x=Math.max(yq.l,Math.min(yq.r,centerX+innerWidth*.055-yu.w/2));
+ yu.x=Math.max(yq.l,Math.min(yq.r,centerX+innerWidth*.03-yu.w/2));
  yu.y=Math.max(yq.t,Math.min(yq.b,innerHeight*.755-yu.h*.5));
 
  }
@@ -1114,7 +1114,7 @@ function updateLive(now){
   say(e.yu,line,1700);
  }
  const y=e.yu,q=box(y);
- y.x=Math.max(q.l,Math.min(q.r,e.centerX+innerWidth*.055-y.w/2));
+ y.x=Math.max(q.l,Math.min(q.r,e.centerX+innerWidth*.03-y.w/2));
  y.frame=Math.floor(elapsed/180)%4;
  if(y.liveImage){const index=Math.floor(elapsed/210)%8;y.liveImage.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%'}
  y.y=Math.max(q.t,Math.min(q.b,innerHeight*.755-y.h*.5));
