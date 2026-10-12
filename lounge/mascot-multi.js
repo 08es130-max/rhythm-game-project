@@ -974,22 +974,20 @@ function endLive(now=performance.now()){
   a.el.classList.remove('mascot-live-active','mascot-yu-cheering');hideSpeech(a);
  }
  liveEvent=null;
- // Spread everyone across the available screen immediately, instead of
- // leaving the audience packed together at the bottom after the concert.
- const shuffled=[...actors].sort(()=>Math.random()-.5);
- const cols=Math.max(2,Math.ceil(Math.sqrt(shuffled.length*innerWidth/Math.max(1,innerHeight))));
- const rows=Math.ceil(shuffled.length/cols);
- shuffled.forEach((a,i)=>{
-  const q=box(a),col=i%cols,row=Math.floor(i/cols);
-  const cellX=q.l+(q.r-q.l)*(col+.5)/cols;
-  const cellY=q.t+(q.b-q.t)*(row+.5)/rows;
-  a.x=Math.max(q.l,Math.min(q.r,cellX+(Math.random()-.5)*(q.r-q.l)/cols*.45));a.renderX=undefined;
-  a.y=Math.max(q.t,Math.min(q.b,cellY+(Math.random()-.5)*(q.b-q.t)/rows*.45));
-  keepOffStage(a);
+ // Preserve everyone's current position after the live. No random relocation.
+ // Performers leave the stage by walking; spectators resume from their seats.
+ actors.forEach(a=>{
   a.watchingLive=false;a.watchArrived=false;
-  a.frame=0;a.lastF=now;a.pose=now+250;a.restUntil=0;a.cool=now+600;
+  a.frame=0;a.lastF=now;a.pose=0;a.restUntil=0;a.cool=now+800;
   hideSpeech(a);
-  if(actors.length>1)setV(a,Math.random()*Math.PI*2);
+  if(a.performing===false&&actors.length>1){
+   const stage=stageArea(),cx=a.x+a.w*.5,cy=a.y+a.h*.88;
+   if(cx>stage.l&&cx<stage.r&&cy>stage.t&&cy<stage.b){
+    keepOffStage(a);
+   }else{
+    setV(a,Math.random()*Math.PI*2);
+   }
+  }
  });
  scheduleLive(now);
 }
