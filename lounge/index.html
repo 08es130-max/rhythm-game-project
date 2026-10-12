@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ほぼフェス！ 2Dラウンジ（試作）</title>
+<link rel="stylesheet" href="./mascot.css?v=1">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:system-ui,"Noto Sans JP",sans-serif}
+body{background:#e9dff6;color:#423552}
+.lounge{position:fixed;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 20%,#fff9f7 0%,#f6ecff 48%,#d8e3ff 100%)}
+.lounge:before{content:"";position:absolute;inset:0 0 38%;background:linear-gradient(180deg,#d8c9f4 0%,#f6e9fa 85%,#f9f4fc);border-bottom:12px solid #d4bddf}
+.floor{position:absolute;inset:62% 0 0;background:repeating-linear-gradient(90deg,transparent 0 118px,#d9cce766 119px 121px),linear-gradient(180deg,#fff7ed,#e8d9ec)}
+.title{position:fixed;top:max(12px,env(safe-area-inset-top));left:14px;z-index:910;background:#ffffffdb;padding:9px 15px;border-radius:16px;box-shadow:0 4px 16px #72608433;font-weight:800;pointer-events:none}
+.title small{display:block;font-weight:500;font-size:11px;color:#6d5b79}
+.back{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:950;background:#fff;border:1px solid #cbbbdc;border-radius:12px;padding:9px 12px;color:#463856;text-decoration:none;font-size:13px;font-weight:700}
+.notice{position:fixed;left:14px;bottom:max(12px,env(safe-area-inset-bottom));z-index:910;background:#ffffffd9;border-radius:12px;padding:7px 10px;font-size:11px;max-width:55%;pointer-events:none}
+:root{--mascot-safe-top:76px;--mascot-safe-right:8px;--mascot-safe-bottom:40px;--mascot-safe-left:8px}
+</style>
+</head>
+<body>
+<div class="lounge" aria-hidden="true"><div class="floor"></div></div>
+<div class="title">ほぼフェス！ ラウンジ<small>2D自由歩行・会話・ミニライブ 試作</small></div>
+<a class="back" href="../index.html">ホームへ戻る</a>
+<div class="notice">ラブポケのキャラ・動作を流用した動作確認版。画像の読み込みには通信が必要です。</div>
+<script src="./mascot-multi.js?v=1"></script>
+</body>
+</html>
