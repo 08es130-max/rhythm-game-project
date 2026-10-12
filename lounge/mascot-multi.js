@@ -949,8 +949,8 @@ function audienceStep(a,dt){
  const near=Math.hypot(a.x+a.w/2-e.centerX,a.y+a.h/2-(t+b)/2)<190;
  if(!a.watchingLive&&!near){
   if(a.x+a.w>l&&a.x<r&&a.y+a.h>t&&a.y<b){
-   const q=box(a),p=[{d:Math.abs(l-a.x-a.w),x:l-a.w,y:a.y},{d:Math.abs(r-a.x),x:r,y:a.y},{d:Math.abs(t-a.y-a.h),x:a.x,y:t-a.h},{d:Math.abs(b-a.y),x:a.x,y:b}].sort((u,v)=>u.d-v.d)[0];
-   a.x=Math.max(q.l,Math.min(q.r,p.x));a.y=Math.max(q.t,Math.min(q.b,p.y));setV(a,Math.atan2(a.y-t,a.x-e.centerX));
+   // Do not teleport spectators out of the stage footprint; steer them away.
+   setV(a,Math.atan2(a.y+a.h/2-(t+b)/2,a.x+a.w/2-e.centerX));
   }
   return false;
  }
@@ -1776,6 +1776,7 @@ function tick(now){
       });
     }else{
       const multi=actors.length>1,dist=(speed[S.speed]||42)*dt/1000;
+      const previousPositions=new Map(actors.map(a=>[a,{x:a.x,y:a.y}]));
       if(!liveEvent){if(multi&&S.moving)updateSocial(now);
       else if(socialEvent)endConversation(now);
       else if(!multi)maybeSoloSpeech(now)}
@@ -1797,7 +1798,19 @@ function tick(now){
       if(multi&&S.moving){
         collide(now);
       }
-      actors.forEach(a=>{if(!a.performing&&!a.watchingLive)keepOffStage(a);render(a,now);bubblePlacement(a)});
+      actors.forEach(a=>{
+        // Safety limit: no walking character can jump across the lounge in one frame.
+        // Preserve deliberate stage choreography and spectators' controlled movement.
+        if(!a.performing&&!a.watchingLive){
+          const prev=previousPositions.get(a);
+          if(prev){const dx=a.x-prev.x,dy=a.y-prev.y,length=Math.hypot(dx,dy);
+            const maxStep=Math.max(5,(speed[S.speed]||42)*3*dt/1000);
+            if(length>maxStep){a.x=prev.x+dx/length*maxStep;a.y=prev.y+dy/length*maxStep}
+          }
+          keepOffStage(a);
+        }
+        render(a,now);bubblePlacement(a)
+      });
     }
   }
   requestAnimationFrame(tick);
