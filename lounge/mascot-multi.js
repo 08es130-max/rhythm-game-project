@@ -968,6 +968,7 @@ function audienceStep(a,dt){
 }
 function endLive(now=performance.now()){
  if(!liveEvent)return;
+ window.LOUNGE_GROUP_PHOTO?.hide();
  for(const a of [...liveEvent.members,liveEvent.yu].filter(Boolean)){
   a.performing=false;a.liveImage?.remove();a.liveImage=null;
   a.el.classList.remove('mascot-live-active','mascot-yu-cheering');hideSpeech(a);
@@ -1039,6 +1040,7 @@ function updateLive(now){
  if(elapsed<1700)return;
  if(e.phase==='intro'){
   e.phase='dance';hideSpeech(e.caller);
+  window.LOUNGE_GROUP_PHOTO?.show(e.members,e.frames).catch(err=>console.warn('Group photo:',err));
   const members=e.members,frames=e.frames,yu=e.yu,centerX=e.centerX;
   const centerY=members.reduce((sum,a)=>sum+a.y+a.h/2,0)/3;
  const stageWidth=Math.max(...members.map(a=>a.w));
