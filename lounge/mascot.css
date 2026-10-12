@@ -655,22 +655,15 @@ body:has(#pokeGuidePane:not(.hidden) #guideDexTool:not(.hidden) #guidePokemonDet
 /* Lounge-only controls: test live immediately beside settings. */
 .mascot-live-test-btn{right:calc(env(safe-area-inset-right,0px) + 68px)!important}
 
-/* v0.8.299: keep the stable sprite frame; animate only the body rhythm. */
+/* v0.8.302: iOS-safe animation: never animate CSS filters on sprite sheets.
+   Compositor filter changes were a remaining source of intermittent blank sprites. */
 .edge-mascot.mascot-gentle-walk:not(.mascot-live-active):not(.mascot-bump-reaction){
-  animation:mascot-gentle-walk var(--mascot-walk-duration,660ms) ease-in-out infinite alternate;
+ animation:mascot-gentle-walk var(--mascot-walk-duration,660ms) ease-in-out infinite alternate;
 }
-@keyframes mascot-gentle-walk{
-  from{margin-top:0;filter:drop-shadow(0 3px 3px rgba(0,0,0,.2))}
-  to{margin-top:-3px;filter:drop-shadow(0 5px 4px rgba(0,0,0,.15))}
-}
+@keyframes mascot-gentle-walk{from{margin-top:0}to{margin-top:-2px}}
 .edge-mascot.mascot-bump-reaction:not(.mascot-live-active){
-  animation:mascot-gentle-bump .6s ease-out 1;
+ animation:mascot-gentle-bump .6s ease-out 1;
 }
-@keyframes mascot-gentle-bump{
-  0%,100%{margin-top:0}
-  28%{margin-top:-7px}
-  52%{margin-top:1px}
-}
-@media(prefers-reduced-motion:reduce){
- .edge-mascot.mascot-gentle-walk,.edge-mascot.mascot-bump-reaction{animation:none!important}
-}
+@keyframes mascot-gentle-bump{0%,100%{margin-top:0}28%{margin-top:-5px}52%{margin-top:1px}}
+.edge-mascot.mascot-sprite{filter:none!important;will-change:transform}
+@media(prefers-reduced-motion:reduce){.edge-mascot.mascot-gentle-walk,.edge-mascot.mascot-bump-reaction{animation:none!important}}
