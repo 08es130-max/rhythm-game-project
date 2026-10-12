@@ -1,0 +1,14 @@
+/* Ver.0.8.280: edge-to-edge home screen only; preserve artwork aspect ratio. */
+body:not(.playing-mode) .app-shell:has(#homeScreen:not([hidden])){
+  width:100%;max-width:none;margin:0;padding:0;
+}
+#homeScreen:not([hidden]){
+  width:100%;height:100dvh;min-height:100dvh;
+  margin:0;border:0;border-radius:0;box-shadow:none;
+}
+@media (orientation:landscape) and (pointer:coarse){
+  #homeScreen:not([hidden]){height:100dvh!important;min-height:100dvh!important}
+  #homeScreen:not([hidden]) .home-main{height:calc(100dvh - 48px)}
+}
+#homeScreen .home-lr-scene-bg-v096,
+#homeScreen .home-lr-scene-v096{object-fit:cover!important;object-position:center center!important}
