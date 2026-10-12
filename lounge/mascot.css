@@ -1,0 +1,653 @@
+:root {
+  --mascot-safe-top: env(safe-area-inset-top, 0px);
+  --mascot-safe-right: env(safe-area-inset-right, 0px);
+  --mascot-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mascot-safe-left: env(safe-area-inset-left, 0px);
+}
+
+.mascot-root {
+  position: relative;
+  z-index: 900;
+  pointer-events: none;
+}
+
+.mascot-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mascot-layer[hidden] {
+  display: none !important;
+}
+
+.mascot-sprite {
+  --mascot-column: 0;
+  --mascot-row: 0;
+  --mascot-scale: 0.40553;
+  --mascot-sheet-width: 441.22px;
+  --mascot-sheet-height: 440px;
+  --mascot-frame-x: 0px;
+  --mascot-frame-y: 0px;
+
+  display: block;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background-color: transparent;
+  background-image: var(--mascot-image, url('https://08es130-max.github.io/love-poke-tools/assets/mascot/shioriko-sprite.png'));
+  background-repeat: no-repeat;
+  background-size: var(--mascot-sheet-width) var(--mascot-sheet-height);
+  background-position: var(--mascot-frame-x) var(--mascot-frame-y);
+}
+
+.edge-mascot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, .2));
+  will-change: transform, background-position;
+}
+
+.edge-mascot:focus-visible {
+  outline: 3px solid #e8508c;
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.edge-mascot.mascot-tapped {
+  animation: mascot-hop .55s ease;
+}
+
+.mascot-bubble {
+  position: fixed;
+  z-index: 2;
+  max-width: 162px;
+  padding: 8px 10px;
+  border: 1px solid rgba(62, 41, 52, .14);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .97);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .16);
+  color: #392b32;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  pointer-events: none;
+}
+
+.mascot-settings-btn {
+  position: fixed;
+  right: max(10px, calc(env(safe-area-inset-right, 0px) + 8px));
+  bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+  z-index: 920;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, .12);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .16);
+  color: #d9437d;
+  font-size: 20px;
+  cursor: pointer;
+  touch-action: manipulation;
+  pointer-events: auto;
+}
+
+.mascot-dialog {
+  z-index: 950;
+  width: min(92vw, 500px);
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.mascot-dialog::backdrop {
+  background: rgba(28, 20, 24, .46);
+}
+
+.mascot-dialog-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+}
+
+.mascot-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mascot-dialog-head h2 {
+  margin: 0 0 3px;
+  font-size: 20px;
+}
+
+.mascot-dialog-head p {
+  margin: 0;
+  color: #70656a;
+  font-size: 13px;
+}
+
+.mascot-preview {
+  display: grid;
+  min-height: 112px;
+  margin: 14px 0;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff2f7, #f2f6ff);
+}
+
+.mascot-preview .mascot-sprite {
+  width: 100px;
+  height: 80px;
+}
+
+.mascot-image-error .mascot-preview::after {
+  content: '画像を読み込めませんでした';
+  color: #a83252;
+  font-size: 13px;
+}
+
+.mascot-image-error .mascot-preview .mascot-sprite {
+  display: none;
+}
+
+.mascot-setting-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+
+.mascot-setting-grid > label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #4b4146;
+  font-size: 13px;
+}
+
+.mascot-switch {
+  flex-direction: row !important;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 8px 11px;
+  border-radius: 11px;
+  background: #f8f6f7;
+}
+
+.mascot-setting-grid select {
+  min-height: 42px;
+  padding: 7px 9px;
+  border: 1px solid #ddd5d9;
+  border-radius: 9px;
+  background: white;
+  color: inherit;
+  font: inherit;
+}
+
+.mascot-setting-grid input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: #e8508c;
+}
+
+.mascot-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+@keyframes mascot-hop {
+  0%,
+  100% {
+    margin-top: 0;
+  }
+
+  45% {
+    margin-top: -16px;
+  }
+}
+
+@media (max-width: 560px) {
+  .mascot-dialog {
+    width: calc(100vw - 20px);
+  }
+
+  .mascot-dialog-card {
+    max-height: calc(100dvh - 24px);
+    padding: 14px;
+    overflow: auto;
+  }
+
+  .mascot-setting-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .mascot-preview {
+    min-height: 92px;
+    margin: 10px 0;
+  }
+
+  .mascot-bubble {
+    max-width: 145px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge-mascot.mascot-tapped {
+    animation: none;
+  }
+}
+
+.mascot-character-setting { grid-column: 1 / -1; }
+
+
+/* multi mascot v0.9.65 */
+.mascot-actor { position:absolute; left:0; top:0; }
+.mascot-actor-bubble { position:fixed; }
+.edge-mascot.mascot-collision-pose { animation:mascot-collision-pose .8s ease; }
+@keyframes mascot-collision-pose {
+  0%,100% { margin-top:0; }
+  35% { margin-top:-10px; }
+  62% { margin-top:-3px; }
+}
+.mascot-character-panel {
+  margin:14px 0;
+  padding:12px;
+  border:1px solid #e6dde1;
+  border-radius:14px;
+  background:#fbf9fa;
+}
+.mascot-character-head {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:9px;
+  color:#4b4146;
+  font-size:13px;
+  font-weight:700;
+}
+.mascot-character-actions { display:flex; gap:6px; }
+.mascot-character-actions button {
+  min-height:34px;
+  padding:5px 9px;
+  border:1px solid #ddd5d9;
+  border-radius:9px;
+  background:#fff;
+  color:#594d53;
+  font-size:12px;
+}
+.mascot-character-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+.mascot-character-chip {
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+  min-height:40px;
+  padding:7px 8px;
+  border:1px solid #e3dce0;
+  border-radius:10px;
+  background:#fff;
+  color:#4b4146;
+  font-size:12px;
+}
+.mascot-character-chip input {
+  width:18px;
+  height:18px;
+  flex:0 0 auto;
+  accent-color:#e8508c;
+}
+.mascot-character-chip span {
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.mascot-selection-status {
+  margin:9px 0 0;
+  color:#786b72;
+  font-size:12px;
+}
+@media (max-width:420px) {
+  .mascot-character-grid { grid-template-columns:1fr; }
+  .mascot-character-head { align-items:flex-start; flex-direction:column; }
+}
+
+/* aligned edge lineup v0.9.71 */
+.mascot-lineup-btn {
+  position: fixed;
+  right: max(70px, calc(env(safe-area-inset-right, 0px) + 68px));
+  bottom: max(10px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+  z-index: 920;
+  min-width: 49px;
+  min-height: 42px;
+  padding: 0 9px;
+  border: 1px solid rgba(0, 0, 0, .12);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, .96);
+  color: #c53974;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .16);
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.mascot-lineup-btn:focus-visible {
+  outline: 3px solid #e8508c;
+  outline-offset: 2px;
+}
+.mascot-lineup-active .mascot-actor {
+  transition: none;
+}
+
+/* Lineup button is to the LEFT of the settings gear. */
+.mascot-settings-btn {
+  right: max(10px, calc(env(safe-area-inset-right, 0px) + 8px));
+}
+
+
+/* compact dialog v0.9.72: fit all 13 choices and controls on iPhone */
+.mascot-dialog {
+  box-sizing: border-box;
+  width: min(calc(100vw - 20px), 480px);
+  max-height: calc(100dvh - 20px);
+  margin: auto;
+}
+.mascot-dialog-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: calc(100dvh - 20px);
+  padding: 14px;
+  overflow: hidden;
+}
+.mascot-dialog-head {
+  align-items: center;
+  gap: 9px;
+}
+.mascot-dialog-heading {
+  min-width: 0;
+  flex: 1;
+}
+.mascot-dialog-head h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  line-height: 1.2;
+}
+.mascot-dialog-head p {
+  font-size: 12px;
+  line-height: 1.35;
+}
+.mascot-close-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  min-height: 40px;
+  padding: 7px 12px;
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+  word-break: keep-all;
+  writing-mode: horizontal-tb;
+}
+.mascot-character-panel {
+  margin: 0;
+  padding: 10px;
+}
+.mascot-character-head {
+  flex-flow: row nowrap;
+  align-items: center;
+  margin-bottom: 7px;
+  gap: 5px;
+  font-size: 13px;
+}
+.mascot-character-actions {
+  flex: 0 0 auto;
+  gap: 5px;
+}
+.mascot-character-actions button {
+  min-width: 50px;
+  min-height: 32px;
+  padding: 4px 7px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.mascot-character-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px 6px;
+}
+.mascot-character-chip {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 37px;
+  padding: 5px 7px;
+  gap: 5px;
+  border-radius: 9px;
+  font-size: 12px;
+  line-height: 1.2;
+}
+.mascot-character-chip input {
+  width: 17px;
+  height: 17px;
+}
+.mascot-selection-status {
+  margin-top: 7px;
+  font-size: 11px;
+  line-height: 1.25;
+}
+.mascot-setting-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.mascot-setting-grid > label {
+  min-width: 0;
+  gap: 5px;
+  font-size: 12px;
+}
+.mascot-switch {
+  min-height: 41px;
+  padding: 6px 9px;
+  gap: 6px;
+}
+.mascot-setting-grid select {
+  width: 100%;
+  min-height: 37px;
+  padding: 5px 8px;
+  font-size: 14px;
+}
+@media (max-width: 560px) {
+  .mascot-dialog-card {
+    max-height: calc(100dvh - 20px);
+    padding: 12px;
+    overflow: hidden;
+  }
+  .mascot-setting-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .mascot-character-head {
+    flex-direction: row;
+    align-items: center;
+  }
+  .mascot-character-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-height: 620px) {
+  .mascot-dialog-card { padding: 9px; gap: 7px; }
+  .mascot-dialog-head h2 { font-size: 17px; }
+  .mascot-character-panel { padding: 7px; }
+  .mascot-character-chip { min-height: 32px; padding: 3px 5px; font-size: 11px; }
+  .mascot-character-grid { gap: 3px 5px; }
+  .mascot-character-actions button { min-height: 30px; }
+  .mascot-close-btn { min-height: 34px; }
+  .mascot-switch { min-height: 35px; }
+  .mascot-setting-grid select { min-height: 32px; }
+}
+/* For unusually short viewports only, keep every control reachable. */
+@media (max-height: 485px) {
+  .mascot-dialog-card { overflow-y: auto; }
+}
+
+/* Visible speech and personality feedback v0.9.75 */
+.mascot-actor-bubble {
+  z-index: 910;
+  box-sizing: border-box;
+  max-width: min(200px, calc(100vw - 16px));
+  padding: 9px 11px;
+  border: 1px solid #e9b0c8;
+  border-left: 4px solid #e9508b;
+  border-radius: 12px;
+  background: rgba(255, 252, 254, .98);
+  color: #42303a;
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  box-shadow: 0 5px 15px rgba(96, 39, 62, .2);
+  pointer-events: none;
+}
+.mascot-actor-bubble[hidden] { display: none !important; }
+.mascot-napping::after {
+  content: 'Zzz';
+  position: absolute;
+  right: 3px;
+  top: 0;
+  padding: 2px 5px;
+  color: #7b65b2;
+  background: rgba(255,255,255,.88);
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+/* speech anchor v0.9.77 */
+.mascot-actor-bubble {
+  width: auto;
+  min-width: 0;
+  padding: 7px 10px;
+  line-height: 1.4;
+  text-align: left;
+}
+.mascot-actor-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: var(--bubble-tail-x, 50%);
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  background: rgba(255, 252, 254, .98);
+  border-right: 1px solid #e9b0c8;
+  border-bottom: 1px solid #e9b0c8;
+  transform: translateX(-50%) rotate(45deg);
+  pointer-events: none;
+}
+
+
+/* In-place mini-live: keep the walking actor's position and size.
+   The active full-body frame replaces, rather than manipulates, its walk sprite. */
+.edge-mascot.mascot-live-active{
+  background-image:none !important;
+  overflow:visible;
+  animation:none !important;
+}
+.mascot-live-frame{
+  position:absolute;
+  left:50%;
+  display:block;
+  width:auto;
+  max-width:none;
+  pointer-events:none;
+  user-select:none;
+  transform:translateX(-50%);
+  object-fit:contain;
+}
+.mascot-live-test-btn{
+  position:fixed;
+  right:max(122px,calc(env(safe-area-inset-right,0px) + 120px));
+  bottom:max(15px,calc(env(safe-area-inset-bottom,0px) + 13px));
+  z-index:920;
+  width:36px;height:36px;padding:0;
+  border:1px solid #d79bc0;border-radius:50%;
+  background:rgba(255,241,249,.96);color:#a73678;
+  font-size:20px;font-weight:700;line-height:1;
+  cursor:pointer;touch-action:manipulation;pointer-events:auto;
+  box-shadow:0 3px 12px rgba(0,0,0,.12);
+}
+@media(max-height:700px){
+  .mascot-dialog-card{overflow-y:auto}
+}
+
+/* Yu cheers only during mini-live: four columns, two rows. */
+.edge-mascot.mascot-yu-cheering{overflow:visible!important;z-index:909!important}
+.edge-mascot.mascot-yu-cheering:has(.mascot-yu-cheer-sprite.ready){background-image:none!important}
+.mascot-yu-cheer-sprite{
+ position:absolute;left:50%;bottom:0;width:72%;height:auto;aspect-ratio:4 / 5;
+ transform:translateX(-50%);
+ background-repeat:no-repeat;background-size:400% 200%;
+ background-position:0 0;pointer-events:none;display:none;
+}
+.mascot-yu-cheer-sprite.ready{display:block}
+
+/* When a speech bubble sits below its speaker, point the tail upward. */
+.mascot-actor-bubble.mascot-bubble-below::after{
+ top:-6px;bottom:auto;
+ border-right:0;border-bottom:0;
+ border-left:1px solid #e9b0c8;
+ border-top:1px solid #e9b0c8;
+}
+
+/* Explicit upward pointer for the mini-live cheer bubble. */
+.mascot-actor-bubble.mascot-bubble-tail-up::after{
+ top:-6px!important;bottom:auto!important;
+ border-top:1px solid #e9b0c8!important;
+ border-left:1px solid #e9b0c8!important;
+ border-right:0!important;border-bottom:0!important;
+}
+
+/* Fixed mobile toolbar ordering: ♪ / 整列 / ページ上部 / 設定 */
+.mascot-lineup-btn{right:max(130px,calc(env(safe-area-inset-right,0px) + 128px));min-width:52px;min-height:44px}
+.mascot-settings-btn{right:max(10px,calc(env(safe-area-inset-right,0px) + 8px));width:44px;height:44px}
+
+/* v0.9.170: one toolbar coordinate system; never overlap ♪ and 整列. */
+.mascot-settings-btn{right:calc(env(safe-area-inset-right,0px) + 12px)!important;bottom:calc(env(safe-area-inset-bottom,0px) + 12px)!important;width:44px;height:44px}
+.mascot-lineup-btn{right:calc(env(safe-area-inset-right,0px) + 68px)!important;bottom:calc(env(safe-area-inset-bottom,0px) + 12px)!important;width:52px;min-width:52px;height:44px;min-height:44px}
+.mascot-live-test-btn{right:calc(env(safe-area-inset-right,0px) + 132px)!important;bottom:calc(env(safe-area-inset-bottom,0px) + 12px)!important;width:44px;height:44px}
+/* On an open Pokémon detail, reserve a fourth slot for the upward arrow. */
+body:has(#pokeGuidePane:not(.hidden) #guideDexTool:not(.hidden) #guidePokemonDetail:not(.hidden)) .mascot-lineup-btn{right:calc(env(safe-area-inset-right,0px) + 132px)!important}
+body:has(#pokeGuidePane:not(.hidden) #guideDexTool:not(.hidden) #guidePokemonDetail:not(.hidden)) .mascot-live-test-btn{right:calc(env(safe-area-inset-right,0px) + 196px)!important}
+
+/* v0.9.171: permanent four-button toolbar on all app pages. */
+.mascot-settings-btn{right:calc(env(safe-area-inset-right,0px) + 12px)!important}
+.mascot-top-btn{position:fixed;right:calc(env(safe-area-inset-right,0px) + 68px);bottom:calc(env(safe-area-inset-bottom,0px) + 12px);z-index:925;width:52px;height:44px;padding:0;border:1px solid rgba(0,0,0,.12);border-radius:24px;background:#2865a4;color:white;font-size:25px;font-weight:700;box-shadow:0 4px 14px #0003;cursor:pointer;pointer-events:auto;touch-action:manipulation}
+.mascot-lineup-btn{right:calc(env(safe-area-inset-right,0px) + 132px)!important}
+.mascot-live-test-btn{right:calc(env(safe-area-inset-right,0px) + 196px)!important}
