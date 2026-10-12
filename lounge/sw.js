@@ -1,6 +1,5 @@
-/* Lounge-specific offline cache. Keeps existing LovePoke artwork intact. */
-const CACHE='hobofes-lounge-assets-v6';
-const LOVEPOKE='https://08es130-max.github.io/love-poke-tools/';
+/* Self-contained lounge offline cache. */
+const CACHE='hobofes-lounge-assets-v7';
 const LOCAL=['./','./index.html','./mascot.css','./mascot-multi.js','./lounge-background.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(LOCAL)).then(()=>self.skipWaiting()));
@@ -15,9 +14,8 @@ self.addEventListener('fetch',event=>{
   const request=event.request;
   if(request.method!=='GET')return;
   const url=new URL(request.url);
-  const external=url.href.startsWith(LOVEPOKE)&&(url.pathname.includes('/assets/mascot/')||url.pathname.includes('/mini-live/'));
   const local=url.origin===self.location.origin&&url.pathname.includes('/lounge/');
-  if(!external&&!local)return;
+  if(!local)return;
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE);
     const cached=await cache.match(request);
