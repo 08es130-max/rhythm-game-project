@@ -1047,13 +1047,13 @@ function updateLive(now){
  const stageWidth=Math.max(...members.map(a=>a.w));
  const stageGap=Math.min(stageWidth*.75,innerWidth*.105);
  const stageCenter=innerWidth*.5;
- // Slightly lower V formation: center performer steps forward toward the audience.
+ // Keep the two outer performers at their current positions; center steps slightly back.
  const stageBottom=innerHeight*.535;
- const centerFrontOffset=Math.min(innerHeight*.035,26);
+ const centerBackOffset=Math.min(innerHeight*.018,14);
  members.forEach((a,i)=>{
   const q=box(a);
   a.x=Math.max(q.l,Math.min(q.r,stageCenter+(i-1)*stageGap-a.w/2));
-  a.y=Math.max(0,stageBottom+(i===1?centerFrontOffset:0)-a.h);
+  a.y=Math.max(0,stageBottom-(i===1?centerBackOffset:0)-a.h);
   const image=document.createElement('img');
   image.className='mascot-live-frame';image.alt='';image.draggable=false;
   // Match visible character height, independent of transparent PNG padding.
