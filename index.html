@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="home-layering-v0814.css?v=0.8.101-lrmenu1" />
 <link rel="stylesheet" href="gacha-v045.css?v=0.8.176-lrenvelope2" data-gacha-patch="046" />
 <script>
-window.APP_VERSION = '0.8.266';
+window.APP_VERSION = '0.8.267';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -69,6 +69,7 @@ window.location.replace(url.toString());
 <div class="home-menu">
 <button id="homeLiveBtn" class="home-menu-btn home-menu-live" type="button">ライブ<span>曲・譜面を選んでプレイ</span></button>
 <button id="homeStoryBtn" class="home-menu-btn home-menu-story" type="button" onclick="window.LOVEFES_STORY&&window.LOVEFES_STORY.open()"><img class="home-menu-art" src="assets/ui/home-v0855/story.png?v=0.8.140" alt="ストーリー"></button>
+
 <button id="homeSettingsBtn" class="home-menu-btn home-menu-settings" type="button">設定<span>速度・判定強化など</span></button>
 <button id="homeTimingBtn" class="home-menu-btn home-menu-timing" type="button">判定調整<span>実際にノーツを叩いて調整</span></button>
 <button id="homeCharactersBtn" class="home-menu-btn home-menu-characters" type="button">キャラ変更<span>9レーンのアイコンを設定</span></button>
@@ -205,12 +206,13 @@ window.location.replace(url.toString());
 <script src="story-scenes-v0237.js?v=0.8.237-scenes1"></script>
 <script src="story-deeper-v0238.js?v=0.8.238-deeper1"></script>
 <script src="story-focus-v0239.js?v=0.8.239-focus1"></script>
-<script src="story-visual-system-v0240.js?v=0.8.266-nosprites1"></script>
+<script src="story-visual-system-v0240.js?v=0.8.267-nosprites1"></script>
 <script src="story-polish-v087.js?v=0.8.262-layout1"></script>
 <script src="story-icon-v0827.js?v=0.8.37-story-icon6"></script>
 <script src="assets/ui/home-v0220/home-icons-v0220.js?v=0.8.220-icons1"></script>
 <script src="home-menu-unified-v0854.js?v=0.8.220-safeicons1"></script>
-<script src="version-final-v0845.js?v=0.8.266-final167"></script>
+<script src="lounge/lobby-entry.js?v=2"></script>
+<script src="version-final-v0845.js?v=0.8.267-final167"></script>
 <script>
 document.addEventListener('click',async(e)=>{
   if(e.target?.id!=='copyInputDiagBtn')return;
