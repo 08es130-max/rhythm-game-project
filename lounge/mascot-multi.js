@@ -982,6 +982,7 @@ function endLive(now=performance.now()){
   const cellY=q.t+(q.b-q.t)*(row+.5)/rows;
   a.x=Math.max(q.l,Math.min(q.r,cellX+(Math.random()-.5)*(q.r-q.l)/cols*.45));
   a.y=Math.max(q.t,Math.min(q.b,cellY+(Math.random()-.5)*(q.b-q.t)/rows*.45));
+  keepOffStage(a);
   a.watchingLive=false;a.watchArrived=false;
   a.frame=0;a.lastF=now;a.pose=now+250;a.restUntil=0;a.cool=now+600;
   hideSpeech(a);
@@ -1113,10 +1114,10 @@ function updateLive(now){
   say(e.yu,line,1700);
  }
  const y=e.yu,q=box(y);
- y.x=Math.max(q.l,Math.min(q.r,e.centerX-y.w/2+Math.sin(elapsed/580)*y.w*1.45));
+ y.x=Math.max(q.l,Math.min(q.r,e.centerX-y.w/2));
  y.frame=Math.floor(elapsed/180)%4;
  if(y.liveImage){const index=Math.floor(elapsed/210)%8;y.liveImage.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%'}
- y.y=Math.max(q.t,Math.min(q.b,innerHeight*.70-y.h*.5+Math.abs(Math.sin(elapsed/290))*y.h*.05));
+ y.y=Math.max(q.t,Math.min(q.b,innerHeight*.70-y.h*.5));
 }
 let S=load(),root,layer,dialog,status,actors=[],last=0,metrics=new Map(),rebuildSerial=0;
 function valid(a){return [...new Set((Array.isArray(a)?a:[]).filter(x=>C[x]))]}
@@ -1193,7 +1194,7 @@ function spriteVisibleRatio(image,fw,fh){
 function box(a){let st=getComputedStyle(document.documentElement),n=x=>parseFloat(st.getPropertyValue(x))||0,e=5;const h=innerHeight,w=innerWidth;return{l:n('--mascot-safe-left')+e,t:Math.max(n('--mascot-safe-top')+e,h*.31),r:w-n('--mascot-safe-right')-a.w-e,b:h-n('--mascot-safe-bottom')-a.h-e}}
 // The concert platform is reserved for performers. Coordinates are relative
 // to the full-bleed lounge artwork; use sprite feet for collision checks.
-function stageArea(){return {l:innerWidth*.335,r:innerWidth*.665,t:innerHeight*.285,b:innerHeight*.565}}
+function stageArea(){return {l:innerWidth*.325,r:innerWidth*.675,t:innerHeight*.275,b:innerHeight*.655}}
 function keepOffStage(a){
  if(a.performing||S.lineup)return;
  const s=stageArea(),fx=a.x+a.w*.5,fy=a.y+a.h*.88;
@@ -1360,6 +1361,7 @@ function place(){
       const rows=Math.ceil(actors.length/cols),c=i%cols,r=Math.floor(i/cols);
       a.x=q.l+(q.r-q.l)*(c+.5)/cols;
       a.y=q.t+(q.b-q.t)*(r+.5)/rows;
+      keepOffStage(a);
       setV(a,Math.random()*Math.PI*2);
     }else{
       a.x=q.l;a.y=q.b;a.d='right';a.vx=(speed[S.speed]||42)*(PERSONALITY[a.id]?.pace||1);a.vy=0;
