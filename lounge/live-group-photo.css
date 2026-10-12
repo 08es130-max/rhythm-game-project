@@ -15,3 +15,14 @@
 .lounge-cutin-trio.has-special{display:flex;padding:0;align-items:center;justify-content:center}
 .lounge-cutin-special{max-width:100%;max-height:100%;object-fit:contain}
 @media(max-width:650px){.lounge-cutin-trio{padding-top:19vh;padding-bottom:2vh}.lounge-cutin-member img{max-height:55vh}.lounge-cutin-group{top:2%!important;font-size:clamp(27px,6.4vw,55px)!important}}
+
+/* v0.8.288: decorative polish only; preserve approved title and character geometry. */
+.lounge-cutin-effects{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.lounge-cutin-spark{position:absolute;left:var(--x);top:var(--y);font-size:var(--size);line-height:1;color:#fff9df;text-shadow:0 0 8px #fff,0 0 17px #ffe6a5,0 0 24px #ffdd8d;opacity:0;animation:cutinSpark 1.15s ease-in-out var(--delay) infinite alternate}
+.lounge-cutin-spark:nth-child(3n){color:#fff;text-shadow:0 0 9px #fff,0 0 18px #f7b6f7}
+.lounge-cutin-spark:nth-child(4n){color:#fff3ac}
+@keyframes cutinSpark{0%{opacity:0;transform:translateY(8px) scale(.65) rotate(-14deg)}55%{opacity:.95}100%{opacity:.25;transform:translateY(-15px) scale(1.15) rotate(12deg)}}
+.lounge-cutin-group{filter:drop-shadow(0 0 12px #fff7);animation:cutinName .55s cubic-bezier(.15,.9,.2,1.2) 2.2s forwards,cutinLogoGlow 1.3s ease-in-out 2.8s infinite alternate}
+.lounge-cutin-ornament{font-size:clamp(12px,1.6vw,25px);line-height:1.1;letter-spacing:1.6em;text-indent:1.6em;color:#fff4b7;-webkit-text-stroke:0;text-shadow:0 0 10px #fff,0 0 16px #f9c1e6;font-family:system-ui;font-style:normal}
+@keyframes cutinLogoGlow{from{filter:drop-shadow(0 0 5px #fff5)}to{filter:drop-shadow(0 0 15px #fff9)}}
+@media(prefers-reduced-motion:reduce){.lounge-cutin-spark{animation:none;opacity:.55}.lounge-cutin-group{animation:cutinName .55s ease-out 2.2s forwards}}
