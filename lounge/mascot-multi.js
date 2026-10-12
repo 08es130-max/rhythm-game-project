@@ -983,7 +983,7 @@ function endLive(now=performance.now()){
   const q=box(a),col=i%cols,row=Math.floor(i/cols);
   const cellX=q.l+(q.r-q.l)*(col+.5)/cols;
   const cellY=q.t+(q.b-q.t)*(row+.5)/rows;
-  a.x=Math.max(q.l,Math.min(q.r,cellX+(Math.random()-.5)*(q.r-q.l)/cols*.45));
+  a.x=Math.max(q.l,Math.min(q.r,cellX+(Math.random()-.5)*(q.r-q.l)/cols*.45));a.renderX=undefined;
   a.y=Math.max(q.t,Math.min(q.b,cellY+(Math.random()-.5)*(q.b-q.t)/rows*.45));
   keepOffStage(a);
   a.watchingLive=false;a.watchArrived=false;
@@ -1221,7 +1221,17 @@ function render(a,now){
   if(a.id==='kanata'){
     if(!a.performing&&!S.lineup&&now<(a.restUntil||0))a.el.classList.add('mascot-napping');
     else a.el.classList.remove('mascot-napping');
-  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||now<a.pose||now<(a.restUntil||0)||!S.moving)?'idle':a.d,sc=a.h/m.fh,f=a.frame%4,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.el.style.setProperty('--mascot-frame-x',(-m.fw*f*sc)+'px');a.el.style.setProperty('--mascot-frame-y',(-m.fh*row(pose)*sc)+'px');a.el.style.transform='translate3d('+a.x+'px,'+(a.y+b)+'px,0)';a.el.style.zIndex=String(100+Math.floor(a.y))}
+  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||now<a.pose||now<(a.restUntil||0)||!S.moving)?'idle':a.d,sc=a.h/m.fh,f=a.frame%4,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.el.style.setProperty('--mascot-frame-x',(-m.fw*f*sc)+'px');a.el.style.setProperty('--mascot-frame-y',(-m.fh*row(pose)*sc)+'px');if(!a.performing&&!S.lineup){
+    const targetX=a.x,targetY=a.y;
+    if(Number.isFinite(a.renderX)&&Number.isFinite(a.renderY)){
+      const elapsed=Math.min(100,Math.max(0,now-(a.renderAt||now)));
+      const maxTravel=Math.max(3,(speed[S.speed]||42)*2.4*elapsed/1000);
+      const dx=targetX-a.renderX,dy=targetY-a.renderY,distance=Math.hypot(dx,dy);
+      if(distance>maxTravel){a.x=a.renderX+dx/distance*maxTravel;a.y=a.renderY+dy/distance*maxTravel}
+    }
+    a.renderX=a.x;a.renderY=a.y;a.renderAt=now;
+  }else{a.renderX=a.x;a.renderY=a.y;a.renderAt=now}
+  a.el.style.transform='translate3d('+a.x+'px,'+(a.y+b)+'px,0)';a.el.style.zIndex=String(100+Math.floor(a.y))}
 function pose(a,now,ms=800){a.pose=Math.max(a.pose,now+ms);a.frame=Math.floor(Math.random()*4);a.el.classList.remove('mascot-collision-pose');void a.el.offsetWidth;a.el.classList.add('mascot-collision-pose');setTimeout(()=>a.el&&a.el.classList.remove('mascot-collision-pose'),ms)}
 function bubble(a){if(!S.speech)return;const p=P[a.id]||[C[a.id][0]+'です！'];say(a,p[Math.floor(Math.random()*p.length)],3000)}
 function actor(id){let d=dims(id),el=document.createElement('button'),b=document.createElement('div');el.type='button';el.className='edge-mascot mascot-sprite mascot-actor';el.setAttribute('aria-label',C[id][0]+'マスコット');b.className='mascot-bubble mascot-actor-bubble';b.hidden=true;let a={id,el,b,w:d.w,h:d.h,x:0,y:0,vx:0,vy:0,d:'right',frame:0,lastF:0,pose:0,cool:0,bt:null,restUntil:0,nextRest:performance.now()+(PERSONALITY[id]?.rest||17000)*(.7+Math.random()*.6),nextTurn:performance.now()+(PERSONALITY[id]?.turn||12000)*(.7+Math.random()*.7)};el.addEventListener('click',()=>{if(a.watchingLive)return;if(a.performing){endLive(performance.now());return}let n=performance.now();pose(a,n,1100);bubble(a)});layer.append(el,b);return a}
@@ -1369,7 +1379,7 @@ function place(){
     const q=box(a);
     if(multi){
       const rows=Math.ceil(actors.length/cols),c=i%cols,r=Math.floor(i/cols);
-      a.x=q.l+(q.r-q.l)*(c+.5)/cols;
+      a.renderX=undefined;a.x=q.l+(q.r-q.l)*(c+.5)/cols;
       a.y=q.t+(q.b-q.t)*(r+.5)/rows;
       keepOffStage(a);
       setV(a,Math.random()*Math.PI*2);
@@ -1430,7 +1440,8 @@ function bubblePlacement(a){
   const requiredTop=safeTop+margin+h+5;
   if(!S.lineup&&!a.performing&&avatar.top<requiredTop){
     const q=box(a);
-    a.y=Math.min(q.b,a.y+requiredTop-avatar.top);
+    // Keep the actor stationary: speech bubbles must not move walkers.
+    // The bubble itself is clamped to the visible viewport.
   }
   const speaker=mascotVisibleBox(a);
   if(a.id==='yu'&&a.performing){
