@@ -31,7 +31,12 @@ body{background:#e9dff6;color:#423552}
 <div class="lounge" aria-hidden="true"><div class="floor"></div><div class="windows"><div class="window"></div><div class="window"></div><div class="window"></div></div><div class="stage"></div><div class="plant left"></div><div class="plant right"></div></div>
 <div class="title">ほぼフェス！ ラウンジ<small>2D自由歩行・会話・ミニライブ 試作</small></div>
 <a class="back" href="../index.html">ホームへ戻る</a>
-<div class="notice">虹ヶ咲のみんなが自由に過ごすラウンジ。画像とライブ衣装は現在オンライン読み込みです。</div>
-<script src="./mascot-multi.js?v=1"></script>
+<div class="notice">虹ヶ咲のみんなが自由に過ごすラウンジ。初回は画像・ライブ衣装の読み込みに通信が必要です。再訪時はキャッシュを利用します。</div>
+<script src="./mascot-multi.js?v=2"></script>
+<script>
+if ('serviceWorker' in navigator && location.protocol==='https:') {
+  navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(error=>console.warn('Lounge offline cache unavailable:',error));
+}
+</script>
 </body>
 </html>
