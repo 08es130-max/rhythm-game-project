@@ -1,5 +1,5 @@
 /* Self-contained lounge offline cache. */
-const CACHE='hobofes-lounge-assets-v13';
+const CACHE='hobofes-lounge-assets-v14';
 const LOCAL=['./','./index.html','./mascot.css','./mascot-multi.js','./lounge-background.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(LOCAL)).then(()=>self.skipWaiting()));
