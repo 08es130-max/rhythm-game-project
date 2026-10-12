@@ -1023,7 +1023,7 @@ async function beginLive(manual=false){
     liveEvent||S.lineup||!S.moving||document.hidden)return false;
  const now=performance.now();
  members.forEach(a=>hideSpeech(a));hideSpeech(yu);
- const centerX=members.reduce((sum,a)=>sum+a.x+a.w/2,0)/3;
+ const centerX=innerWidth*.5; // Fixed stage center, independent of performers' starting positions.
  const centerY=members.reduce((sum,a)=>sum+a.y+a.h/2,0)/3;
  // Announce while still wearing walking outfits; change to live costumes after the call.
  liveEvent={members,frames,yu,caller,started:now,until:now+12000,frame:-1,cheer:-1,cheerOrder:[...members].sort(()=>Math.random()-.5).map(a=>a.id),cheerSeed:Math.floor(Math.random()*10),phase:'intro',centerX};
@@ -1086,7 +1086,7 @@ function updateLive(now){
  probe.src=cheerUrl;
  yu.el.appendChild(cheerSprite);yu.liveImage=cheerSprite;
  const yq=box(yu);
- yu.x=Math.max(yq.l,Math.min(yq.r,centerX+innerWidth*.03-yu.w/2));
+ yu.x=Math.max(yq.l,Math.min(yq.r,centerX-yu.w/2));
  yu.y=Math.max(yq.t,Math.min(yq.b,innerHeight*.755-yu.h*.5));
 
  }
@@ -1114,7 +1114,7 @@ function updateLive(now){
   say(e.yu,line,1700);
  }
  const y=e.yu,q=box(y);
- y.x=Math.max(q.l,Math.min(q.r,e.centerX+innerWidth*.03-y.w/2));
+ y.x=Math.max(q.l,Math.min(q.r,e.centerX-y.w/2));
  y.frame=Math.floor(elapsed/180)%4;
  if(y.liveImage){const index=Math.floor(elapsed/210)%8;y.liveImage.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%'}
  y.y=Math.max(q.t,Math.min(q.b,innerHeight*.755-y.h*.5));
