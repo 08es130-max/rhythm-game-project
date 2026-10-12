@@ -1219,7 +1219,16 @@ function render(a,now){
   if(a.id==='kanata'){
     if(!a.performing&&!S.lineup&&now<(a.restUntil||0))a.el.classList.add('mascot-napping');
     else a.el.classList.remove('mascot-napping');
-  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||!S.moving||now<(a.restUntil||0)||(now<a.pose&&Math.hypot(a.vx||0,a.vy||0)<1))?'idle':a.d,sc=a.h/m.fh,f=0,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';if(!a.spriteReady){a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.spriteReady=true;}if(a.sheetWidth!==m.fw*4*sc||a.sheetHeight!==m.fh*5*sc){a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.sheetWidth=m.fw*4*sc;a.sheetHeight=m.fh*5*sc;}a.el.style.setProperty('--mascot-frame-x','0px');a.el.style.setProperty('--mascot-frame-y',(-m.fh*4*sc)+'px');
+  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||!S.moving||now<(a.restUntil||0)||(now<a.pose&&Math.hypot(a.vx||0,a.vy||0)<1))?'idle':a.d,sc=a.h/m.fh,f=0,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';if(!a.spriteReady){a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.spriteReady=true;}if(a.sheetWidth!==m.fw*4*sc||a.sheetHeight!==m.fh*5*sc){a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.sheetWidth=m.fw*4*sc;a.sheetHeight=m.fh*5*sc;}// Use verified, populated frames only. Change at most once every 420 ms.
+  const spriteRow=row(pose);
+  const allowed=m.walkFrames?.[spriteRow]||[0];
+  const safeFrames=allowed.length>=2?allowed.slice(0,2):[allowed[0]??0];
+  const isWalking=pose!=='idle'&&!S.lineup&&!a.performing;
+  const index=isWalking?Math.floor(now/480)%safeFrames.length:0;
+  const spriteCol=safeFrames[index];
+  const px=(-m.fw*spriteCol*sc)+'px',py=(-m.fh*spriteRow*sc)+'px';
+  if(a.lastSpriteX!==px){a.el.style.setProperty('--mascot-frame-x',px);a.lastSpriteX=px}
+  if(a.lastSpriteY!==py){a.el.style.setProperty('--mascot-frame-y',py);a.lastSpriteY=py}
   const walking=!S.lineup&&!a.performing&&S.moving&&now>=a.pose&&now>=a.restUntil&&!a.watchArrived;
   a.el.classList.toggle('mascot-gentle-walk',walking);
   a.el.style.setProperty('--mascot-walk-duration',Math.round(660/(PERSONALITY[a.id]?.pace||1))+'ms');if(!a.performing&&!S.lineup){
@@ -1266,13 +1275,35 @@ function spriteIdleBounds(image,fw,fh){
     return bounds;
   }catch(_){return Array(4).fill(fallback)}
 }
+// Only animate populated sprite cells; transparent/unfinished cells caused flicker.
+function usableWalkFrames(image,fw,fh){
+ const result={};
+ try{
+  const c=document.createElement('canvas');c.width=48;c.height=48;
+  const ctx=c.getContext('2d',{willReadFrequently:true});
+  for(let row=0;row<5;row++){
+   const counts=[];
+   for(let col=0;col<4;col++){
+    ctx.clearRect(0,0,48,48);
+    ctx.drawImage(image,col*fw,row*fh,fw,fh,0,0,48,48);
+    const data=ctx.getImageData(0,0,48,48).data;
+    let count=0;for(let p=3;p<data.length;p+=4)if(data[p]>70)count++;
+    counts.push(count);
+   }
+   const baseline=Math.max(...counts);
+   result[row]=counts.map((count,i)=>({count,i})).filter(x=>x.count>120&&x.count>baseline*.48).map(x=>x.i);
+  }
+ }catch(e){return {0:[0],1:[0],2:[0],3:[0],4:[0]}}
+ return result;
+}
 function loadMetric(id){return new Promise(res=>{let i=new Image();i.onload=()=>{
   const fw=i.naturalWidth/4,fh=i.naturalHeight/5;
   if(!fw||!fh){res(false);return}
   metrics.set(id,{
     fw,fh,
     visibleRatio:spriteVisibleRatio(i,fw,fh),
-    idleBounds:spriteIdleBounds(i,fw,fh)
+    idleBounds:spriteIdleBounds(i,fw,fh),
+    walkFrames:usableWalkFrames(i,fw,fh)
   });
   res(true)
 };i.onerror=()=>res(false);i.src=sprite(id)})}
