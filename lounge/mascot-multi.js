@@ -1039,13 +1039,13 @@ function updateLive(now){
   const members=e.members,frames=e.frames,yu=e.yu,centerX=e.centerX;
   const centerY=members.reduce((sum,a)=>sum+a.y+a.h/2,0)/3;
  const stageWidth=Math.max(...members.map(a=>a.w));
- const stageGap=stageWidth*0.62;
- const stageCenter=Math.max(Math.max(...members.map(a=>box(a).l+a.w/2))+stageGap,Math.min(centerX,Math.min(...members.map(a=>box(a).r+a.w/2))-stageGap));
- const stageBottom=Math.max(...members.map(a=>box(a).t+a.h),Math.min(centerY+Math.max(...members.map(a=>a.h))*.5,Math.min(...members.map(a=>box(a).b+a.h))));
+ const stageGap=Math.min(stageWidth*.75,innerWidth*.105);
+ const stageCenter=innerWidth*.5;
+ const stageBottom=innerHeight*.505;
  members.forEach((a,i)=>{
   const q=box(a);
   a.x=Math.max(q.l,Math.min(q.r,stageCenter+(i-1)*stageGap-a.w/2));
-  a.y=Math.max(q.t,Math.min(q.b,stageBottom-a.h));
+  a.y=Math.max(0,stageBottom-a.h);
   const image=document.createElement('img');
   image.className='mascot-live-frame';image.alt='';image.draggable=false;
   // Match visible character height, independent of transparent PNG padding.
@@ -1191,6 +1191,18 @@ function spriteVisibleRatio(image,fw,fh){
   }catch(_){return .76}
 }
 function box(a){let st=getComputedStyle(document.documentElement),n=x=>parseFloat(st.getPropertyValue(x))||0,e=5;const h=innerHeight,w=innerWidth;return{l:n('--mascot-safe-left')+e,t:Math.max(n('--mascot-safe-top')+e,h*.31),r:w-n('--mascot-safe-right')-a.w-e,b:h-n('--mascot-safe-bottom')-a.h-e}}
+// The concert platform is reserved for performers. Coordinates are relative
+// to the full-bleed lounge artwork; use sprite feet for collision checks.
+function stageArea(){return {l:innerWidth*.335,r:innerWidth*.665,t:innerHeight*.285,b:innerHeight*.565}}
+function keepOffStage(a){
+ if(a.performing||S.lineup)return;
+ const s=stageArea(),fx=a.x+a.w*.5,fy=a.y+a.h*.88;
+ if(fx<=s.l||fx>=s.r||fy<=s.t||fy>=s.b)return;
+ const options=[{d:fx-s.l,x:s.l-a.w*.5,y:a.y},{d:s.r-fx,x:s.r-a.w*.5,y:a.y},{d:fy-s.t,x:a.x,y:s.t-a.h*.88},{d:s.b-fy,x:a.x,y:s.b-a.h*.88}];
+ const p=options.sort((a,b)=>a.d-b.d)[0],q=box(a);
+ a.x=Math.max(q.l,Math.min(q.r,p.x));a.y=Math.max(q.t,Math.min(q.b,p.y));
+ setV(a,Math.random()*Math.PI*2);
+}
 function dir(a){return Math.abs(a.vx)>=Math.abs(a.vy)?(a.vx>=0?'right':'left'):(a.vy>=0?'down':'up')}
 function row(d){return{right:0,left:1,down:2,up:3,idle:4}[d]??4}
 function setV(a,ang=Math.atan2(a.vy,a.vx)){let v=(speed[S.speed]||42)*(PERSONALITY[a.id]?.pace||1);a.vx=Math.cos(ang)*v;a.vy=Math.sin(ang)*v;a.d=dir(a)}
@@ -1694,7 +1706,7 @@ function updatePersonality(a,now,multi){
     a.nextTurn=now+p.turn*(.75+Math.random()*.7);
   }
 }
-function wall(a,now){let q=box(a),hit=false;if(a.x<q.l){a.x=q.l;a.vx=Math.abs(a.vx);hit=true}else if(a.x>q.r){a.x=q.r;a.vx=-Math.abs(a.vx);hit=true}if(a.y<q.t){a.y=q.t;a.vy=Math.abs(a.vy);hit=true}else if(a.y>q.b){a.y=q.b;a.vy=-Math.abs(a.vy);hit=true}if(hit&&now>a.cool){setV(a,Math.atan2(a.vy,a.vx)+(Math.random()-.5)*.5);a.cool=now+650;pose(a,now,700)}}
+function wall(a,now){let q=box(a),hit=false;if(a.x<q.l){a.x=q.l;a.vx=Math.abs(a.vx);hit=true}else if(a.x>q.r){a.x=q.r;a.vx=-Math.abs(a.vx);hit=true}if(a.y<q.t){a.y=q.t;a.vy=Math.abs(a.vy);hit=true}else if(a.y>q.b){a.y=q.b;a.vy=-Math.abs(a.vy);hit=true}keepOffStage(a);if(hit&&now>a.cool){setV(a,Math.atan2(a.vy,a.vx)+(Math.random()-.5)*.5);a.cool=now+650;pose(a,now,700)}}
 function collide(now){for(let i=0;i<actors.length;i++)for(let j=i+1;j<actors.length;j++){let a=actors[i],b=actors[j];if(a.performing||b.performing||now<a.cool||now<b.cool)continue;if(socialEvent&&((socialEvent.a===a&&socialEvent.b===b)||(socialEvent.a===b&&socialEvent.b===a)))continue;if(socialEvent&&socialEvent.phase==='talk'&&[socialEvent.a,socialEvent.b].some(person=>person===a||person===b))continue;let ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2,dx=bx-ax,dy=by-ay,di=Math.hypot(dx,dy),mi=Math.min(a.w,a.h)*.32+Math.min(b.w,b.h)*.32;if(di>0&&di<mi){
   // Physical encounters may start a conversation sooner, without overlapping
   // an existing event or turning an opted-out speech setting back on.
@@ -1753,7 +1765,7 @@ function tick(now){
           if(multi){
             a.x+=a.vx*dt/1000;a.y+=a.vy*dt/1000;
             wall(a,now);a.d=dir(a);if(liveEvent)audienceStep(a,0);
-          }else single(a,dist*(PERSONALITY[a.id]?.pace||1),now);
+          }else {single(a,dist*(PERSONALITY[a.id]?.pace||1),now);keepOffStage(a);}
         }
         const iv=paused?520:190;
         if(now-a.lastF>=iv){a.frame=(a.frame+1)%4;a.lastF=now}
@@ -1761,7 +1773,7 @@ function tick(now){
       if(multi&&S.moving){
         collide(now);
       }
-      actors.forEach(a=>{render(a,now);bubblePlacement(a)});
+      actors.forEach(a=>{if(!a.performing&&!a.watchingLive)keepOffStage(a);render(a,now);bubblePlacement(a)});
     }
   }
   requestAnimationFrame(tick);
