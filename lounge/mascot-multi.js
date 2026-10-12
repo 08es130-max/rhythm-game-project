@@ -1221,7 +1221,7 @@ function render(a,now){
   if(a.id==='kanata'){
     if(!a.performing&&!S.lineup&&now<(a.restUntil||0))a.el.classList.add('mascot-napping');
     else a.el.classList.remove('mascot-napping');
-  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||!S.moving||now<(a.restUntil||0)||(now<a.pose&&Math.hypot(a.vx||0,a.vy||0)<1))?'idle':a.d,sc=a.h/m.fh,f=a.frame%4,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.el.style.setProperty('--mascot-frame-x',(-m.fw*f*sc)+'px');a.el.style.setProperty('--mascot-frame-y',(-m.fh*row(pose)*sc)+'px');if(!a.performing&&!S.lineup){
+  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||!S.moving||now<(a.restUntil||0)||(now<a.pose&&Math.hypot(a.vx||0,a.vy||0)<1))?'idle':a.d,sc=a.h/m.fh,f=0,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';if(!a.spriteReady){a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.spriteReady=true;}if(a.sheetWidth!==m.fw*4*sc||a.sheetHeight!==m.fh*5*sc){a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.sheetWidth=m.fw*4*sc;a.sheetHeight=m.fh*5*sc;}a.el.style.setProperty('--mascot-frame-x','0px');a.el.style.setProperty('--mascot-frame-y',(-m.fh*4*sc)+'px');if(!a.performing&&!S.lineup){
     const targetX=a.x,targetY=a.y;
     if(Number.isFinite(a.renderX)&&Number.isFinite(a.renderY)){
       const elapsed=Math.min(100,Math.max(0,now-(a.renderAt||now)));
@@ -1431,6 +1431,7 @@ function bubblePlacement(a){
     (socialEvent.a===a?socialEvent.b:socialEvent.b===a?socialEvent.a:null):null;
   const other=partner?mascotVisibleBox(partner):null;
   const {w,h}=bubbleDimensions(a);
+  a.b.style.boxSizing='border-box';a.b.style.maxWidth=Math.max(100,innerWidth-16)+'px';a.b.style.overflowWrap='anywhere';
   const styles=getComputedStyle(document.documentElement);
   const safeTop=parseFloat(styles.getPropertyValue('--mascot-safe-top'))||0;
   const margin=6;
