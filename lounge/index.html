@@ -4,22 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ほぼフェス！ 2Dラウンジ（試作）</title>
-<link rel="stylesheet" href="./mascot.css?v=1">
+<link rel="stylesheet" href="./mascot.css?v=0.8.268">
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:system-ui,"Noto Sans JP",sans-serif}
 body{background:#e9dff6;color:#423552}
-.lounge{position:fixed;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 20%,#fff9f7 0%,#f6ecff 48%,#d8e3ff 100%)}
-.lounge:before{content:"";position:absolute;inset:0 0 38%;background:linear-gradient(180deg,#d8c9f4 0%,#f6e9fa 85%,#f9f4fc);border-bottom:12px solid #d4bddf}
-.floor{position:absolute;inset:54% 0 0;background:repeating-linear-gradient(90deg,transparent 0 118px,#d9cce766 119px 121px),linear-gradient(180deg,#fff7ed,#e8d9ec)}
-.windows{position:absolute;left:12%;right:12%;top:12%;height:27%;display:flex;justify-content:space-around;gap:6%;pointer-events:none}
-.window{flex:1;max-width:240px;border:9px solid #fff9fd;border-radius:28px 28px 10px 10px;background:linear-gradient(180deg,#9ccbea 0%,#e7e6fb 75%,#c7ddbe 76%);box-shadow:0 8px 22px #8d7fa233,inset 0 0 0 3px #b5a3d2;position:relative}
-.window:before{content:"";position:absolute;top:0;bottom:0;left:48%;width:6px;background:#fff9fd}
-.window:after{content:"";position:absolute;top:52%;left:0;right:0;height:6px;background:#fff9fd}
-.plant{position:absolute;bottom:43%;width:46px;height:68px;background:radial-gradient(ellipse at 40% 20%,#b7d4a2 0 30%,transparent 31%),radial-gradient(ellipse at 70% 35%,#8fb991 0 34%,transparent 35%),linear-gradient(90deg,transparent 38%,#678b67 40% 60%,transparent 62%);filter:drop-shadow(0 5px 5px #8b789144)}
-.plant:after{content:"";position:absolute;bottom:0;left:9px;width:29px;height:24px;border-radius:4px 4px 12px 12px;background:#dfb8a2}
-.plant.left{left:4%}.plant.right{right:4%}
-.stage{position:absolute;left:22%;right:22%;top:43%;height:14%;border-radius:50% 50% 8px 8px;background:linear-gradient(#e9d6ed,#c5afd6);border-bottom:9px solid #aa90c3;box-shadow:0 8px 16px #8b719333;opacity:.7}
-@media(max-width:550px){.windows{left:7%;right:7%;top:14%}.stage{left:12%;right:12%}.plant{transform:scale(.7)}}
+.lounge{position:fixed;inset:0;overflow:hidden;background:#dcebdc url('./lounge-background.png') center center / 100% 100% no-repeat;pointer-events:none}
 .title{position:fixed;top:max(12px,env(safe-area-inset-top));left:14px;z-index:910;background:#ffffffdb;padding:9px 15px;border-radius:16px;box-shadow:0 4px 16px #72608433;font-weight:800;pointer-events:none}
 .title small{display:block;font-weight:500;font-size:11px;color:#6d5b79}
 .back{position:fixed;top:max(14px,env(safe-area-inset-top));right:14px;z-index:950;background:#fff;border:1px solid #cbbbdc;border-radius:12px;padding:9px 12px;color:#463856;text-decoration:none;font-size:13px;font-weight:700}
@@ -28,11 +17,11 @@ body{background:#e9dff6;color:#423552}
 </style>
 </head>
 <body>
-<div class="lounge" aria-hidden="true"><div class="floor"></div><div class="windows"><div class="window"></div><div class="window"></div><div class="window"></div></div><div class="stage"></div><div class="plant left"></div><div class="plant right"></div></div>
+<div class="lounge" aria-hidden="true"></div>
 <div class="title">ほぼフェス！ ラウンジ<small>2D自由歩行・会話・ミニライブ 試作</small></div>
 <a class="back" href="../index.html">ホームへ戻る</a>
 <div class="notice">虹ヶ咲のみんなが自由に過ごすラウンジ。初回は画像・ライブ衣装の読み込みに通信が必要です。再訪時はキャッシュを利用します。</div>
-<script src="./mascot-multi.js?v=2"></script>
+<script src="./mascot-multi.js?v=0.8.268"></script>
 <script>
 if ('serviceWorker' in navigator && location.protocol==='https:') {
   navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(error=>console.warn('Lounge offline cache unavailable:',error));
