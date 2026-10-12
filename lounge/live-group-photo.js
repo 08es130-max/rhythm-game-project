@@ -1,51 +1,42 @@
-// Three-member live portrait: special illustration takes precedence over generated collage.
+// Live introduction cut-in. Existing transparent live costumes remain untouched.
 (() => {
  'use strict';
- const specialsBase='./live-group/special/';
- let active=null,serial=0;
+ const base='./live-group/special/';
+ let active=null,token=0;
  const keyOf=ids=>[...ids].sort().join('-');
- const loadImage=src=>new Promise((resolve,reject)=>{
-  const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=src;
- });
- function bounds(img){
-  const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;
-  const ctx=c.getContext('2d',{willReadFrequently:true});ctx.drawImage(img,0,0);
-  const data=ctx.getImageData(0,0,c.width,c.height).data;
-  let left=c.width,right=-1,top=c.height,bottom=-1;
-  for(let y=0;y<c.height;y+=2)for(let x=0;x<c.width;x+=2){
-   if(data[(y*c.width+x)*4+3]>70){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y)}
-  }
-  return right<0?{x:0,y:0,w:c.width,h:c.height}:{x:left,y:top,w:right-left+2,h:bottom-top+2};
+ const loadImage=src=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=src});
+ const hash=s=>[...s].reduce((a,c)=>(Math.imul(a,31)+c.charCodeAt(0))>>>0,7);
+ const namesCute=['Blooming Hearts','Sugar Prism','Twinkle Palette','Dreamy Bouquet','Pastel Harmony','Petit Étoile','Lovely Chime','Rainbow Macaron'];
+ const namesCool=['Stellar Pulse','Luminous Edge','Nova Resonance','Crystal Beat','Midnight Aurora','Radiant Axis','Vivid Voltage','Celestial Code'];
+ function groupName(ids){
+  const key=keyOf(ids),n=hash(key),cool=['setsuna','karin','mia','lanzhu','shioriko'].filter(id=>ids.includes(id)).length>=2;
+  const list=cool?namesCool:namesCute;
+  return {name:list[n%list.length],cool};
  }
- async function show(members,frames){
-  hide();const ticket=++serial;
-  const ids=members.map(a=>a.id),key=keyOf(ids);
-  const panel=document.createElement('div');panel.className='lounge-group-photo';
-  panel.setAttribute('aria-label',ids.join('・')+'のライブ集合写真');
-  const canvas=document.createElement('canvas');canvas.width=900;canvas.height=350;
-  panel.appendChild(canvas);document.body.appendChild(panel);active=panel;
-  const ctx=canvas.getContext('2d');if(!ctx)return;
-  const grad=ctx.createLinearGradient(0,0,900,350);grad.addColorStop(0,'#26396d');grad.addColorStop(.55,'#6d5aa5');grad.addColorStop(1,'#bb75b5');
-  ctx.fillStyle=grad;ctx.fillRect(0,0,900,350);
-  ctx.fillStyle='rgba(255,255,255,.13)';
-  for(let i=0;i<16;i++){ctx.beginPath();ctx.arc((i*137+55)%900,(i*73+25)%350,8+i%4*6,0,Math.PI*2);ctx.fill()}
-  const special=await loadImage(specialsBase+key+'.png').catch(()=>null);
-  if(ticket!==serial||active!==panel)return;
-  if(special){ctx.clearRect(0,0,900,350);ctx.drawImage(special,0,0,900,350);return}
-  const images=await Promise.all(frames.map(f=>loadImage(f.frames[f.sequence[0]]).catch(()=>null)));
-  if(ticket!==serial||active!==panel)return;
-  // One shared canvas, with overlapping figures rather than three separate image cards.
-  const positions=[{x:35,y:25,w:315,h:310},{x:295,y:0,w:315,h:335},{x:560,y:25,w:305,h:310}];
-  for(const i of [0,2,1]){
-   const img=images[i];if(!img)continue;
-   const b=bounds(img),p=positions[i],scale=Math.min(p.w/b.w,p.h/b.h);
-   const w=b.w*scale,h=b.h*scale;
-   ctx.drawImage(img,b.x,b.y,b.w,b.h,p.x+(p.w-w)/2,p.y+p.h-h,w,h);
-  }
-  ctx.fillStyle='rgba(20,25,60,.52)';ctx.fillRect(0,310,900,40);
-  ctx.font='bold 19px system-ui';ctx.fillStyle='#fff';ctx.textAlign='center';
-  ctx.fillText('SPECIAL LIVE',450,337);
+ function show(members,frames){
+  hide();const ticket=++token;
+  const ids=members.map(a=>a.id),key=keyOf(ids),group=groupName(ids);
+  const panel=document.createElement('section');
+  panel.className='lounge-group-cutin '+(group.cool?'is-cool':'is-cute');
+  panel.setAttribute('aria-label',group.name+' ライブ開始');
+  const backdrop=document.createElement('div');backdrop.className='lounge-cutin-backdrop';panel.appendChild(backdrop);
+  const trio=document.createElement('div');trio.className='lounge-cutin-trio';panel.appendChild(trio);
+  members.forEach((member,i)=>{
+   const slot=document.createElement('div');slot.className='lounge-cutin-member member-'+i;
+   const img=document.createElement('img');img.alt=member.id;img.draggable=false;
+   img.src=frames[i].frames[frames[i].sequence[0]];
+   slot.appendChild(img);trio.appendChild(slot);
+  });
+  const heading=document.createElement('div');heading.className='lounge-cutin-group';
+  heading.textContent=group.name;panel.appendChild(heading);
+  document.body.appendChild(panel);active=panel;
+  // A dedicated trio illustration can replace the automatic montage without changing timing.
+  loadImage(base+key+'.png').then(img=>{
+   if(ticket!==token||active!==panel)return;
+   trio.classList.add('has-special');
+   trio.replaceChildren(img);img.alt=ids.join('・');img.className='lounge-cutin-special';
+  }).catch(()=>{});
  }
- function hide(){serial++;if(active){active.remove();active=null}}
- window.LOUNGE_GROUP_PHOTO={show,hide};
+ function hide(){token++;active?.remove();active=null}
+ window.LOUNGE_GROUP_PHOTO={show,hide,groupName};
 })();
