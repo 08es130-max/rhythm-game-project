@@ -25,6 +25,24 @@
   members.forEach((member,i)=>{
    const slot=document.createElement('div');slot.className='lounge-cutin-member member-'+i;
    const img=document.createElement('img');img.alt=member.id;img.draggable=false;
+   // Center the visible (nontransparent) artwork, not the PNG canvas.
+   img.onload=()=>{
+    try{
+     const cw=160,ch=Math.max(1,Math.round(160*img.naturalHeight/img.naturalWidth));
+     const canvas=document.createElement('canvas');canvas.width=cw;canvas.height=ch;
+     const ctx=canvas.getContext('2d',{willReadFrequently:true});
+     ctx.drawImage(img,0,0,cw,ch);
+     const rgba=ctx.getImageData(0,0,cw,ch).data;
+     let left=cw,right=-1;
+     for(let y=0;y<ch;y++)for(let x=0;x<cw;x++){
+      if(rgba[(y*cw+x)*4+3]>65){left=Math.min(left,x);right=Math.max(right,x)}
+     }
+     if(right>=left){
+      const offset=(cw-1-left-right)/(2*cw)*100;
+      img.style.transform='translateX('+offset.toFixed(2)+'%)';
+     }
+    }catch(err){console.warn('Cut-in artwork centering:',err)}
+   };
    img.src=frames[i].frames[frames[i].sequence[0]];
    slot.appendChild(img);trio.appendChild(slot);
   });
