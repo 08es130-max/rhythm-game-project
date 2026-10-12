@@ -906,7 +906,7 @@ let nextSocialAt=0;
 let recentTalkPairs=[];
 const speed={slow:24,normal:42,fast:68},size={small:68,medium:88,large:112};
 // New members can join by adding their own six-pose frame JSON file.
-const LIVE_ASSETS={shioriko:'https://08es130-max.github.io/love-poke-tools/mini-live/shioriko-frames.json',ayumu:'https://08es130-max.github.io/love-poke-tools/mini-live/ayumu-frames.json',kasumi:'https://08es130-max.github.io/love-poke-tools/mini-live/kasumi-frames.json',shizuku:'https://08es130-max.github.io/love-poke-tools/mini-live/shizuku-frames.json',karin:'https://08es130-max.github.io/love-poke-tools/mini-live/karin-frames.json',ai:'https://08es130-max.github.io/love-poke-tools/mini-live/ai-frames.json',kanata:'https://08es130-max.github.io/love-poke-tools/mini-live/kanata-frames.json',setsuna:'https://08es130-max.github.io/love-poke-tools/mini-live/setsuna-frames.json',emma:'https://08es130-max.github.io/love-poke-tools/mini-live/emma-frames.json',rina:'https://08es130-max.github.io/love-poke-tools/mini-live/rina-frames.json',mia:'https://08es130-max.github.io/love-poke-tools/mini-live/mia-frames.json',lanzhu:'https://08es130-max.github.io/love-poke-tools/mini-live/lanzhu-frames.json'};
+const LIVE_ASSETS={shioriko:'./mini-live/shioriko-frames.json',ayumu:'./mini-live/ayumu-frames.json',kasumi:'./mini-live/kasumi-frames.json',shizuku:'./mini-live/shizuku-frames.json',karin:'./mini-live/karin-frames.json',ai:'./mini-live/ai-frames.json',kanata:'./mini-live/kanata-frames.json',setsuna:'./mini-live/setsuna-frames.json',emma:'./mini-live/emma-frames.json',rina:'./mini-live/rina-frames.json',mia:'./mini-live/mia-frames.json',lanzhu:'./mini-live/lanzhu-frames.json'};
 const LIVE_INTERVALS={rare:[15*60000,25*60000],normal:[7*60000,12*60000],often:[3*60000,5*60000]};
 const liveCache=new Map();
 let liveEvent=null,nextLiveAt=Infinity,liveLoading=false,liveGeneration=0;
@@ -1118,7 +1118,7 @@ function updateLive(now){
  if(y.liveImage){const index=Math.floor(elapsed/210)%8;y.liveImage.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%'}
  y.y=Math.max(q.t,Math.min(q.b,innerHeight*.70-y.h*.5+Math.abs(Math.sin(elapsed/290))*y.h*.05));
 }
-let S=load(),root,layer,dialog,status,lineupButton,actors=[],last=0,metrics=new Map(),rebuildSerial=0;
+let S=load(),root,layer,dialog,status,actors=[],last=0,metrics=new Map(),rebuildSerial=0;
 function valid(a){return [...new Set((Array.isArray(a)?a:[]).filter(x=>C[x]))]}
 function load(){
   const defaults={enabled:true,moving:true,speech:true,lineup:false,size:'medium',speed:'normal',liveMode:'normal'};
@@ -1148,7 +1148,7 @@ function save(){
     }));
   }catch(_){}
 }
-function sprite(id){return 'https://08es130-max.github.io/love-poke-tools/assets/mascot/'+C[id][1]+'-sprite.png?v='+VER}
+function sprite(id){return './assets/mascot/'+C[id][1]+'-sprite.png?v='+VER}
 // Visible character height is normalized, not the transparent sprite cell height.
 function crowdScale(n){if(n>=13)return .77;if(n>=9)return .82;if(n>=5)return .88;if(n>=2)return .94;return 1}
 function dims(id){
@@ -1416,11 +1416,21 @@ function bubblePlacement(a){
   // A bubble must stay ABOVE the speaking character, including near screen top.
   // Normal walkers can shift downward slightly to make headroom; lineup stays fixed.
   const requiredTop=safeTop+margin+h+5;
-  if(!S.lineup&&avatar.top<requiredTop){
+  if(!S.lineup&&!a.performing&&avatar.top<requiredTop){
     const q=box(a);
     a.y=Math.min(q.b,a.y+requiredTop-avatar.top);
   }
   const speaker=mascotVisibleBox(a);
+  if(a.id==='yu'&&a.performing){
+    const {w:tw,h:th}=bubbleDimensions(a);
+    const left=Math.max(8,Math.min(innerWidth-tw-8,speaker.left-tw-14));
+    const right=Math.max(8,Math.min(innerWidth-tw-8,speaker.right+14));
+    const x=speaker.left-tw-14>=8?left:right;
+    const y=Math.max(8,Math.min(innerHeight-th-8,speaker.top-th-12));
+    a.b.style.left=x+'px';a.b.style.top=y+'px';a.b.style.width=tw+'px';
+    return;
+  }
+
   const maxX=Math.max(8,innerWidth-w-8);
   const clampX=x=>Math.min(maxX,Math.max(8,x));
   const wantedTop=speaker.top-h-5;
@@ -1781,26 +1791,10 @@ function tick(now){
 function selected(){return[...dialog.querySelectorAll('[data-char]:checked')].map(x=>x.value)}
 function syncStatus(msg=''){
   if(status)status.textContent=msg||(!S.selectedCharacters.length?'0人選択中：マスコット非表示':S.lineup?'整列中：その場でポーズを切り替えます':S.selectedCharacters.length===1?'1人選択中：外周を歩きます':S.selectedCharacters.length+'人選択中：自由に歩きます');
-  if(lineupButton){
-    lineupButton.textContent=S.lineup?'歩行':'整列';
-    lineupButton.setAttribute('aria-label',S.lineup?'通常歩行に戻す':'キャラクターを画面左右に縦に整列');
-    lineupButton.setAttribute('aria-pressed',S.lineup?'true':'false');
-  }
+
 }
 function sync(){dialog.querySelector('#mMoving').checked=S.moving;dialog.querySelector('#mSpeech').checked=S.speech;dialog.querySelector('#mSize').value=S.size;dialog.querySelector('#mSpeed').value=S.speed;let set=new Set(S.selectedCharacters);dialog.querySelectorAll('[data-char]').forEach(x=>x.checked=set.has(x.value));syncStatus()}
 function ui(){S.lineup=false;root=document.createElement('div');root.id=ROOT;root.className='mascot-root';layer=document.createElement('div');layer.className='mascot-layer';let gear=document.createElement('button');gear.type='button';gear.className='mascot-settings-btn';gear.textContent='⚙';
-  lineupButton=document.createElement('button');
-  lineupButton.type='button';
-  lineupButton.className='mascot-lineup-btn';
-  lineupButton.textContent='整列';
-  lineupButton.addEventListener('click',()=>{
-    endLive(performance.now());liveGeneration++;if(socialEvent)endConversation(performance.now());S.lineup=!S.lineup;nextSocialAt=performance.now()+2400;save();place();syncStatus();
-    actors.forEach(a=>render(a,performance.now()));
-  });
-  const topButton=document.createElement('button');
-  topButton.type='button';topButton.className='mascot-top-btn';topButton.textContent='↑';
-  topButton.setAttribute('aria-label','ページの上部へ戻る');topButton.title='ページ上部へ';
-  topButton.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
   const liveButton=document.createElement('button');
   liveButton.type='button';liveButton.className='mascot-live-test-btn';liveButton.textContent='♪';
   liveButton.setAttribute('aria-label','テストライブ');liveButton.title='テストライブ';
