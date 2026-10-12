@@ -28,8 +28,16 @@
    img.src=frames[i].frames[frames[i].sequence[0]];
    slot.appendChild(img);trio.appendChild(slot);
   });
+  const effects=document.createElement('div');effects.className='lounge-cutin-effects';effects.setAttribute('aria-hidden','true');
+  const symbols=['✦','♪','✧','♡','✿','♫','✦','❀','✧','♪','♡','✦','♫','✿','✧','♡','♪','✦'];
+  symbols.forEach((symbol,i)=>{const el=document.createElement('span');el.className='lounge-cutin-spark';el.textContent=symbol;
+   el.style.setProperty('--x',((i*37+11)%94+3)+'%');el.style.setProperty('--y',((i*29+17)%74+18)+'%');
+   el.style.setProperty('--delay',(i%7*.13)+'s');el.style.setProperty('--size',(14+i%5*6)+'px');effects.appendChild(el)});
+  panel.appendChild(effects);
   const heading=document.createElement('div');heading.className='lounge-cutin-group';
-  heading.textContent=group.name;panel.appendChild(heading);
+  heading.textContent=group.name;
+  const ornament=document.createElement('div');ornament.className='lounge-cutin-ornament';ornament.setAttribute('aria-hidden','true');ornament.textContent=group.cool?'✦  ◆  ✦':'✿  ♡  ✿';
+  heading.appendChild(ornament);panel.appendChild(heading);
   document.body.appendChild(panel);active=panel;
   // A dedicated trio illustration can replace the automatic montage without changing timing.
   loadImage(base+key+'.png').then(img=>{
