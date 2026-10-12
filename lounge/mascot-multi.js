@@ -1,6 +1,6 @@
 (() => {
 'use strict';
-const ROOT='lovePokeMascotRoot',KEY='lovepoke_mascot_settings_v3',OLD='lovepoke_mascot_settings_v2',VER='0.9.79';
+const ROOT='lovePokeMascotRoot',KEY='hobofes_lounge_settings_v1',OLD='hobofes_lounge_settings_legacy',VER='0.9.79';
 const C={
  ayumu:['上原歩夢','ayumu'],kasumi:['中須かすみ','kasumi'],shizuku:['桜坂しずく','shizuku'],karin:['朝香果林','karin'],
  ai:['宮下愛','ai'],kanata:['近江彼方','kanata'],setsuna:['優木せつ菜','setsuna'],emma:['エマ・ヴェルデ','emma'],
@@ -1130,10 +1130,10 @@ function load(){
       return {...defaults,...stored,enabled:true,selectedCharacters:valid(stored.selectedCharacters)};
     }
     const old=JSON.parse(localStorage.getItem(OLD)||'{}');
-    const selected=old.character&&C[old.character]?[old.character]:['shioriko'];
+    const selected=old.character&&C[old.character]?[old.character]:Object.keys(C);
     return {...defaults,...old,enabled:true,selectedCharacters:selected};
   }catch(_){
-    return {...defaults,selectedCharacters:['shioriko']};
+    return {...defaults,selectedCharacters:Object.keys(C)};
   }
 }
 function save(){
@@ -1190,7 +1190,7 @@ function spriteVisibleRatio(image,fw,fh){
     return Math.min(.95,Math.max(.48,typical));
   }catch(_){return .76}
 }
-function box(a){let st=getComputedStyle(document.documentElement),n=x=>parseFloat(st.getPropertyValue(x))||0,e=5;return{l:n('--mascot-safe-left')+e,t:n('--mascot-safe-top')+e,r:innerWidth-n('--mascot-safe-right')-a.w-e,b:innerHeight-n('--mascot-safe-bottom')-a.h-e}}
+function box(a){let st=getComputedStyle(document.documentElement),n=x=>parseFloat(st.getPropertyValue(x))||0,e=5;const h=innerHeight,w=innerWidth;return{l:n('--mascot-safe-left')+e,t:Math.max(n('--mascot-safe-top')+e,h*.31),r:w-n('--mascot-safe-right')-a.w-e,b:h-n('--mascot-safe-bottom')-a.h-e}}
 function dir(a){return Math.abs(a.vx)>=Math.abs(a.vy)?(a.vx>=0?'right':'left'):(a.vy>=0?'down':'up')}
 function row(d){return{right:0,left:1,down:2,up:3,idle:4}[d]??4}
 function setV(a,ang=Math.atan2(a.vy,a.vx)){let v=(speed[S.speed]||42)*(PERSONALITY[a.id]?.pace||1);a.vx=Math.cos(ang)*v;a.vy=Math.sin(ang)*v;a.d=dir(a)}
@@ -1198,7 +1198,7 @@ function render(a,now){
   if(a.id==='kanata'){
     if(!a.performing&&!S.lineup&&now<(a.restUntil||0))a.el.classList.add('mascot-napping');
     else a.el.classList.remove('mascot-napping');
-  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||now<a.pose||now<(a.restUntil||0)||!S.moving)?'idle':a.d,sc=a.h/m.fh,f=a.frame%4,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.el.style.setProperty('--mascot-frame-x',(-m.fw*f*sc)+'px');a.el.style.setProperty('--mascot-frame-y',(-m.fh*row(pose)*sc)+'px');a.el.style.transform='translate3d('+a.x+'px,'+(a.y+b)+'px,0)'}
+  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||now<a.pose||now<(a.restUntil||0)||!S.moving)?'idle':a.d,sc=a.h/m.fh,f=a.frame%4,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.el.style.setProperty('--mascot-frame-x',(-m.fw*f*sc)+'px');a.el.style.setProperty('--mascot-frame-y',(-m.fh*row(pose)*sc)+'px');a.el.style.transform='translate3d('+a.x+'px,'+(a.y+b)+'px,0)';a.el.style.zIndex=String(100+Math.floor(a.y))}
 function pose(a,now,ms=800){a.pose=Math.max(a.pose,now+ms);a.frame=Math.floor(Math.random()*4);a.el.classList.remove('mascot-collision-pose');void a.el.offsetWidth;a.el.classList.add('mascot-collision-pose');setTimeout(()=>a.el&&a.el.classList.remove('mascot-collision-pose'),ms)}
 function bubble(a){if(!S.speech)return;const p=P[a.id]||[C[a.id][0]+'です！'];say(a,p[Math.floor(Math.random()*p.length)],3000)}
 function actor(id){let d=dims(id),el=document.createElement('button'),b=document.createElement('div');el.type='button';el.className='edge-mascot mascot-sprite mascot-actor';el.setAttribute('aria-label',C[id][0]+'マスコット');b.className='mascot-bubble mascot-actor-bubble';b.hidden=true;let a={id,el,b,w:d.w,h:d.h,x:0,y:0,vx:0,vy:0,d:'right',frame:0,lastF:0,pose:0,cool:0,bt:null,restUntil:0,nextRest:performance.now()+(PERSONALITY[id]?.rest||17000)*(.7+Math.random()*.6),nextTurn:performance.now()+(PERSONALITY[id]?.turn||12000)*(.7+Math.random()*.7)};el.addEventListener('click',()=>{if(a.watchingLive)return;if(a.performing){endLive(performance.now());return}let n=performance.now();pose(a,n,1100);bubble(a)});layer.append(el,b);return a}
