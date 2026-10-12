@@ -957,7 +957,9 @@ function audienceStep(a,dt){
  a.watchingLive=true;a.restUntil=0;a.pose=0;hideSpeech(a);
  const audience=actors.filter(p=>!p.performing),i=audience.indexOf(a),count=audience.length;
  const gap=Math.min(45,(innerWidth-20)/Math.max(2,count)),q=box(a);
- const tx=Math.max(q.l,Math.min(q.r,e.centerX+(i-(count-1)/2)*gap-a.w/2));
+ const side=i%2===0?-1:1,rank=Math.floor(i/2);
+ const yuClearance=Math.max(e.yu.w*.75,a.w*.65)+18;
+ const tx=Math.max(q.l,Math.min(q.r,e.centerX+side*(yuClearance+rank*gap)-a.w/2));
  const ty=Math.max(q.t,Math.min(q.b,Math.max(b+10,e.yu.y+e.yu.h+10)+Math.floor(i/7)*a.h*.5));
  const dx=tx-a.x,dy=ty-a.y,dist=Math.hypot(dx,dy);
  if(dist>3){const step=Math.min(dist,(speed[S.speed]||42)*1.8*dt/1000);a.x+=dx/dist*step;a.y+=dy/dist*step;a.d=dir({vx:dx,vy:dy});a.watchArrived=false}
@@ -1087,7 +1089,7 @@ function updateLive(now){
  yu.el.appendChild(cheerSprite);yu.liveImage=cheerSprite;
  const yq=box(yu);
  yu.x=Math.max(yq.l,Math.min(yq.r,centerX-yu.w/2));
- yu.y=Math.max(yq.t,Math.min(yq.b,innerHeight*.755-yu.h*.5));
+ yu.y=Math.max(yq.t,Math.min(yq.b,innerHeight*.705-yu.h*.5));
 
  }
 
@@ -1117,7 +1119,7 @@ function updateLive(now){
  y.x=Math.max(q.l,Math.min(q.r,e.centerX-y.w/2));
  y.frame=Math.floor(elapsed/180)%4;
  if(y.liveImage){const index=Math.floor(elapsed/210)%8;y.liveImage.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%'}
- y.y=Math.max(q.t,Math.min(q.b,innerHeight*.755-y.h*.5));
+ y.y=Math.max(q.t,Math.min(q.b,innerHeight*.705-y.h*.5));
 }
 let S=load(),root,layer,dialog,status,actors=[],last=0,metrics=new Map(),rebuildSerial=0;
 function valid(a){return [...new Set((Array.isArray(a)?a:[]).filter(x=>C[x]))]}
