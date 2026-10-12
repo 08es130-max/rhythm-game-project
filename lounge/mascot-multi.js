@@ -1219,16 +1219,10 @@ function render(a,now){
   if(a.id==='kanata'){
     if(!a.performing&&!S.lineup&&now<(a.restUntil||0))a.el.classList.add('mascot-napping');
     else a.el.classList.remove('mascot-napping');
-  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||!S.moving||now<(a.restUntil||0)||(now<a.pose&&Math.hypot(a.vx||0,a.vy||0)<1))?'idle':a.d,sc=a.h/m.fh,f=0,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';if(!a.spriteReady){a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.spriteReady=true;}if(a.sheetWidth!==m.fw*4*sc||a.sheetHeight!==m.fh*5*sc){a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.sheetWidth=m.fw*4*sc;a.sheetHeight=m.fh*5*sc;}// Use verified, populated frames only. Change at most once every 420 ms.
-  const spriteRow=row(pose);
-  const allowed=m.walkFrames?.[spriteRow]||[0];
-  const safeFrames=allowed.length>=2?allowed.slice(0,2):[allowed[0]??0];
-  const isWalking=pose!=='idle'&&!S.lineup&&!a.performing;
-  const index=isWalking?Math.floor(now/480)%safeFrames.length:0;
-  const spriteCol=safeFrames[index];
-  const px=(-m.fw*spriteCol*sc)+'px',py=(-m.fh*spriteRow*sc)+'px';
-  if(a.lastSpriteX!==px){a.el.style.setProperty('--mascot-frame-x',px);a.lastSpriteX=px}
-  if(a.lastSpriteY!==py){a.el.style.setProperty('--mascot-frame-y',py);a.lastSpriteY=py}
+  }let m=metrics.get(a.id)||{fw:272,fh:217},pose=(S.lineup||!S.moving||now<(a.restUntil||0)||(now<a.pose&&Math.hypot(a.vx||0,a.vy||0)<1))?'idle':a.d,sc=a.h/m.fh,f=0,b=(pose==='idle'?0:[0,-4,0,-2][f]*Math.max(.65,Math.min(1.15,a.h/88)));if(S.lineup)positionLineupActor(a);a.el.style.width=a.w+'px';a.el.style.height=a.h+'px';if(!a.spriteReady){a.el.style.setProperty('--mascot-image','url("'+sprite(a.id)+'")');a.spriteReady=true;}if(a.sheetWidth!==m.fw*4*sc||a.sheetHeight!==m.fh*5*sc){a.el.style.setProperty('--mascot-sheet-width',(m.fw*4*sc)+'px');a.el.style.setProperty('--mascot-sheet-height',(m.fh*5*sc)+'px');a.sheetWidth=m.fw*4*sc;a.sheetHeight=m.fh*5*sc;}// Stable single-frame rendering restored; no sprite-sheet frame cycling.
+  if(a.lastSpriteX!=='0px'){a.el.style.setProperty('--mascot-frame-x','0px');a.lastSpriteX='0px'}
+  const fixedY=(-m.fh*4*sc)+'px';
+  if(a.lastSpriteY!==fixedY){a.el.style.setProperty('--mascot-frame-y',fixedY);a.lastSpriteY=fixedY}
   const walking=!S.lineup&&!a.performing&&S.moving&&now>=a.pose&&now>=a.restUntil&&!a.watchArrived;
   a.el.classList.toggle('mascot-gentle-walk',walking);
   a.el.style.setProperty('--mascot-walk-duration',Math.round(660/(PERSONALITY[a.id]?.pace||1))+'ms');if(!a.performing&&!S.lineup){
