@@ -1148,7 +1148,7 @@ function save(){
     }));
   }catch(_){}
 }
-function sprite(id){return './assets/mascot/'+C[id][1]+'-sprite.png?v='+VER}
+function sprite(id){return (id==='ayumu'?'./assets/mascot/':'https://08es130-max.github.io/love-poke-tools/assets/mascot/')+C[id][1]+'-sprite.png?v='+VER}
 // Visible character height is normalized, not the transparent sprite cell height.
 function crowdScale(n){if(n>=13)return .77;if(n>=9)return .82;if(n>=5)return .88;if(n>=2)return .94;return 1}
 function dims(id){
