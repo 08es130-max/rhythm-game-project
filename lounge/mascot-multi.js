@@ -1087,7 +1087,7 @@ function updateLive(now){
  yu.el.appendChild(cheerSprite);yu.liveImage=cheerSprite;
  const yq=box(yu);
  yu.x=Math.max(yq.l,Math.min(yq.r,centerX-yu.w/2));
- yu.y=Math.max(yq.t,Math.min(yq.b,innerHeight*.70-yu.h*.5));
+ yu.y=Math.max(yq.t,Math.min(yq.b,innerHeight*.755-yu.h*.5));
 
  }
 
@@ -1117,7 +1117,7 @@ function updateLive(now){
  y.x=Math.max(q.l,Math.min(q.r,e.centerX-y.w/2));
  y.frame=Math.floor(elapsed/180)%4;
  if(y.liveImage){const index=Math.floor(elapsed/210)%8;y.liveImage.style.backgroundPosition=(index%4*100/3)+'% '+(Math.floor(index/4)*100)+'%'}
- y.y=Math.max(q.t,Math.min(q.b,innerHeight*.70-y.h*.5));
+ y.y=Math.max(q.t,Math.min(q.b,innerHeight*.755-y.h*.5));
 }
 let S=load(),root,layer,dialog,status,actors=[],last=0,metrics=new Map(),rebuildSerial=0;
 function valid(a){return [...new Set((Array.isArray(a)?a:[]).filter(x=>C[x]))]}
