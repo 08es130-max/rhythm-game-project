@@ -1203,13 +1203,16 @@ function box(a){let st=getComputedStyle(document.documentElement),n=x=>parseFloa
 // to the full-bleed lounge artwork; use sprite feet for collision checks.
 function stageArea(){return {l:innerWidth*.325,r:innerWidth*.675,t:innerHeight*.275,b:innerHeight*.655}}
 function keepOffStage(a){
- if(a.performing||S.lineup)return;
+ if(a.performing||S.lineup||a.watchingLive)return;
  const s=stageArea(),fx=a.x+a.w*.5,fy=a.y+a.h*.88;
  if(fx<=s.l||fx>=s.r||fy<=s.t||fy>=s.b)return;
- const options=[{d:fx-s.l,x:s.l-a.w*.5,y:a.y},{d:s.r-fx,x:s.r-a.w*.5,y:a.y},{d:fy-s.t,x:a.x,y:s.t-a.h*.88},{d:s.b-fy,x:a.x,y:s.b-a.h*.88}];
- const p=options.sort((a,b)=>a.d-b.d)[0],q=box(a);
- a.x=Math.max(q.l,Math.min(q.r,p.x));a.y=Math.max(q.t,Math.min(q.b,p.y));
- setV(a,Math.random()*Math.PI*2);
+ // Steer smoothly toward the nearest edge instead of snapping to it.
+ // Teleporting each animation frame made walkers flicker near the stage.
+ const options=[{d:fx-s.l,vx:-1,vy:0},{d:s.r-fx,vx:1,vy:0},
+                {d:fy-s.t,vx:0,vy:-1},{d:s.b-fy,vx:0,vy:1}];
+ const p=options.sort((a,b)=>a.d-b.d)[0];
+ const velocity=(speed[S.speed]||42)*(PERSONALITY[a.id]?.pace||1);
+ a.vx=p.vx*velocity;a.vy=p.vy*velocity;a.d=dir(a);
 }
 function dir(a){return Math.abs(a.vx)>=Math.abs(a.vy)?(a.vx>=0?'right':'left'):(a.vy>=0?'down':'up')}
 function row(d){return{right:0,left:1,down:2,up:3,idle:4}[d]??4}
