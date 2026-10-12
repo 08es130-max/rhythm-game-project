@@ -1029,18 +1029,19 @@ async function beginLive(manual=false){
  const centerX=innerWidth*.5; // Fixed stage center, independent of performers' starting positions.
  const centerY=members.reduce((sum,a)=>sum+a.y+a.h/2,0)/3;
  // Announce while still wearing walking outfits; change to live costumes after the call.
- liveEvent={members,frames,yu,caller,started:now,until:now+12000,frame:-1,cheer:-1,cheerOrder:[...members].sort(()=>Math.random()-.5).map(a=>a.id),cheerSeed:Math.floor(Math.random()*10),phase:'intro',centerX};
+ liveEvent={members,frames,yu,caller,started:now,until:now+14500,frame:-1,cheer:-1,cheerOrder:[...members].sort(()=>Math.random()-.5).map(a=>a.id),cheerSeed:Math.floor(Math.random()*10),phase:'intro',centerX};
  say(caller,LIVE_CALLS[caller.id],1700);
+ window.LOUNGE_GROUP_PHOTO?.show(members,frames);
  return true;
 }
 function updateLive(now){
  if(!liveEvent)return;
  const e=liveEvent,elapsed=now-e.started;
  if(now>=e.until){endLive(now);return}
- if(elapsed<1700)return;
+ if(elapsed<4200)return;
  if(e.phase==='intro'){
   e.phase='dance';hideSpeech(e.caller);
-  window.LOUNGE_GROUP_PHOTO?.show(e.members,e.frames).catch(err=>console.warn('Group photo:',err));
+  window.LOUNGE_GROUP_PHOTO?.hide();
   const members=e.members,frames=e.frames,yu=e.yu,centerX=e.centerX;
   const centerY=members.reduce((sum,a)=>sum+a.y+a.h/2,0)/3;
  const stageWidth=Math.max(...members.map(a=>a.w));
@@ -1095,7 +1096,7 @@ function updateLive(now){
 
  }
 
- const step=Math.floor((elapsed-1700)/270);
+ const step=Math.floor((elapsed-4200)/270);
  if(step!==e.frame){
   e.frame=step;
   e.members.forEach((a,i)=>{
@@ -1103,7 +1104,7 @@ function updateLive(now){
    a.liveImage.src=data.frames[data.sequence[step%data.sequence.length]];
   });
  }
- const cheer=Math.min(4,Math.floor((elapsed-1700)/2060));
+ const cheer=Math.min(4,Math.floor((elapsed-4200)/2060));
  if(cheer!==e.cheer){
   e.cheer=cheer;
   let line;
