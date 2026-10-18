@@ -276,7 +276,7 @@
       const lrChoices=document.createElement('div');
       lrChoices.className='lr-home-character-options';
       lrChoices.hidden=true;
-      lrBtn.insertAdjacentElement('afterend',lrChoices);
+      options.appendChild(lrChoices);
 
       const refreshLrChoices=()=>{
         const owned=[];
