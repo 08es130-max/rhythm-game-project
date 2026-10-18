@@ -1,14 +1,14 @@
-// Final version guard for Ver.0.8.309. Runs after legacy feature scripts.
+// Final version guard for Ver.0.8.310. Runs after legacy feature scripts.
 (function(){
   'use strict';
-  const VERSION='0.8.309';
+  const VERSION='0.8.310';
   window.APP_VERSION=VERSION;
   function sync(){
     document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent=`Ver. ${VERSION}`;});
     const head=document.querySelector('#updateBanner .update-head span:last-child');
     const text=document.querySelector('#updateBanner .update-text');
     if(head) head.textContent=`Ver.${VERSION} アップデート`;
-    if(text) text.textContent='ラウンジの3人ライブ開始時にカットイン演出とグループ名表示を追加しました。';
+    if(text) text.textContent='ホームスタイルの並びと、お知らせボタンの配置を調整しました。';
   }
   sync();requestAnimationFrame(sync);setTimeout(sync,0);setTimeout(sync,150);
 })();
