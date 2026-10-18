@@ -971,7 +971,9 @@ function endLive(now=performance.now()){
  window.LOUNGE_GROUP_PHOTO?.hide();
  for(const a of [...liveEvent.members,liveEvent.yu].filter(Boolean)){
   a.performing=false;a.liveImage?.remove();a.liveImage=null;
-  a.el.classList.remove('mascot-live-active','mascot-yu-cheering');hideSpeech(a);
+  a.el.classList.remove('mascot-live-active','mascot-yu-cheering');
+  if(a.walkCanvas)a.walkCanvas.style.display='';
+  hideSpeech(a);
  }
  liveEvent=null;
  // Preserve everyone's current position after the live. No random relocation.
@@ -1079,9 +1081,12 @@ function updateLive(now){
   image.src=frames[i].frames[frames[i].sequence[0]];
   a.el.appendChild(image);a.liveImage=image;a.performing=true;
   a.el.classList.add('mascot-live-active');
+  if(a.walkCanvas)a.walkCanvas.style.display='none';
  });
  yu.performing=true;
  yu.el.classList.add('mascot-yu-cheering');
+ // The cheer sprite replaces the Canvas walking character; never display both.
+ if(yu.walkCanvas)yu.walkCanvas.style.display='none';
  const cheerSprite=document.createElement('div');
  cheerSprite.className='mascot-yu-cheer-sprite';
  const cheerUrl='./assets/mascot/live/yu-cheer-8frames-transparent-padded.png';
@@ -1236,9 +1241,9 @@ function render(a,now){
     }
     if(a.walkCtx&&(!a.lastWalkPaint||now-a.lastWalkPaint>240)){
       const moving=!S.lineup&&S.moving&&now>=a.pose&&now>=a.restUntil&&!a.watchArrived;
-      const direction=moving?a.d:'idle';
+      const direction=a.watchingLive&&a.watchArrived?'up':(moving?a.d:'idle');
       const directionRow=row(direction);
-      const frame=moving?(Math.floor(now/280)%2):0;
+      const frame=moving&&!a.watchArrived?(Math.floor(now/280)%2):0;
       const fw=m.fw,fh=m.fh;
       const ctx=a.walkCtx;
       ctx.clearRect(0,0,160,160);
