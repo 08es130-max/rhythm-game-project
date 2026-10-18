@@ -1223,6 +1223,32 @@ function render(a,now){
   if(a.lastSpriteX!=='0px'){a.el.style.setProperty('--mascot-frame-x','0px');a.lastSpriteX='0px'}
   const fixedY=(-m.fh*4*sc)+'px';
   if(a.lastSpriteY!==fixedY){a.el.style.setProperty('--mascot-frame-y',fixedY);a.lastSpriteY=fixedY}
+  // Experimental isolated canvas walker for Shioriko only. No background-position
+  // changes, no extra network requests, and no synchronous work at lounge startup.
+  if(a.id==='shioriko'&&shiorikoSheet&&!a.performing){
+    if(!a.walkCanvas){
+      const canvas=document.createElement('canvas');
+      canvas.width=160;canvas.height=160;
+      canvas.className='mascot-walk-canvas';
+      canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
+      a.el.appendChild(canvas);a.walkCanvas=canvas;a.walkCtx=canvas.getContext('2d');
+    }
+    if(a.walkCtx&&(!a.lastWalkPaint||now-a.lastWalkPaint>240)){
+      const moving=!S.lineup&&S.moving&&now>=a.pose&&now>=a.restUntil&&!a.watchArrived;
+      const direction=moving?a.d:'idle';
+      const directionRow=row(direction);
+      const frame=moving?(Math.floor(now/280)%2):0;
+      const fw=m.fw,fh=m.fh;
+      const ctx=a.walkCtx;
+      ctx.clearRect(0,0,160,160);
+      ctx.drawImage(shiorikoSheet,frame*fw,directionRow*fh,fw,fh,0,0,160,160);
+      if(!a.walkCanvasReady){
+        a.el.style.backgroundImage='none';
+        a.walkCanvasReady=true;
+      }
+      a.lastWalkPaint=now;
+    }
+  }
   const walking=!S.lineup&&!a.performing&&S.moving&&now>=a.pose&&now>=a.restUntil&&!a.watchArrived;
   a.el.classList.toggle('mascot-gentle-walk',walking);
   a.el.style.setProperty('--mascot-walk-duration',Math.round(660/(PERSONALITY[a.id]?.pace||1))+'ms');if(!a.performing&&!S.lineup){
@@ -1270,9 +1296,11 @@ function spriteIdleBounds(image,fw,fh){
   }catch(_){return Array(4).fill(fallback)}
 }
 // Only animate populated sprite cells; transparent/unfinished cells caused flicker.
+let shiorikoSheet=null;
 function loadMetric(id){return new Promise(res=>{let i=new Image();i.onload=()=>{
   const fw=i.naturalWidth/4,fh=i.naturalHeight/5;
   if(!fw||!fh){res(false);return}
+  if(id==='shioriko')shiorikoSheet=i;
   metrics.set(id,{
     fw,fh,
     visibleRatio:spriteVisibleRatio(i,fw,fh),
