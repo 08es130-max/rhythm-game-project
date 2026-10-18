@@ -1168,7 +1168,7 @@ function dims(id){
 // Measure the actual nontransparent artwork; several PNGs have different padding.
 function spriteVisibleRatio(image,fw,fh){
   try{
-    const w=Math.round(fw),h=Math.round(fh);
+    const w=64,h=64;
     const canvas=document.createElement('canvas');
     canvas.width=w;canvas.height=h;
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -1242,7 +1242,7 @@ function actor(id){let d=dims(id),el=document.createElement('button'),b=document
 function spriteIdleBounds(image,fw,fh){
   const fallback={cx:.5,bottom:.92,height:.76,width:.60};
   try{
-    const w=Math.round(fw),h=Math.round(fh);
+    const w=64,h=64;
     const canvas=document.createElement('canvas');
     canvas.width=w;canvas.height=h;
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -1270,34 +1270,13 @@ function spriteIdleBounds(image,fw,fh){
   }catch(_){return Array(4).fill(fallback)}
 }
 // Only animate populated sprite cells; transparent/unfinished cells caused flicker.
-function usableWalkFrames(image,fw,fh){
- const result={};
- try{
-  const c=document.createElement('canvas');c.width=48;c.height=48;
-  const ctx=c.getContext('2d',{willReadFrequently:true});
-  for(let row=0;row<5;row++){
-   const counts=[];
-   for(let col=0;col<4;col++){
-    ctx.clearRect(0,0,48,48);
-    ctx.drawImage(image,col*fw,row*fh,fw,fh,0,0,48,48);
-    const data=ctx.getImageData(0,0,48,48).data;
-    let count=0;for(let p=3;p<data.length;p+=4)if(data[p]>70)count++;
-    counts.push(count);
-   }
-   const baseline=Math.max(...counts);
-   result[row]=counts.map((count,i)=>({count,i})).filter(x=>x.count>120&&x.count>baseline*.48).map(x=>x.i);
-  }
- }catch(e){return {0:[0],1:[0],2:[0],3:[0],4:[0]}}
- return result;
-}
 function loadMetric(id){return new Promise(res=>{let i=new Image();i.onload=()=>{
   const fw=i.naturalWidth/4,fh=i.naturalHeight/5;
   if(!fw||!fh){res(false);return}
   metrics.set(id,{
     fw,fh,
     visibleRatio:spriteVisibleRatio(i,fw,fh),
-    idleBounds:spriteIdleBounds(i,fw,fh),
-    walkFrames:usableWalkFrames(i,fw,fh)
+    idleBounds:spriteIdleBounds(i,fw,fh)
   });
   res(true)
 };i.onerror=()=>res(false);i.src=sprite(id)})}
