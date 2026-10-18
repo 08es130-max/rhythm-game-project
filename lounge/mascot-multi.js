@@ -1316,6 +1316,7 @@ function loadMetric(id){return new Promise(res=>{let i=new Image();i.onload=()=>
 };i.onerror=()=>res(false);i.src=sprite(id)})}
 async function rebuild(){
   liveGeneration++;
+  stopAmbientScene(performance.now());
   endLive(performance.now());
   const serial=++rebuildSerial;
   actors.forEach(a=>{clearTimeout(a.bt);a.el.remove();a.b.remove()});
@@ -1683,7 +1684,92 @@ function endConversation(now){
   socialEvent=null;
   scheduleNextConversation(now);
 }
+// Lightweight lounge encounters. All movement uses the stable Canvas renderer.
+let nextAmbientScene=performance.now()+18000;
+let ambientScene=null;
+const REST_LINES={
+ kanata:'ふわぁ……ここ、気持ちいいねぇ',emma:'少し休んでいこうか♪',
+ karin:'たまにはのんびりするのもいいわね',yu:'みんなが楽しそうでうれしいな！',
+ ai:'ちょっと休憩！ なんちゃって！'
+};
+function stopAmbientScene(now){
+ if(!ambientScene)return;
+ for(const a of ambientScene.people){
+  a.ambientRest=false;a.ambientGroup=false;a.ambientChase=false;
+  a.el.classList.remove('mascot-ambient-rest');
+  a.pose=0;a.restUntil=0;
+  hideSpeech(a);
+ }
+ ambientScene=null;
+ nextAmbientScene=now+14000+Math.random()*14000;
+}
+function startAmbientScene(now){
+ if(ambientScene||socialEvent||liveEvent||liveLoading||S.lineup||!S.moving||actors.length<2||now<nextAmbientScene)return;
+ const available=actors.filter(a=>!a.performing&&!a.watchingLive);
+ if(available.length<2)return;
+ const kind=available.length>=3?['rest','group','chase'][Math.floor(Math.random()*3)]:['rest','chase'][Math.floor(Math.random()*2)];
+ const shuffled=[...available].sort(()=>Math.random()-.5);
+ const people=shuffled.slice(0,kind==='group'?Math.min(4,available.length):2);
+ const targets=people.map((a,i)=>{
+  if(kind==='rest'){
+   // Rest by the right-hand bench, outside the reserved stage footprint.
+   return{x:innerWidth*(.79+i*.055)-a.w/2,y:innerHeight*.42-a.h};
+  }
+  const cx=people.reduce((sum,p)=>sum+p.x+p.w/2,0)/people.length;
+  const cy=people.reduce((sum,p)=>sum+p.y+p.h/2,0)/people.length;
+  return{x:cx+(i-(people.length-1)/2)*Math.min(58,a.w*.85)-a.w/2,y:cy-a.h/2+(i%2)*12};
+ });
+ ambientScene={kind,people,targets,phase:kind==='chase'?'chase':'approach',started:now,until:now+(kind==='chase'?8500:15000),spoken:-1};
+ people.forEach(a=>{a.restUntil=0;a.pose=0;hideSpeech(a);});
+ if(kind==='chase'){say(people[0],people[0].id==='kasumi'?'つかまえてみてください！':'待ってー！',2200)}
+}
+function updateAmbientScene(now){
+ const e=ambientScene;
+ if(!e)return;
+ if(liveEvent||liveLoading||S.lineup||!S.moving||e.people.some(a=>!actors.includes(a))||now>=e.until){stopAmbientScene(now);return}
+ if(e.kind==='chase'){
+  const [leader,follower]=e.people;
+  if(now-e.started<2200){setV(leader,Math.atan2(leader.y-follower.y,leader.x-follower.x));}
+  else if(now>(leader.ambientNextTurn||0)){
+   setV(leader,Math.atan2(leader.vy,leader.vx)+(Math.random()-.5)*1.6);
+   leader.ambientNextTurn=now+1200;
+  }
+  const dx=leader.x-follower.x,dy=leader.y-follower.y;
+  setV(follower,Math.atan2(dy,dx));
+  for(const a of e.people){a.vx*=1.45;a.vy*=1.45;a.ambientChase=true}
+  if(now-e.started>4800&&e.spoken<0){e.spoken=0;say(follower,'待って待ってー！',2300)}
+  return;
+ }
+ if(e.phase==='approach'){
+  let arrived=true;
+  e.people.forEach((a,i)=>{
+   const q=box(a),t=e.targets[i],tx=Math.max(q.l,Math.min(q.r,t.x)),ty=Math.max(q.t,Math.min(q.b,t.y));
+   const dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);
+   if(d>10){arrived=false;setV(a,Math.atan2(dy,dx));a.restUntil=0}
+  });
+  if(arrived||now-e.started>8000){
+   e.phase='stay';e.stayAt=now;
+   e.people.forEach((a,i)=>{
+    a.pose=now+6500;a.restUntil=now+6500;
+    a.ambientRest=e.kind==='rest';a.ambientGroup=e.kind==='group';
+    if(e.kind==='rest'){a.d='down';a.el.classList.add('mascot-ambient-rest')}
+    else a.d=i%2?'left':'right';
+   });
+  }
+  return;
+ }
+ const slot=Math.floor((now-e.stayAt)/2100);
+ if(slot!==e.spoken&&slot<e.people.length){
+  e.spoken=slot;
+  e.people.forEach(hideSpeech);
+  const a=e.people[slot];
+  const line=e.kind==='rest'?(REST_LINES[a.id]||'ちょっとひと休みしよう♪'):
+   (slot===0?'みんな、ちょっと集まって！':slot===e.people.length-1?'またみんなで遊ぼうね！':(P[a.id]?.[slot%P[a.id].length]||'うん、楽しそう！'));
+  say(a,line,1900);
+ }
+}
 function updateSocial(now){
+  if(ambientScene)return;
   if((!S.moving&&!S.lineup)||actors.length<2){
     if(socialEvent)endConversation(now);
     return;
@@ -1765,6 +1851,7 @@ function maybeSoloSpeech(now){
 }
 function updatePersonality(a,now,multi){
   if(!S.moving)return;
+  if(ambientScene&&ambientScene.people.includes(a))return;
   if(socialEvent&&(socialEvent.a===a||socialEvent.b===a))return;
   const p=PERSONALITY[a.id];
   if(!p)return;
@@ -1782,7 +1869,7 @@ function updatePersonality(a,now,multi){
   }
 }
 function wall(a,now){let q=box(a),hit=false;if(a.x<q.l){a.x=q.l;a.vx=Math.abs(a.vx);hit=true}else if(a.x>q.r){a.x=q.r;a.vx=-Math.abs(a.vx);hit=true}if(a.y<q.t){a.y=q.t;a.vy=Math.abs(a.vy);hit=true}else if(a.y>q.b){a.y=q.b;a.vy=-Math.abs(a.vy);hit=true}keepOffStage(a);if(hit&&now>a.cool){setV(a,Math.atan2(a.vy,a.vx)+(Math.random()-.5)*.5);a.cool=now+650}}
-function collide(now){for(let i=0;i<actors.length;i++)for(let j=i+1;j<actors.length;j++){let a=actors[i],b=actors[j];if(a.performing||b.performing||now<a.cool||now<b.cool)continue;if(socialEvent&&((socialEvent.a===a&&socialEvent.b===b)||(socialEvent.a===b&&socialEvent.b===a)))continue;if(socialEvent&&socialEvent.phase==='talk'&&[socialEvent.a,socialEvent.b].some(person=>person===a||person===b))continue;let ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2,dx=bx-ax,dy=by-ay,di=Math.hypot(dx,dy),mi=Math.min(a.w,a.h)*.32+Math.min(b.w,b.h)*.32;if(di>0&&di<mi){
+function collide(now){for(let i=0;i<actors.length;i++)for(let j=i+1;j<actors.length;j++){let a=actors[i],b=actors[j];if(a.performing||b.performing||a.ambientRest||b.ambientRest||a.ambientGroup||b.ambientGroup||a.ambientChase||b.ambientChase||now<a.cool||now<b.cool)continue;if(socialEvent&&((socialEvent.a===a&&socialEvent.b===b)||(socialEvent.a===b&&socialEvent.b===a)))continue;if(socialEvent&&socialEvent.phase==='talk'&&[socialEvent.a,socialEvent.b].some(person=>person===a||person===b))continue;let ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2,dx=bx-ax,dy=by-ay,di=Math.hypot(dx,dy),mi=Math.min(a.w,a.h)*.32+Math.min(b.w,b.h)*.32;if(di>0&&di<mi){
   // Physical encounters may start a conversation sooner, without overlapping
   // an existing event or turning an opted-out speech setting back on.
   if(!socialEvent&&S.speech&&now>=nextSocialAt-2000&&Math.random()<(a.id==='yu'||b.id==='yu' ? .70 : .65)){
@@ -1811,6 +1898,7 @@ function checkAutomaticLive(){
  if(S.lineup){S.lineup=false;place();syncStatus();save()}
  if(!S.moving){S.moving=true;sync();save()}
  if(socialEvent)endConversation(now);
+ stopAmbientScene(now);
  nextLiveAt=now+15000;
  autoLiveStatus='自動ライブ準備中';
  void beginLive(false).then(started=>{
@@ -1826,6 +1914,8 @@ function tick(now){
   const dt=Math.min(50,now-(last||now));last=now;
   checkAutomaticLive();
   updateLive(now);
+  if(!liveEvent&&!S.lineup){startAmbientScene(now);updateAmbientScene(now)}
+  else if(ambientScene)stopAmbientScene(now);
   if(actors.length){
     if(S.lineup){
       if(!liveEvent){if(actors.length>1)updateSocial(now);else maybeSoloSpeech(now)}
