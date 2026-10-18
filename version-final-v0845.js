@@ -1,7 +1,7 @@
-// Final version and home layout correction v0.8.316
+// Final version and home layout correction v0.8.317
 (function(){
 'use strict';
-const VERSION='0.8.316';
+const VERSION='0.8.317';
 window.APP_VERSION=VERSION;
 const style=document.createElement('style');
 style.id='home-layout-fix-v08316';
@@ -15,7 +15,9 @@ style.textContent=`
 #homeScreen .home-header-actions .home-version{position:static!important;margin:0!important;flex:none!important}
 @media(orientation:landscape) and (pointer:coarse){#homeScreen .home-menu{transform:translateY(40px)!important}}
 `;
-style.textContent += `\n@media(orientation:landscape) and (pointer:coarse){#homeScreen .home-menu{transform:translateY(0px)!important}#homeScreen .home-menu>.home-menu-btn:nth-child(n+4){transform:translateY(-20px)!important}}\n`;\ndocument.head.appendChild(style);
+style.textContent += `\n@media(orientation:landscape) and (pointer:coarse){#homeScreen .home-menu{transform:translateY(0px)!important}#homeScreen .home-menu>.home-menu-btn:nth-child(n+4){transform:translateY(-20px)!important}}
+`;
+document.head.appendChild(style);
 function sync(){
  document.querySelectorAll('.home-version,.version-badge').forEach(el=>{el.textContent='Ver. '+VERSION;});
  const banner=document.getElementById('updateBanner');
