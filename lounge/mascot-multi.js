@@ -1736,7 +1736,7 @@ function updateAmbientScene(now){
   }
   const dx=leader.x-follower.x,dy=leader.y-follower.y;
   setV(follower,Math.atan2(dy,dx));
-  for(const a of e.people){a.vx*=1.45;a.vy*=1.45;a.ambientChase=true}
+  for(const a of e.people){const angle=Math.atan2(a.vy,a.vx);setV(a,angle);a.vx*=1.45;a.vy*=1.45;a.ambientChase=true}
   if(now-e.started>4800&&e.spoken<0){e.spoken=0;say(follower,'待って待ってー！',2300)}
   return;
  }
