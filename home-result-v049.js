@@ -226,7 +226,22 @@
   function pick(pool){if(!pool?.length)return'';let choices=pool.filter(x=>x!==lastDialogue);if(!choices.length)choices=pool;return choices[Math.floor(Math.random()*choices.length)];}
   function getTimePool(set){const h=new Date().getHours();if(h>=5&&h<11)return set.morning;if(h>=11&&h<17)return set.daytime;if(h>=17&&h<22)return set.evening;return set.night;}
   function ensureBubble(){if(!homeCard)return null;let bubble=document.getElementById('homeDialogue');if(!bubble){bubble=document.createElement('div');bubble.id='homeDialogue';bubble.className='home-dialogue';bubble.setAttribute('role','button');bubble.setAttribute('tabindex','0');bubble.setAttribute('aria-live','polite');bubble.innerHTML='<span class="home-dialogue-name"></span><span class="home-dialogue-text"></span>';homeCard.appendChild(bubble);}return bubble;}
+
+  const YU_REWARD_LINES=["みんなの想いが集まった景色……何度見ても胸がいっぱいになるよ！","歩夢が隣にいてくれたから、私も夢を見つけられたんだ。","かすみちゃんのかわいさへのこだわり、ほんとにすごいよね！","しずくちゃんの演技を見ると、物語の世界に引き込まれちゃう！","果林さんのステージって、目が離せなくなるんだよね。","愛ちゃんの笑顔を見ると、こっちまで元気になっちゃう！","彼方さんの優しい歌声、ずっと聴いていたくなるなあ。","せつ菜ちゃんの大好きを全力で伝える姿、私も大好き！","エマさんの歌は、あったかい毛布みたいに心を包んでくれるね。","璃奈ちゃんの気持ち、璃奈ちゃんボードがなくても伝わってくるよ。","栞子ちゃん、最初の一歩を踏み出したときの勇気、忘れないよ。","ミアちゃんの曲って、聴くたび新しい発見があるんだ！","ランジュちゃんの自信たっぷりなステージ、最高に輝いてる！","12人みんな違うから、虹みたいにきれいなんだね！","一人だけなんて選べないよー！ だってみんな大好きなんだもん！","ねえ、今日は誰のライブから見ようか？ 全部見たいな！","歩夢と一緒に帰る道、なんだかいつも特別なんだ。","かすみちゃん、また新しいかわいいポーズを考えたんだって！","しずくちゃんの次の舞台、絶対に見に行きたいな。","果林さんのダンス、私もちょっと真似してみたい！","愛ちゃんのダジャレ、つい笑っちゃうんだよね。","彼方さん、休憩時間にまた寝ちゃったかな？","せつ菜ちゃんと好きなものの話をすると、時間が足りないよ！","エマさんとピクニックに行ったら楽しそう！","璃奈ちゃんとゲームしたら、きっと夢中になっちゃうな。","栞子ちゃんのまっすぐなところ、私も見習いたいな。","ミアちゃん、今度は一緒にピアノを弾こうよ！","ランジュちゃんの素直な気持ち、もっと聞かせてほしいな。","この景色をみんなと見られて、本当によかった。","あなたも一緒に、この虹の続きを見届けてくれる？"];
+  let lastYuLine='';
+  function showYuRewardLine(){
+    const pool=YU_REWARD_LINES.filter(line=>line!==lastYuLine);
+    lastYuLine=pool[Math.floor(Math.random()*pool.length)];
+    const bubble=ensureBubble();if(!bubble)return;
+    bubble.querySelector('.home-dialogue-name').textContent='高咲 侑';
+    bubble.querySelector('.home-dialogue-text').textContent=lastYuLine;
+  }
   function showLine(kind='normal'){
+    if(localStorage.getItem('rhythmGame.shiorikoHomeArt.v1')==='yu'){
+      const ids=['lr-shioriko-eternal-rose','lr-ayumu-flower-garden','lr-kasumi-flower-garden','lr-shizuku-blue-garden','lr-karin-blue-garden','lr-kanata-lavender-garden','lr-setsuna-rose-garden','lr-ai-sunflower-garden','lr-emma-flower-garden','lr-mia-silver-garden','lr-rina-pink-garden','lr-lanzhu-rose-palace'];
+      const owned=typeof window.loadGachaOwned==='function'?window.loadGachaOwned():new Set();
+      if(ids.every(id=>owned.has(id))){showYuRewardLine();return;}
+    }
     const set=getDialogueSet();let pool=set[kind]||set.normal;
     const mode=isShioriko(getHomeCharacterId())?(localStorage.getItem(SHIORIKO_MODE_KEY)||'normal'):'normal';
     if(kind==='normal'&&mode==='normal'){const r=Math.random();if(r<.08)pool=set.rare;else if(r<.35)pool=getTimePool(set);}
