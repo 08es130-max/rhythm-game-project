@@ -672,3 +672,7 @@ body:has(#pokeGuidePane:not(.hidden) #guideDexTool:not(.hidden) #guidePokemonDet
 .edge-mascot.mascot-live-active .mascot-walk-canvas,
 .edge-mascot.mascot-yu-cheering .mascot-walk-canvas{display:none!important}
 .edge-mascot.mascot-yu-cheering{background-image:none!important}
+
+/* v0.8.309: subtle seated pose at the lounge rest spot. */
+.edge-mascot.mascot-ambient-rest:not(.mascot-live-active){transform-origin:50% 100%;}
+.edge-mascot.mascot-ambient-rest .mascot-walk-canvas{transform:translateY(7%) scaleY(.85);transform-origin:50% 100%;}
