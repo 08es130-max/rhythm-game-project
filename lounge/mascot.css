@@ -667,3 +667,8 @@ body:has(#pokeGuidePane:not(.hidden) #guideDexTool:not(.hidden) #guidePokemonDet
 @keyframes mascot-gentle-bump{0%,100%{margin-top:0}28%{margin-top:-5px}52%{margin-top:1px}}
 .edge-mascot.mascot-sprite{filter:none!important;will-change:transform}
 @media(prefers-reduced-motion:reduce){.edge-mascot.mascot-gentle-walk,.edge-mascot.mascot-bump-reaction{animation:none!important}}
+
+/* v0.8.308: live costumes and Yu cheering must completely replace walk Canvas. */
+.edge-mascot.mascot-live-active .mascot-walk-canvas,
+.edge-mascot.mascot-yu-cheering .mascot-walk-canvas{display:none!important}
+.edge-mascot.mascot-yu-cheering{background-image:none!important}
