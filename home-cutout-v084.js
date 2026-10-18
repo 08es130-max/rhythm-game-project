@@ -114,10 +114,16 @@
     }catch(_){return false;}
   };
   const isLrOwned=()=>isOwned(LR_ID)||isOwned(LR_AYUMU_ID)||isOwned(LR_KASUMI_ID)||isOwned(LR_SHIZUKU_ID)||isOwned(LR_KARIN_ID)||isOwned(LR_KANATA_ID)||isOwned(LR_SETSUNA_ID)||isOwned(LR_AI_ID)||isOwned(LR_EMMA_ID)||isOwned(LR_MIA_ID)||isOwned(LR_RINA_ID)||isOwned(LR_LANZHU_ID);
+
+  // Fixed first-wave LR IDs: future LR releases never affect this reward.
+  const FIRST_LR_IDS=[LR_ID,LR_AYUMU_ID,LR_KASUMI_ID,LR_SHIZUKU_ID,LR_KARIN_ID,LR_KANATA_ID,LR_SETSUNA_ID,LR_AI_ID,LR_EMMA_ID,LR_MIA_ID,LR_RINA_ID,LR_LANZHU_ID];
+  const isFirstLrComplete=()=>FIRST_LR_IDS.every(isOwned);
+  const firstLrCount=()=>FIRST_LR_IDS.filter(isOwned).length;
+  const YU_HOME='assets/home-ui/hobofes_home_yu_background.png?v=0.8.309';
   const normalizeHomeArt=(value)=>{
-    const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic',lr:'lr',legend:'lr'};
+    const aliases={stage:'stage',latest:'stage',current:'stage',new:'stage',classic:'classic',old:'classic',legacy:'classic',lr:'lr',legend:'lr',yu:'yu'};
     const normalized=Object.prototype.hasOwnProperty.call(aliases,value)?aliases[value]:'stage';
-    return normalized==='lr'&&!isLrOwned()?'stage':normalized;
+    return normalized==='yu'&&!isFirstLrComplete()?'stage':normalized==='lr'&&!isLrOwned()?'stage':normalized;
   };
   const getHomeArt=()=>{
     const saved=localStorage.getItem(HOME_ART_KEY);
@@ -130,12 +136,12 @@
   const applyMode=(mode)=>{
     const m=VALID.includes(mode)?mode:'normal';
     const art=getHomeArt();
-    const useLrScene=art==='lr';
+    const useLrScene=art==='lr'||art==='yu';
     const lrCharacter=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
-    const lrSceneSrc=lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:lrCharacter==='kasumi'&&isOwned(LR_KASUMI_ID)?LR_KASUMI_HOME:lrCharacter==='shizuku'&&isOwned(LR_SHIZUKU_ID)?LR_SHIZUKU_HOME:lrCharacter==='karin'&&isOwned(LR_KARIN_ID)?LR_KARIN_HOME:lrCharacter==='kanata'&&isOwned(LR_KANATA_ID)?LR_KANATA_HOME:lrCharacter==='setsuna'&&isOwned(LR_SETSUNA_ID)?LR_SETSUNA_HOME:lrCharacter==='ai'&&isOwned(LR_AI_ID)?LR_AI_HOME:lrCharacter==='emma'&&isOwned(LR_EMMA_ID)?LR_EMMA_HOME:lrCharacter==='mia'&&isOwned(LR_MIA_ID)?LR_MIA_HOME:lrCharacter==='rina'&&isOwned(LR_RINA_ID)?LR_RINA_HOME:lrCharacter==='lanzhu'&&isOwned(LR_LANZHU_ID)?LR_LANZHU_HOME:LR_HOME_SCENE;
+    const lrSceneSrc=art==='yu'?YU_HOME:lrCharacter==='ayumu'&&isOwned(LR_AYUMU_ID)?LR_AYUMU_HOME:lrCharacter==='kasumi'&&isOwned(LR_KASUMI_ID)?LR_KASUMI_HOME:lrCharacter==='shizuku'&&isOwned(LR_SHIZUKU_ID)?LR_SHIZUKU_HOME:lrCharacter==='karin'&&isOwned(LR_KARIN_ID)?LR_KARIN_HOME:lrCharacter==='kanata'&&isOwned(LR_KANATA_ID)?LR_KANATA_HOME:lrCharacter==='setsuna'&&isOwned(LR_SETSUNA_ID)?LR_SETSUNA_HOME:lrCharacter==='ai'&&isOwned(LR_AI_ID)?LR_AI_HOME:lrCharacter==='emma'&&isOwned(LR_EMMA_ID)?LR_EMMA_HOME:lrCharacter==='mia'&&isOwned(LR_MIA_ID)?LR_MIA_HOME:lrCharacter==='rina'&&isOwned(LR_RINA_ID)?LR_RINA_HOME:lrCharacter==='lanzhu'&&isOwned(LR_LANZHU_ID)?LR_LANZHU_HOME:LR_HOME_SCENE;
     document.documentElement.dataset.shioMode=m;
     home.classList.toggle('is-lr-home-scene-v096',useLrScene);
-    home.dataset.lrHomeCharacter=useLrScene?lrCharacter:'';
+    home.dataset.lrHomeCharacter=art==='lr'?lrCharacter:'';
     if(useLrScene){
       const sceneUrl=new URL(lrSceneSrc,location.href).href;
       lrScene.onload=()=>{lrScene.hidden=false;};
@@ -190,7 +196,7 @@
       .home-art-selector{margin:0 0 16px;padding:14px;border:1px solid #374151;border-radius:14px;background:#111827}
       .home-art-selector h2{margin:0 0 5px;font-size:17px}
       .home-art-selector p{margin:0 0 12px;color:#94a3b8;font-size:12px;line-height:1.5}
-      .home-art-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:900px}
+      .home-art-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:900px}
       .home-art-option{appearance:none;border:2px solid #374151;border-radius:14px;background:#0b1220;padding:8px;color:#f8fafc;cursor:pointer;text-align:left;transition:border-color .12s,box-shadow .12s,transform .12s}
       .home-art-option:active{transform:scale(.985)}
       .home-art-option.is-selected{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.18)}
@@ -216,20 +222,22 @@
     const defs=[
       {id:'stage',label:'ステージスタイル',src:ART_SETS.stage.normal},
       {id:'classic',label:'クラシックスタイル',src:ART_SETS.classic.normal},
-      {id:'lr',label:'メモリアルスタイル',src:LR_HOME_SCENE,requiresLr:true}
+      {id:'lr',label:'メモリアルスタイル',src:LR_HOME_SCENE,requiresLr:true},
+      {id:'yu',label:'虹の向こうへ！',src:YU_HOME,requiresComplete:true}
     ];
     const labelFor=(id)=>defs.find(def=>def.id===id)?.label||'ステージスタイル';
     const refresh=()=>{
       const selected=getHomeArt();
       wrap.querySelectorAll('.home-art-option').forEach(btn=>{
         const def=defs.find(x=>x.id===btn.dataset.art);
-        const locked=!!def?.requiresLr&&!isLrOwned();
-        btn.hidden=locked;
+        const locked=(!!def?.requiresLr&&!isLrOwned())||(!!def?.requiresComplete&&!isFirstLrComplete());
+        btn.hidden=!!def?.requiresLr&&!isLrOwned();
+        if(def?.requiresComplete)btn.title=locked?`第1期LR ${firstLrCount()}/12種類で解放`:'第1期LRコンプリート特典';
         btn.disabled=locked;
         btn.classList.toggle('is-selected',!locked&&btn.dataset.art===selected);
         btn.setAttribute('aria-pressed',String(!locked&&btn.dataset.art===selected));
       });
-      status.textContent=`選択中：${labelFor(selected)}`;
+      status.textContent=`選択中：${labelFor(selected)} ／ 第1期LR ${firstLrCount()}/12種類`;
       if(lrBtn){
         const current=localStorage.getItem(LR_HOME_CHARACTER_KEY)||'shioriko';
         const lrSources={
@@ -255,10 +263,11 @@
       label.textContent=def.label;
       btn.append(img,label);
       btn.addEventListener('click',()=>{
-        if(def.requiresLr&&!isLrOwned()) return;
+        if((def.requiresLr&&!isLrOwned())||(def.requiresComplete&&!isFirstLrComplete())) return;
         localStorage.setItem(HOME_ART_KEY,def.id);
         refresh();
         window.dispatchEvent(new CustomEvent('rhythmGameShiorikoHomeArtChanged',{detail:{art:def.id}}));
+        if(typeof window.refreshLoveFesHomeDialogue==='function')window.refreshLoveFesHomeDialogue();
       });
       options.appendChild(btn);
     });
