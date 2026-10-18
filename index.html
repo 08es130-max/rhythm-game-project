@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="home-layering-v0814.css?v=0.8.101-lrmenu1" />
 <link rel="stylesheet" href="gacha-v045.css?v=0.8.176-lrenvelope2" data-gacha-patch="046" />
 <script>
-window.APP_VERSION = '0.8.312';
+window.APP_VERSION = '0.8.313';
 (async () => {
 try {
 const response = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -53,20 +53,15 @@ window.location.replace(url.toString());
 })();
 </script>
 <link rel="stylesheet" href="home-fullscreen-v08280.css?v=0.8.280" />
-<style id="compact-home-notice-v08312">
-/* Fixed top-right group, independent from menu layout. */
-.home-screen .home-topbar{position:relative!important;display:flex!important;align-items:center!important;justify-content:space-between!important}
-.home-screen .home-topbar .home-header-actions{position:absolute!important;right:24px!important;top:22px!important;display:flex!important;align-items:center!important;gap:10px!important;z-index:50!important;pointer-events:auto!important}
-.home-screen .home-header-actions #updateBanner{position:relative!important;inset:auto!important;transform:none!important;display:flex!important;align-items:center!important;justify-content:center!important;flex:none!important;width:auto!important;height:auto!important;min-height:0!important;margin:0!important;padding:7px 12px!important;border-radius:999px!important;box-sizing:border-box!important}
-.home-screen .home-header-actions #updateBanner .update-head{font-size:12px!important;line-height:1.3!important;gap:0!important}
-.home-screen .home-header-actions #updateBanner .update-head span,.home-screen .home-header-actions #updateBanner .update-text{display:none!important}
-.home-screen .home-header-actions #updateBanner .update-head::after{content:"お知らせ";white-space:nowrap}
-.home-screen .home-header-actions .home-version{position:relative!important;margin:0!important;flex:none!important}
-.home-screen .home-main{transform:none!important}
-@media(orientation:landscape) and (pointer:coarse){
-.home-screen .home-topbar .home-header-actions{right:12px!important;top:7px!important;gap:8px!important}
-.home-screen .home-menu{transform:translateY(-17vh)!important}
-}
+<style id="compact-home-notice-v08313">
+#homeScreen .home-topbar .home-header-actions{position:absolute!important;right:12px!important;top:7px!important;display:flex!important;align-items:center!important;gap:8px!important;z-index:100!important;pointer-events:auto!important}
+#homeScreen .home-header-actions #updateBanner{position:static!important;inset:auto!important;transform:none!important;display:flex!important;flex:0 0 auto!important;width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;margin:0!important;padding:6px 12px!important;border-radius:999px!important;overflow:hidden!important}
+#homeScreen .home-header-actions #updateBanner .update-head{font-size:12px!important;line-height:1.3!important;gap:0!important}
+#homeScreen .home-header-actions #updateBanner .update-head>*,
+#homeScreen .home-header-actions #updateBanner .update-text{display:none!important}
+#homeScreen .home-header-actions #updateBanner .update-head::after{content:"お知らせ";display:block;white-space:nowrap}
+#homeScreen .home-header-actions .home-version{position:static!important;margin:0!important}
+@media(orientation:landscape) and (pointer:coarse){#homeScreen .home-menu{transform:translateY(-8vh)!important}}
 </style>
 </head>
 <body>
@@ -76,9 +71,9 @@ window.location.replace(url.toString());
 <div><h1 class="home-title">ほぼフェス！</h1><p class="home-subtitle">LIVE HOME</p></div>
 
 <div class="home-header-actions"><div id="updateBanner" class="update-banner" role="button" tabindex="0" aria-label="更新内容">
-<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.8.312 アップデート</span></div>
+<div class="update-head"><span id="updateNew" class="update-new">NEW</span><span>Ver.0.8.313 アップデート</span></div>
 <p class="update-text">部室のホームスタイル選択で12人のキャラ枠を均等幅にし、はみ出しを修正しました。</p>
-</div><div class="home-version">Ver. 0.8.312</div></div>
+</div><div class="home-version">Ver. 0.8.313</div></div>
 </div>
 
 <div class="home-main">
@@ -169,7 +164,7 @@ window.location.replace(url.toString());
 <script src="voice-ieni-v040.js?v=0.5.7"></script>
 <script src="voice-yohane-v040.js?v=0.5.7"></script>
 <script src="voice-independent-v040.js?v=0.5.7"></script>
-<script src="home-result-v049.js?v=0.8.312-yu1"></script>
+<script src="home-result-v049.js?v=0.8.313-yu1"></script>
 <script src="home-layout-v042.js?v=0.8.89-notice32"></script>
 <script src="hidden-admin-v048.js?v=0.8.87-lr1"></script>
 <script src="shioriko-secret-modes-v050.js?v=0.8.156-characterguard1"></script>
@@ -214,7 +209,7 @@ window.location.replace(url.toString());
 <script src="assets/lr/embed/home-hq-final-21.js?v=0.8.100-hq1"></script>
 <script src="assets/lr/embed/home-hq-final-22.js?v=0.8.100-hq1"></script>
 <script src="assets/lr/embed/home-hq-finalize.js?v=0.8.100-hq1"></script>
-<script src="home-cutout-v084.js?v=0.8.312-yu-layout"></script>
+<script src="home-cutout-v084.js?v=0.8.313-yu-layout"></script>
 <script src="home-branding-v085.js?v=0.8.5"></script>
 <script src="story-v086.js?v=0.8.262-visualhook1"></script>
 <script src="story-expanded-v088.js?v=0.8.35-expanded2"></script>
@@ -228,8 +223,8 @@ window.location.replace(url.toString());
 <script src="story-icon-v0827.js?v=0.8.37-story-icon6"></script>
 <script src="assets/ui/home-v0220/home-icons-v0220.js?v=0.8.220-icons1"></script>
 <script src="home-menu-unified-v0854.js?v=0.8.220-safeicons1"></script>
-<script src="lounge/lobby-entry.js?v=0.8.312"></script>
-<script src="version-final-v0845.js?v=0.8.312"></script>
+<script src="lounge/lobby-entry.js?v=0.8.313"></script>
+<script src="version-final-v0845.js?v=0.8.313"></script>
 <script>
 document.addEventListener('click',async(e)=>{
   if(e.target?.id!=='copyInputDiagBtn')return;
