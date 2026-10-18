@@ -660,7 +660,7 @@ body:has(#pokeGuidePane:not(.hidden) #guideDexTool:not(.hidden) #guidePokemonDet
 .edge-mascot.mascot-gentle-walk:not(.mascot-live-active):not(.mascot-bump-reaction){
  animation:mascot-gentle-walk var(--mascot-walk-duration,660ms) ease-in-out infinite alternate;
 }
-@keyframes mascot-gentle-walk{from{margin-top:0}to{margin-top:-2px}}
+@keyframes mascot-gentle-walk{0%{margin-top:0;margin-left:-2px}50%{margin-top:-3px;margin-left:0}100%{margin-top:0;margin-left:2px}}
 .edge-mascot.mascot-bump-reaction:not(.mascot-live-active){
  animation:mascot-gentle-bump .6s ease-out 1;
 }
