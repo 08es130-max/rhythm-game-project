@@ -1,4 +1,4 @@
-// v0.8.321 - Yu reward: non-destructive subtle motion and rare spotlight.
+// v0.8.322 - Yu reward: non-destructive subtle motion and rare spotlight.
 (()=>{'use strict';
 const home=document.getElementById('homeScreen');
 if(!home)return;
@@ -9,9 +9,9 @@ const style=document.createElement('style');
 style.textContent=`
 #homeScreen .yu-life-layer{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden}
 #homeScreen .yu-life-layer[hidden]{display:none!important}
-#homeScreen .yu-life-canvas{position:absolute;inset:0;width:100%;height:100%}
-#homeScreen .yu-life-dim{position:absolute;inset:0;background:rgba(5,7,25,.82);opacity:0;transition:opacity .42s ease}
-#homeScreen .yu-life-spot{position:absolute;left:8%;top:-18%;width:46%;height:110%;background:radial-gradient(ellipse at 50% 42%,rgba(255,255,255,.26) 0%,rgba(255,245,209,.17) 22%,rgba(150,200,255,.08) 44%,transparent 72%);opacity:0;transition:opacity .6s ease}
+#homeScreen .yu-life-canvas{display:none!important}
+#homeScreen .yu-life-dim{position:absolute;inset:0;background:radial-gradient(ellipse 26% 38% at 32% 32%,rgba(5,7,25,.02) 0%,rgba(5,7,25,.14) 57%,rgba(5,7,25,.83) 100%);opacity:0;transition:opacity .42s ease}
+#homeScreen .yu-life-spot{position:absolute;left:9%;top:-12%;width:46%;height:105%;background:linear-gradient(180deg,rgba(255,251,211,.36),rgba(255,255,255,.18) 28%,rgba(255,248,205,.12) 56%,transparent 88%);clip-path:polygon(45% 0,55% 0,100% 100%,0 100%);filter:blur(8px);opacity:0;transition:opacity .6s ease}
 #homeScreen .yu-life-layer.is-show .yu-life-dim,#homeScreen .yu-life-layer.is-show .yu-life-spot{opacity:1}
 #homeScreen .yu-life-layer.is-show .yu-life-spot{animation:yu-spot-sway 2.8s ease-in-out infinite}
 @keyframes yu-spot-sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
@@ -23,7 +23,7 @@ const canvas=document.createElement('canvas');canvas.className='yu-life-canvas';
 const dim=document.createElement('div');dim.className='yu-life-dim';layer.appendChild(dim);
 const spot=document.createElement('div');spot.className='yu-life-spot';layer.appendChild(spot);
 home.appendChild(layer);
-const ctx=canvas.getContext('2d',{alpha:true});
+const ctx=null;
 let active=false,raf=0,taps=0,playing=false,lastRare=0,scene=null,seq=0;
 const patches=[
   {x:.243,y:.142,w:.066,h:.115,amp:2.1,period:3100}, // left ponytail
@@ -62,7 +62,7 @@ function render(t){
 function start(){if(raf)return;raf=requestAnimationFrame(render);}
 function refresh(){
  const next=eligible()&&!home.hidden&&getComputedStyle(home).display!=='none';
- if(next&&!active){scene=home.querySelector('.home-lr-scene-v096');layer.hidden=false;active=true;start();}
+ if(next&&!active){scene=home.querySelector('.home-lr-scene-v096');layer.hidden=false;active=true;}
  else if(!next&&active){active=false;layer.hidden=true;layer.classList.remove('is-show');playing=false;seq++;if(raf)cancelAnimationFrame(raf);raf=0;ctx?.clearRect(0,0,canvas.width,canvas.height);}
 }
 function rare(){
@@ -79,6 +79,6 @@ home.addEventListener('click',e=>{
 });
 new MutationObserver(refresh).observe(home,{attributes:true,attributeFilter:['style','hidden','class']});
 document.addEventListener('click',()=>requestAnimationFrame(refresh));
-document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0;}else{refresh();if(active)start();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(raf)cancelAnimationFrame(raf);raf=0;}else{refresh();}});
 refresh();
 })();
