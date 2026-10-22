@@ -1,7 +1,7 @@
-// Final version and home layout correction v0.8.318
+// Final version and home layout correction v0.8.319
 (function(){
 'use strict';
-const VERSION='0.8.318';
+const VERSION='0.8.319';
 window.APP_VERSION=VERSION;
 const style=document.createElement('style');
 style.id='home-layout-fix-v08316';
