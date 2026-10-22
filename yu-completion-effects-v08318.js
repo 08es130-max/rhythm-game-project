@@ -1,4 +1,4 @@
-// Yu first-wave LR completion: isolated visual effects (v0.8.319).
+// Yu first-wave LR completion: isolated visual effects (v0.8.320).
 (()=>{'use strict';
 const home=document.getElementById('homeScreen');
 if(!home)return;
@@ -62,7 +62,8 @@ if(t>.67){const blend=(t-.67)/.33;const gradient=ctx.createRadialGradient(cx,cy,
 if(t<1)requestAnimationFrame(frame);else canvas.remove();
 }
 requestAnimationFrame(frame);}
-function flash(){for(const [cls,x,y,w,h] of [['yu-flash','24%','7%','17%','40%'],['yu-flash yu-rainbow-flash','50%','6%','47%','78%']]){const n=el(cls);Object.assign(n.style,{left:x,top:y,width:w,height:h});layer.appendChild(n);n.addEventListener('animationend',()=>n.remove(),{once:true});}}\nfunction burst(){if(layer.hidden)return;for(let i=0;i<24;i++){const angle=i*Math.PI/12,dist=rnd(70,190);const n=el(i%3?'yu-burst':'yu-note',{'--color':colors[i%12],'--dx':Math.cos(angle)*dist+'px','--dy':Math.sin(angle)*dist+'px'});if(i%3===0)n.textContent='♪';layer.appendChild(n);n.addEventListener('animationend',()=>n.remove(),{once:true});}}
+function flash(){for(const [cls,x,y,w,h] of [['yu-flash','24%','7%','17%','40%'],['yu-flash yu-rainbow-flash','50%','6%','47%','78%']]){const n=el(cls);Object.assign(n.style,{left:x,top:y,width:w,height:h});layer.appendChild(n);n.addEventListener('animationend',()=>n.remove(),{once:true});}}
+function burst(){if(layer.hidden)return;for(let i=0;i<24;i++){const angle=i*Math.PI/12,dist=rnd(70,190);const n=el(i%3?'yu-burst':'yu-note',{'--color':colors[i%12],'--dx':Math.cos(angle)*dist+'px','--dy':Math.sin(angle)*dist+'px'});if(i%3===0)n.textContent='♪';layer.appendChild(n);n.addEventListener('animationend',()=>n.remove(),{once:true});}}
 let active=false,taps=0;
 function refresh(){const visible=!home.hidden&&getComputedStyle(home).display!=='none';const next=visible&&eligible();if(next&&!active){layer.hidden=false;taps=0;ambient();intro();}else if(!next&&active){layer.hidden=true;layer.replaceChildren();}active=next;}
 home.addEventListener('click',e=>{if(!active)return;if(e.target.closest('button,a,.home-menu,.home-dialogue-bubble,.home-notice,.home-version'))return;const r=home.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.left+r.width*.53)return;burst();flash();taps++;if(taps>=5){taps=0;intro();}});
