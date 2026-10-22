@@ -1,4 +1,4 @@
-// v0.8.322 - Yu reward: non-destructive subtle motion and rare spotlight.
+// v0.8.323 - Yu reward: non-destructive subtle motion and rare spotlight.
 (()=>{'use strict';
 const home=document.getElementById('homeScreen');
 if(!home)return;
@@ -11,9 +11,9 @@ style.textContent=`
 #homeScreen .yu-life-layer[hidden]{display:none!important}
 #homeScreen .yu-life-canvas{display:none!important}
 #homeScreen .yu-life-dim{position:absolute;inset:0;background:radial-gradient(ellipse 26% 38% at 32% 32%,rgba(5,7,25,.02) 0%,rgba(5,7,25,.14) 57%,rgba(5,7,25,.83) 100%);opacity:0;transition:opacity .42s ease}
-#homeScreen .yu-life-spot{position:absolute;left:9%;top:-12%;width:46%;height:105%;background:linear-gradient(180deg,rgba(255,251,211,.36),rgba(255,255,255,.18) 28%,rgba(255,248,205,.12) 56%,transparent 88%);clip-path:polygon(45% 0,55% 0,100% 100%,0 100%);filter:blur(8px);opacity:0;transition:opacity .6s ease}
+#homeScreen .yu-life-spot{position:absolute;left:7%;top:-12%;width:49%;height:130%;background:linear-gradient(180deg,rgba(255,251,211,.36),rgba(255,255,255,.18) 28%,rgba(255,248,205,.12) 56%,rgba(255,248,205,.10) 82%,transparent 100%);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%);filter:blur(8px);opacity:0;transition:opacity .6s ease}
 #homeScreen .yu-life-layer.is-show .yu-life-dim,#homeScreen .yu-life-layer.is-show .yu-life-spot{opacity:1}
-#homeScreen .yu-life-layer.is-show .yu-life-spot{animation:yu-spot-sway 2.8s ease-in-out infinite}
+#homeScreen .yu-life-layer.is-show .yu-life-spot{animation:none}
 @keyframes yu-spot-sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
 @media(prefers-reduced-motion:reduce){#homeScreen .yu-life-canvas{display:none!important}#homeScreen .yu-life-layer.is-show .yu-life-spot{animation:none}}
 `;
